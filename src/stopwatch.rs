@@ -41,11 +41,12 @@ impl Stopwatch {
     }
 
     pub fn stop(&mut self) -> Result<(), Error> {
-        if self.start.is_none() {
-            Err(Error::AlreadyStopped)
-        } else {
+        if let Some(start) = self.start {
+            self.elapsed += start.elapsed();
             self.start = None;
             Ok(())
+        } else {
+            Err(Error::AlreadyStopped)
         }
     }
 
