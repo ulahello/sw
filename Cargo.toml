@@ -1,0 +1,13 @@
+[package]
+name = "sw"
+version = "0.1.0"
+authors = ["Ula Shipman <ula.hello@mailbox.org>"]
+edition = "2021"
+description = "terminal stopwatch"
+license = "GPL-3.0-or-later"
+
+[profile.release]
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
