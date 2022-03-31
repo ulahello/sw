@@ -87,6 +87,12 @@ impl Stopwatch {
             self.elapsed
         }
     }
+
+    /// Return [`true`] if the stopwatch is running.
+    pub const fn is_running(&self) -> bool {
+        self.start.is_some()
+    }
+}
 }
 
 /// Errors associated with [`Stopwatch`].
