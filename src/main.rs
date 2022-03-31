@@ -62,13 +62,13 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), Error> {
                 Command::Help => {
                     writeln!(stdout, "terminal stopwatch")?;
                     writeln!(stdout)?;
-                    writeln!(stdout, "| command | description        |")?;
-                    writeln!(stdout, "| ---     | ---                |")?;
-                    writeln!(stdout, "| q       | quit               |")?;
-                    writeln!(stdout, "| h       | print this message |")?;
-                    writeln!(stdout, "| s       | toggle stopwatch   |")?;
-                    writeln!(stdout, "| r       | reset stopwatch    |")?;
-                    writeln!(stdout, "| <enter> | display stopwatch  |")?;
+                    writeln!(stdout, "| command | description          |")?;
+                    writeln!(stdout, "| ---     | ---                  |")?;
+                    writeln!(stdout, "| q       | quit                 |")?;
+                    writeln!(stdout, "| h       | print this message   |")?;
+                    writeln!(stdout, "| s       | toggle stopwatch     |")?;
+                    writeln!(stdout, "| r       | reset stopwatch      |")?;
+                    writeln!(stdout, "| <enter> | display elapsed time |")?;
                 }
 
                 Command::Toggle => {
