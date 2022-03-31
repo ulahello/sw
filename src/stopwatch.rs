@@ -70,6 +70,17 @@ impl Stopwatch {
         }
     }
 
+    /// Start or stop the stopwatch.
+    ///
+    /// If stopped, then start, and if running, then stop.
+    pub fn toggle(&mut self) {
+        if self.is_running() {
+            let _ = self.stop();
+        } else {
+            let _ = self.start();
+        }
+    }
+
     /// Reset the elapsed time to zero.
     ///
     /// # Notes
