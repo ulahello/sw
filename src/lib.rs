@@ -17,5 +17,9 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::pedantic)]
 
+mod error;
 #[warn(missing_docs)]
 pub mod stopwatch;
+
+#[warn(missing_docs)]
+pub use error::Error;
