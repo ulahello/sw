@@ -44,7 +44,7 @@ impl Stopwatch {
     /// Returns [`Error::AlreadyStarted`] if the stopwatch has already been
     /// started.
     pub fn start(&mut self) -> Result<(), Error> {
-        if self.start.is_some() {
+        if self.is_running() {
             Err(Error::AlreadyStarted)
         } else {
             self.start = Some(Instant::now());
