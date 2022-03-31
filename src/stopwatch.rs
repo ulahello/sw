@@ -16,6 +16,7 @@
 
 use std::time::{Duration, Instant};
 
+#[must_use]
 pub struct Stopwatch {
     elapsed: Duration,
     start: Option<Instant>,
@@ -47,6 +48,7 @@ impl Stopwatch {
         }
     }
 
+    #[must_use]
     pub fn elapsed(&self) -> Duration {
         if let Some(start) = self.start {
             self.elapsed + start.elapsed()
