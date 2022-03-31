@@ -81,6 +81,7 @@ impl Stopwatch {
 }
 
 /// Errors associated with [`Stopwatch`].
+#[derive(Clone, Copy)]
 pub enum Error {
     /// Called [`Stopwatch::start`] while already running.
     AlreadyStarted,
