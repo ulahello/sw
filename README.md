@@ -2,7 +2,7 @@
 
 `sw` is a simple terminal stopwatch.
 
-## The Use Case
+## the Use Case
 
 allegedly, this improves on the experience of using an interactive python shell
 as a stopwatch.
