@@ -16,6 +16,7 @@
 
 use std::time::{Duration, Instant};
 
+#[derive(Clone, Copy)]
 #[must_use]
 pub struct Stopwatch {
     elapsed: Duration,
