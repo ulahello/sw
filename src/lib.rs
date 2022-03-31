@@ -16,6 +16,6 @@
 
 #![forbid(unsafe_code)]
 #![warn(clippy::pedantic)]
-#![warn(missing_docs)]
 
+#[warn(missing_docs)]
 pub mod stopwatch;

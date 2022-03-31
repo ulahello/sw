@@ -14,8 +14,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+//! Defines an abstraction for stopwatches.
+
 use std::time::{Duration, Instant};
 
+/// A stopwatch abstraction. Measures and accumulates time between starts and
+/// stops.
 #[derive(Clone, Copy)]
 #[must_use]
 pub struct Stopwatch {
@@ -24,6 +28,7 @@ pub struct Stopwatch {
 }
 
 impl Stopwatch {
+    /// Creates a stopped [`Stopwatch`] with zero time elapsed.
     pub const fn new() -> Self {
         Self {
             start: None,
@@ -31,6 +36,12 @@ impl Stopwatch {
         }
     }
 
+    /// Start measuring the time elapsed.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::AlreadyStarted`] if the [`Stopwatch`]
+    /// has already been started.
     pub fn start(&mut self) -> Result<(), Error> {
         if self.start.is_some() {
             Err(Error::AlreadyStarted)
@@ -40,6 +51,14 @@ impl Stopwatch {
         }
     }
 
+    /// Stop measuring the time elapsed since the last start.
+    ///
+    /// On success, this will add to the total elapsed time.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::AlreadyStopped`] if the [`Stopwatch`]
+    /// has already been stopped.
     pub fn stop(&mut self) -> Result<(), Error> {
         if let Some(start) = self.start {
             self.elapsed += start.elapsed();
@@ -50,6 +69,7 @@ impl Stopwatch {
         }
     }
 
+    /// Returns the total time elapsed.
     #[must_use]
     pub fn elapsed(&self) -> Duration {
         if let Some(start) = self.start {
@@ -60,7 +80,10 @@ impl Stopwatch {
     }
 }
 
+/// Errors associated with [`Stopwatch`].
 pub enum Error {
+    /// Called [`Stopwatch::start`] while already running.
     AlreadyStarted,
+    /// Called [`Stopwatch::stop`] while already stopped.
     AlreadyStopped,
 }
