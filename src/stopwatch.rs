@@ -98,6 +98,7 @@ impl Stopwatch {
     }
 
     /// Return [`true`] if the stopwatch is running.
+    #[must_use]
     pub const fn is_running(&self) -> bool {
         self.start.is_some()
     }
