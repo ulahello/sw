@@ -40,8 +40,8 @@ impl Stopwatch {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::AlreadyStarted`] if the [`Stopwatch`]
-    /// has already been started.
+    /// Returns [`Error::AlreadyStarted`] if the stopwatch has already been
+    /// started.
     pub fn start(&mut self) -> Result<(), Error> {
         if self.start.is_some() {
             Err(Error::AlreadyStarted)
@@ -57,8 +57,8 @@ impl Stopwatch {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::AlreadyStopped`] if the [`Stopwatch`]
-    /// has already been stopped.
+    /// Returns [`Error::AlreadyStopped`] if the stopwatch has already been
+    /// stopped.
     pub fn stop(&mut self) -> Result<(), Error> {
         if let Some(start) = self.start {
             self.elapsed += start.elapsed();
