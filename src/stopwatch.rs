@@ -97,13 +97,23 @@ impl Stopwatch {
 
 impl fmt::Display for Stopwatch {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        write!(f, "{:.4}", self.elapsed().as_secs_f64() / 60.0 / 60.0)?;
+        let elapsed = self.elapsed().as_secs_f64();
 
-        if self.is_running() {
-            write!(f, " (running)")
-        } else {
-            write!(f, " (stopped)")
-        }
+        // display time elapsed in different units
+        writeln!(f, "{:.4} seconds", elapsed)?;
+        writeln!(f, "{:.4} minutes", elapsed / 60.0)?;
+        writeln!(f, "{:.4} hours", elapsed / 60.0 / 60.0)?;
+
+        // indicate status
+        write!(
+            f,
+            "status: {}",
+            if self.is_running() {
+                "running"
+            } else {
+                "stopped"
+            }
+        )
     }
 }
 
