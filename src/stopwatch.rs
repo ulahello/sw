@@ -69,7 +69,7 @@ impl Stopwatch {
         }
     }
 
-    /// Returns the total time elapsed.
+    /// Return the total time elapsed.
     #[must_use]
     pub fn elapsed(&self) -> Duration {
         if let Some(start) = self.start {
