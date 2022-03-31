@@ -16,10 +16,11 @@
 
 #![forbid(unsafe_code)]
 #![warn(clippy::pedantic)]
+#![warn(missing_docs)]
+
+//! Backend for `sw`, containing a stopwatch abstraction and runtime errors.
 
 mod error;
-#[warn(missing_docs)]
 pub mod stopwatch;
 
-#[warn(missing_docs)]
 pub use error::Error;
