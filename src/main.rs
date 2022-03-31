@@ -63,6 +63,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), Error> {
                     writeln!(stdout, "| h       | print this message |")?;
                     writeln!(stdout, "| s       | toggle stopwatch   |")?;
                     writeln!(stdout, "| r       | reset stopwatch    |")?;
+                    writeln!(stdout, "| <enter> | display stopwatch  |")?;
                 }
 
                 Command::Toggle => {
