@@ -75,7 +75,6 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), Error> {
                 }
 
                 Command::Reset => {
-                    let _ = stopwatch.stop();
                     stopwatch.reset();
                     writeln!(stderr, "reset stopwatch")?;
                 }

@@ -81,13 +81,10 @@ impl Stopwatch {
         }
     }
 
-    /// Reset the elapsed time to zero.
-    ///
-    /// # Notes
-    ///
-    /// This does not [stop](Self::stop) or [start](Self::start) the stopwatch.
+    /// Stop and reset the elapsed time to zero.
     pub fn reset(&mut self) {
         self.elapsed = Duration::ZERO;
+        self.start = None;
     }
 
     /// Return the total time elapsed.
