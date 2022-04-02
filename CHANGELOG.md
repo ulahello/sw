@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+* changed set command to `c` (c for change)
+* changed offset command to `o`
 
 ## [0.3.0] - 2022-04-02
 * added offset command: `+`

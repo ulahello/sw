@@ -35,7 +35,7 @@ enum Command {
     Display,
     Toggle,
     Reset,
-    Set,
+    Change,
     Offset,
 }
 
@@ -47,8 +47,8 @@ impl Command {
             "" => Ok(Self::Display),
             "s" => Ok(Self::Toggle),
             "r" => Ok(Self::Reset),
-            "=" => Ok(Self::Set),
-            "+" => Ok(Self::Offset),
+            "c" => Ok(Self::Change),
+            "o" => Ok(Self::Offset),
             other => Err(UserError::UnrecognizedCommand(other.into())),
         })
     }
@@ -126,8 +126,8 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| h       | print this message   |")?;
                     writeln!(stdout, "| s       | toggle stopwatch     |")?;
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
-                    writeln!(stdout, "| =       | set elapsed time     |")?;
-                    writeln!(stdout, "| +       | offset elapsed time  |")?;
+                    writeln!(stdout, "| c       | change elapsed time  |")?;
+                    writeln!(stdout, "| o       | offset elapsed time  |")?;
                     writeln!(stdout, "| <enter> | display elapsed time |")?;
                 }
 
@@ -147,7 +147,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stderr, "reset stopwatch")?;
                 }
 
-                Command::Set => match read_secs_f64("new value? ")? {
+                Command::Change => match read_secs_f64("new value? ")? {
                     Ok(secs) => {
                         if secs.is_sign_negative() {
                             writeln!(stderr, "{}", UserError::NegativeDuration)?;
