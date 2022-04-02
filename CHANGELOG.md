@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.4.0] - 2022-04-02
 * changed set command to `c` (c for change)
 * changed offset command to `o`
 
