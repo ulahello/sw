@@ -49,7 +49,6 @@ impl Command {
             "r" => Ok(Self::Reset),
             other => Err(UserError::UnrecognizedCommand(other.into())),
         })
-        }
     }
 }
 
