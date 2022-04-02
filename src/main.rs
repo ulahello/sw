@@ -79,8 +79,6 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                 Command::Quit => return Ok(()),
 
                 Command::Help => {
-                    writeln!(stdout, "terminal stopwatch")?;
-                    writeln!(stdout)?;
                     writeln!(stdout, "| command | description          |")?;
                     writeln!(stdout, "| ---     | ---                  |")?;
                     writeln!(stdout, "| q       | quit                 |")?;
