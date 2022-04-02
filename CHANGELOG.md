@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+* added message when elapsed time is updated
+* improved help message
 
 ## [0.2.0] - 2022-04-02
 * added set command (`=`): allows user to set the total elapsed time
