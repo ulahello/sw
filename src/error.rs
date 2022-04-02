@@ -17,10 +17,10 @@
 use std::fmt;
 use std::io;
 
-/// Fatal runtime errors.
+/// Fatal runtime errors
 #[derive(Debug)]
 pub enum FatalError {
-    /// I/O error.
+    /// I/O error
     Io(io::Error),
 }
 
@@ -38,7 +38,7 @@ impl fmt::Display for FatalError {
     }
 }
 
-/// Errors in the user input.
+/// Errors in the user input
 #[derive(Debug)]
 pub enum UserError {
     UnrecognizedCommand(String),

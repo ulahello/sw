@@ -14,7 +14,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-//! Defines an abstraction for stopwatches.
+//! Defines an abstraction for stopwatches
 
 use std::fmt;
 use std::time::{Duration, Instant};
@@ -126,11 +126,11 @@ impl fmt::Display for Stopwatch {
     }
 }
 
-/// Errors associated with [`Stopwatch`].
+/// Errors associated with [`Stopwatch`]
 #[derive(Clone, Copy)]
 pub enum Error {
-    /// Called [`Stopwatch::start`] while already running.
+    /// Called [`Stopwatch::start`] while already running
     AlreadyStarted,
-    /// Called [`Stopwatch::stop`] while already stopped.
+    /// Called [`Stopwatch::stop`] while already stopped
     AlreadyStopped,
 }
