@@ -62,6 +62,9 @@ enum Unit {
 
 impl Unit {
     pub fn from_stdin() -> Result<Result<Self, UserError>, FatalError> {
+        let mut stdout = io::stdout();
+        writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
+
         Ok(match read_input("which unit? ")?.to_lowercase().as_ref() {
             "s" => Ok(Self::Seconds),
             "m" => Ok(Self::Minutes),
@@ -79,6 +82,20 @@ fn read_input(msg: &str) -> Result<String, FatalError> {
     let mut input = String::new();
     io::stdin().read_line(&mut input)?;
     Ok(input.trim().into())
+}
+
+fn read_secs_f64(msg: &str) -> Result<Result<f64, UserError>, FatalError> {
+    match Unit::from_stdin()? {
+        Ok(unit) => match read_input(msg)?.parse::<f64>() {
+            Ok(scalar) => Ok(Ok(match unit {
+                Unit::Seconds => scalar,
+                Unit::Minutes => scalar * 60.0,
+                Unit::Hours => scalar * 60.0 * 60.0,
+            })),
+            Err(error) => Ok(Err(UserError::InvalidFloat(error))),
+        },
+        Err(error) => Ok(Err(error)),
+    }
 }
 
 fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
@@ -130,57 +147,30 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stderr, "reset stopwatch")?;
                 }
 
-                Command::Set => {
-                    writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
-
-                    match Unit::from_stdin()? {
-                        Ok(unit) => match read_input("new value? ")?.parse::<f64>() {
-                            Ok(scalar) => {
-                                if scalar.is_sign_negative() {
-                                    writeln!(stderr, "{}", UserError::NegativeDuration)?;
-                                } else {
-                                    stopwatch.set(Duration::from_secs_f64(match unit {
-                                        Unit::Seconds => scalar,
-                                        Unit::Minutes => scalar * 60.0,
-                                        Unit::Hours => scalar * 60.0 * 60.0,
-                                    }));
-                                    writeln!(stderr, "updated elapsed time")?;
-                                }
-                            }
-                            Err(error) => {
-                                writeln!(stderr, "{}", UserError::InvalidFloat(error))?;
-                            }
-                        },
-                        Err(error) => writeln!(stderr, "{}", error)?,
+                Command::Set => match read_secs_f64("new value? ")? {
+                    Ok(secs) => {
+                        if secs.is_sign_negative() {
+                            writeln!(stderr, "{}", UserError::NegativeDuration)?;
+                        } else {
+                            stopwatch.set(Duration::from_secs_f64(secs));
+                            writeln!(stderr, "updated elapsed time")?;
+                        }
                     }
-                }
+                    Err(error) => writeln!(stderr, "{}", error)?,
+                },
 
-                Command::Offset => {
-                    writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
-
-                    match Unit::from_stdin()? {
-                        Ok(unit) => match read_input("offset by? ")?.parse::<f64>() {
-                            Ok(scalar) => {
-                                let value = match unit {
-                                    Unit::Seconds => scalar,
-                                    Unit::Minutes => scalar * 60.0,
-                                    Unit::Hours => scalar * 60.0 * 60.0,
-                                };
-                                if scalar.is_sign_negative() {
-                                    stopwatch.sub(Duration::from_secs_f64(value.abs()));
-                                    writeln!(stderr, "subtracted from elapsed time")?;
-                                } else {
-                                    stopwatch.add(Duration::from_secs_f64(value));
-                                    writeln!(stderr, "added to elapsed time")?;
-                                }
-                            }
-                            Err(error) => {
-                                writeln!(stderr, "{}", UserError::InvalidFloat(error))?;
-                            }
-                        },
-                        Err(error) => writeln!(stderr, "{}", error)?,
+                Command::Offset => match read_secs_f64("offset by? ")? {
+                    Ok(secs) => {
+                        if secs.is_sign_negative() {
+                            stopwatch.sub(Duration::from_secs_f64(secs.abs()));
+                            writeln!(stderr, "subtracted from elapsed time")?;
+                        } else {
+                            stopwatch.add(Duration::from_secs_f64(secs));
+                            writeln!(stderr, "added to elapsed time")?;
+                        }
                     }
-                }
+                    Err(error) => writeln!(stderr, "{}", error)?,
+                },
             },
 
             Err(error) => writeln!(stderr, "{}", error)?,
