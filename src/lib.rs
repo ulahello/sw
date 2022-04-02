@@ -23,4 +23,4 @@
 mod error;
 pub mod stopwatch;
 
-pub use error::Error;
+pub use error::{FatalError, UserError};

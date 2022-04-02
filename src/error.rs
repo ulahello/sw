@@ -17,23 +17,37 @@
 use std::fmt;
 use std::io;
 
-/// Errors associated with the command-line interface.
+/// Fatal runtime errors.
 #[derive(Debug)]
-pub enum Error {
+pub enum FatalError {
     /// I/O error.
     Io(io::Error),
 }
 
-impl From<io::Error> for Error {
+impl From<io::Error> for FatalError {
     fn from(err: io::Error) -> Self {
         Self::Io(err)
     }
 }
 
-impl fmt::Display for Error {
+impl fmt::Display for FatalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             Self::Io(err) => write!(f, "io: {}", err),
+        }
+    }
+}
+
+/// Errors in the user input.
+#[derive(Debug)]
+pub enum UserError {
+    UnrecognizedCommand(String),
+}
+
+impl fmt::Display for UserError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+        match self {
+            Self::UnrecognizedCommand(command) => write!(f, "unrecognized command `{}`", command),
         }
     }
 }

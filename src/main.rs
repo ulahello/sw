@@ -17,7 +17,7 @@
 use std::io::{self, Write};
 
 use sw::stopwatch::Stopwatch;
-use sw::Error;
+use sw::{FatalError, UserError};
 
 fn main() {
     match control_stopwatch(Stopwatch::new()) {
@@ -31,26 +31,29 @@ fn main() {
 enum Command {
     Quit,
     Help,
+    Display,
     Toggle,
     Reset,
 }
 
 impl Command {
-    pub fn from_stdin() -> Result<Result<Self, String>, Error> {
+    pub fn from_stdin() -> Result<Result<Self, UserError>, FatalError> {
         let mut input = String::new();
         io::stdin().read_line(&mut input)?;
 
-        match input.to_lowercase().trim() {
-            "q" => Ok(Ok(Self::Quit)),
-            "h" => Ok(Ok(Self::Help)),
-            "s" => Ok(Ok(Self::Toggle)),
-            "r" => Ok(Ok(Self::Reset)),
-            other => Ok(Err(other.into())),
+        Ok(match input.to_lowercase().trim() {
+            "q" => Ok(Self::Quit),
+            "h" => Ok(Self::Help),
+            "" => Ok(Self::Display),
+            "s" => Ok(Self::Toggle),
+            "r" => Ok(Self::Reset),
+            other => Err(UserError::UnrecognizedCommand(other.into())),
+        })
         }
     }
 }
 
-fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), Error> {
+fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
     let mut stdout = io::stdout();
     let mut stderr = io::stderr();
 
@@ -87,6 +90,8 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), Error> {
                     writeln!(stdout, "| <enter> | display elapsed time |")?;
                 }
 
+                Command::Display => writeln!(stdout, "{}", stopwatch)?,
+
                 Command::Toggle => {
                     stopwatch.toggle();
                     if stopwatch.is_running() {
@@ -101,13 +106,8 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), Error> {
                     writeln!(stderr, "reset stopwatch")?;
                 }
             },
-            Err(input) => {
-                if input.is_empty() {
-                    writeln!(stdout, "{}", stopwatch)?;
-                } else {
-                    writeln!(stderr, "unrecognized command `{}`", input)?;
-                }
-            }
+
+            Err(error) => writeln!(stderr, "{}", error)?,
         }
     }
 }
