@@ -107,7 +107,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| h       | print this message   |")?;
                     writeln!(stdout, "| s       | toggle stopwatch     |")?;
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
-                    writeln!(stdout, "| =       | set stopwatch        |")?;
+                    writeln!(stdout, "| =       | set elapsed time     |")?;
                     writeln!(stdout, "| <enter> | display elapsed time |")?;
                 }
 
