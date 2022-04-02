@@ -41,6 +41,7 @@ impl fmt::Display for FatalError {
 /// Errors in the user input
 #[derive(Debug)]
 pub enum UserError {
+    /// Unrecognized command passed to interactive shell
     UnrecognizedCommand(String),
 }
 
