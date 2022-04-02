@@ -42,10 +42,13 @@ impl fmt::Display for FatalError {
 /// Errors in the user input
 #[derive(Debug)]
 pub enum UserError {
-    /// Unrecognized command passed to interactive shell
+    /// Unrecognized command; contains the string which was passed
     UnrecognizedCommand(String),
+    /// Unrecognized unit; contains the string which was passed
     UnrecognizedUnit(String),
+    /// Negative value passed for duration
     NegativeDuration,
+    /// Invalid floating point number; contains the parse error
     InvalidFloat(ParseFloatError),
 }
 
