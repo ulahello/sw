@@ -141,6 +141,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                                         Unit::Minutes => scalar * 60.0,
                                         Unit::Hours => scalar * 60.0 * 60.0,
                                     }));
+                                    writeln!(stderr, "updated elapsed time")?;
                                 }
                             }
                             Err(error) => {
