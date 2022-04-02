@@ -36,6 +36,7 @@ enum Command {
     Toggle,
     Reset,
     Set,
+    Offset,
 }
 
 impl Command {
@@ -47,6 +48,7 @@ impl Command {
             "s" => Ok(Self::Toggle),
             "r" => Ok(Self::Reset),
             "=" => Ok(Self::Set),
+            "+" => Ok(Self::Offset),
             other => Err(UserError::UnrecognizedCommand(other.into())),
         })
     }
@@ -108,6 +110,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| s       | toggle stopwatch     |")?;
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
                     writeln!(stdout, "| =       | set elapsed time     |")?;
+                    writeln!(stdout, "| +       | offset elapsed time  |")?;
                     writeln!(stdout, "| <enter> | display elapsed time |")?;
                 }
 
@@ -142,6 +145,33 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                                         Unit::Hours => scalar * 60.0 * 60.0,
                                     }));
                                     writeln!(stderr, "updated elapsed time")?;
+                                }
+                            }
+                            Err(error) => {
+                                writeln!(stderr, "{}", UserError::InvalidFloat(error))?;
+                            }
+                        },
+                        Err(error) => writeln!(stderr, "{}", error)?,
+                    }
+                }
+
+                Command::Offset => {
+                    writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
+
+                    match Unit::from_stdin()? {
+                        Ok(unit) => match read_input("offset by? ")?.parse::<f64>() {
+                            Ok(scalar) => {
+                                let value = match unit {
+                                    Unit::Seconds => scalar,
+                                    Unit::Minutes => scalar * 60.0,
+                                    Unit::Hours => scalar * 60.0 * 60.0,
+                                };
+                                if scalar.is_sign_negative() {
+                                    stopwatch.sub(Duration::from_secs_f64(value.abs()));
+                                    writeln!(stderr, "subtracted from elapsed time")?;
+                                } else {
+                                    stopwatch.add(Duration::from_secs_f64(value));
+                                    writeln!(stderr, "added to elapsed time")?;
                                 }
                             }
                             Err(error) => {

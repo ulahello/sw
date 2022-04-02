@@ -93,6 +93,16 @@ impl Stopwatch {
         self.start = None;
     }
 
+    /// Add `add` to the total elapsed time.
+    pub fn add(&mut self, add: Duration) {
+        self.elapsed = self.elapsed.saturating_add(add);
+    }
+
+    /// Subtract `sub` from the total elapsed time.
+    pub fn sub(&mut self, sub: Duration) {
+        self.elapsed = self.elapsed.saturating_sub(sub);
+    }
+
     /// Return the total time elapsed.
     #[must_use]
     pub fn elapsed(&self) -> Duration {
