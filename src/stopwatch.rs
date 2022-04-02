@@ -87,6 +87,12 @@ impl Stopwatch {
         self.start = None;
     }
 
+    /// Stop and set the total elapsed time to `new`.
+    pub fn set(&mut self, new: Duration) {
+        self.elapsed = new;
+        self.start = None;
+    }
+
     /// Return the total time elapsed.
     #[must_use]
     pub fn elapsed(&self) -> Duration {

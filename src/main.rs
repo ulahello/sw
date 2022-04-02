@@ -15,6 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 use std::io::{self, Write};
+use std::time::Duration;
 
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, UserError};
@@ -34,6 +35,7 @@ enum Command {
     Display,
     Toggle,
     Reset,
+    Set,
 }
 
 impl Command {
@@ -47,7 +49,28 @@ impl Command {
             "" => Ok(Self::Display),
             "s" => Ok(Self::Toggle),
             "r" => Ok(Self::Reset),
+            "=" => Ok(Self::Set),
             other => Err(UserError::UnrecognizedCommand(other.into())),
+        })
+    }
+}
+
+enum Unit {
+    Seconds,
+    Minutes,
+    Hours,
+}
+
+impl Unit {
+    pub fn from_stdin() -> Result<Result<Self, UserError>, FatalError> {
+        let mut input = String::new();
+        io::stdin().read_line(&mut input)?;
+
+        Ok(match input.to_lowercase().trim() {
+            "s" => Ok(Self::Seconds),
+            "m" => Ok(Self::Minutes),
+            "h" => Ok(Self::Hours),
+            other => Err(UserError::UnrecognizedUnit(other.into())),
         })
     }
 }
@@ -84,6 +107,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| h       | print this message   |")?;
                     writeln!(stdout, "| s       | toggle stopwatch     |")?;
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
+                    writeln!(stdout, "| =       | set stopwatch        |")?;
                     writeln!(stdout, "| <enter> | display elapsed time |")?;
                 }
 
@@ -101,6 +125,40 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                 Command::Reset => {
                     stopwatch.reset();
                     writeln!(stderr, "reset stopwatch")?;
+                }
+
+                Command::Set => {
+                    writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
+                    write!(stdout, "which unit? ")?;
+                    stdout.flush()?;
+
+                    match Unit::from_stdin()? {
+                        Ok(unit) => {
+                            write!(stdout, "new value? ")?;
+                            stdout.flush()?;
+
+                            let mut input = String::new();
+                            io::stdin().read_line(&mut input)?;
+
+                            match input.trim().parse::<f64>() {
+                                Ok(scalar) => {
+                                    if scalar.is_sign_negative() {
+                                        writeln!(stderr, "{}", UserError::NegativeDuration)?;
+                                    } else {
+                                        stopwatch.set(Duration::from_secs_f64(match unit {
+                                            Unit::Seconds => scalar,
+                                            Unit::Minutes => scalar * 60.0,
+                                            Unit::Hours => scalar * 60.0 * 60.0,
+                                        }));
+                                    }
+                                }
+                                Err(error) => {
+                                    writeln!(stderr, "{}", UserError::InvalidFloat(error))?;
+                                }
+                            }
+                        }
+                        Err(error) => writeln!(stderr, "{}", error)?,
+                    }
                 }
             },
 

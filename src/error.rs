@@ -16,6 +16,7 @@
 
 use std::fmt;
 use std::io;
+use std::num::ParseFloatError;
 
 /// Fatal runtime errors
 #[derive(Debug)]
@@ -43,12 +44,18 @@ impl fmt::Display for FatalError {
 pub enum UserError {
     /// Unrecognized command passed to interactive shell
     UnrecognizedCommand(String),
+    UnrecognizedUnit(String),
+    NegativeDuration,
+    InvalidFloat(ParseFloatError),
 }
 
 impl fmt::Display for UserError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             Self::UnrecognizedCommand(command) => write!(f, "unrecognized command `{}`", command),
+            Self::UnrecognizedUnit(unit) => write!(f, "unrecognized unit `{}`", unit),
+            Self::NegativeDuration => write!(f, "duration can't be negative"),
+            Self::InvalidFloat(error) => write!(f, "invalid f64 ({})", error),
         }
     }
 }
