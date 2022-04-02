@@ -40,10 +40,7 @@ enum Command {
 
 impl Command {
     pub fn from_stdin() -> Result<Result<Self, UserError>, FatalError> {
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-
-        Ok(match input.to_lowercase().trim() {
+        Ok(match read_input("> ")?.to_lowercase().as_ref() {
             "q" => Ok(Self::Quit),
             "h" => Ok(Self::Help),
             "" => Ok(Self::Display),
@@ -63,16 +60,23 @@ enum Unit {
 
 impl Unit {
     pub fn from_stdin() -> Result<Result<Self, UserError>, FatalError> {
-        let mut input = String::new();
-        io::stdin().read_line(&mut input)?;
-
-        Ok(match input.to_lowercase().trim() {
+        Ok(match read_input("which unit? ")?.to_lowercase().as_ref() {
             "s" => Ok(Self::Seconds),
             "m" => Ok(Self::Minutes),
             "h" => Ok(Self::Hours),
             other => Err(UserError::UnrecognizedUnit(other.into())),
         })
     }
+}
+
+fn read_input(msg: &str) -> Result<String, FatalError> {
+    let mut stdout = io::stdout();
+    write!(stdout, "{}", msg)?;
+    stdout.flush()?;
+
+    let mut input = String::new();
+    io::stdin().read_line(&mut input)?;
+    Ok(input.trim().into())
 }
 
 fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
@@ -91,10 +95,6 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
     writeln!(stderr)?;
 
     loop {
-        // prompt for command
-        write!(stdout, "> ")?;
-        stdout.flush()?;
-
         // respond to command
         match Command::from_stdin()? {
             Ok(command) => match command {
@@ -129,34 +129,24 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
 
                 Command::Set => {
                     writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
-                    write!(stdout, "which unit? ")?;
-                    stdout.flush()?;
 
                     match Unit::from_stdin()? {
-                        Ok(unit) => {
-                            write!(stdout, "new value? ")?;
-                            stdout.flush()?;
-
-                            let mut input = String::new();
-                            io::stdin().read_line(&mut input)?;
-
-                            match input.trim().parse::<f64>() {
-                                Ok(scalar) => {
-                                    if scalar.is_sign_negative() {
-                                        writeln!(stderr, "{}", UserError::NegativeDuration)?;
-                                    } else {
-                                        stopwatch.set(Duration::from_secs_f64(match unit {
-                                            Unit::Seconds => scalar,
-                                            Unit::Minutes => scalar * 60.0,
-                                            Unit::Hours => scalar * 60.0 * 60.0,
-                                        }));
-                                    }
-                                }
-                                Err(error) => {
-                                    writeln!(stderr, "{}", UserError::InvalidFloat(error))?;
+                        Ok(unit) => match read_input("new value? ")?.parse::<f64>() {
+                            Ok(scalar) => {
+                                if scalar.is_sign_negative() {
+                                    writeln!(stderr, "{}", UserError::NegativeDuration)?;
+                                } else {
+                                    stopwatch.set(Duration::from_secs_f64(match unit {
+                                        Unit::Seconds => scalar,
+                                        Unit::Minutes => scalar * 60.0,
+                                        Unit::Hours => scalar * 60.0 * 60.0,
+                                    }));
                                 }
                             }
-                        }
+                            Err(error) => {
+                                writeln!(stderr, "{}", UserError::InvalidFloat(error))?;
+                            }
+                        },
                         Err(error) => writeln!(stderr, "{}", error)?,
                     }
                 }
