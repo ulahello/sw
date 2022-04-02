@@ -15,10 +15,9 @@ as a stopwatch.
 >>> t += time() - start
 ```
 
-## contributions (are welcome !)
+## contributions
 
-tickets and improvements are welcome and appreciated, improvements
-should stick to the simplicity of the use case.
+tickets and improvements are welcome and appreciated!
 
 ## license
 
