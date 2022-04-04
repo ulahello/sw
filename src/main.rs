@@ -40,17 +40,20 @@ enum Command {
 }
 
 impl Command {
-    pub fn from_stdin() -> Result<Result<Self, UserError>, FatalError> {
-        Ok(match read_input("> ")?.to_lowercase().as_ref() {
-            "q" => Ok(Self::Quit),
-            "h" => Ok(Self::Help),
-            "" => Ok(Self::Display),
-            "s" => Ok(Self::Toggle),
-            "r" => Ok(Self::Reset),
-            "c" => Ok(Self::Change),
-            "o" => Ok(Self::Offset),
-            other => Err(UserError::UnrecognizedCommand(other.into())),
-        })
+    pub fn from_stdin(running: bool) -> Result<Result<Self, UserError>, FatalError> {
+        match read_input(if running { "> " } else { "< " })?
+            .to_lowercase()
+            .as_ref()
+        {
+            "q" => Ok(Ok(Self::Quit)),
+            "h" => Ok(Ok(Self::Help)),
+            "" => Ok(Ok(Self::Display)),
+            "s" => Ok(Ok(Self::Toggle)),
+            "r" => Ok(Ok(Self::Reset)),
+            "c" => Ok(Ok(Self::Change)),
+            "o" => Ok(Ok(Self::Offset)),
+            other => Ok(Err(UserError::UnrecognizedCommand(other.into()))),
+        }
     }
 }
 
@@ -115,7 +118,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
 
     loop {
         // respond to command
-        match Command::from_stdin()? {
+        match Command::from_stdin(stopwatch.is_running())? {
             Ok(command) => match command {
                 Command::Quit => return Ok(()),
 
