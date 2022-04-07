@@ -62,7 +62,7 @@ impl Stopwatch {
     /// stopped.
     pub fn stop(&mut self) -> Result<(), Error> {
         if let Some(start) = self.start {
-            self.elapsed += start.elapsed();
+            self.add(start.elapsed());
             self.start = None;
             Ok(())
         } else {
@@ -107,7 +107,7 @@ impl Stopwatch {
     #[must_use]
     pub fn elapsed(&self) -> Duration {
         if let Some(start) = self.start {
-            self.elapsed + start.elapsed()
+            self.elapsed.saturating_add(start.elapsed())
         } else {
             self.elapsed
         }
