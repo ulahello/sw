@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+#![feature(duration_checked_float)]
+
 use std::io::{self, Write};
 use std::time::Duration;
 
@@ -87,14 +89,20 @@ fn read_input(msg: &str) -> Result<String, FatalError> {
     Ok(input.trim().into())
 }
 
-fn read_secs_f64(msg: &str) -> Result<Result<f64, UserError>, FatalError> {
+fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, FatalError> {
     match Unit::from_stdin()? {
         Ok(unit) => match read_input(msg)?.parse::<f64>() {
-            Ok(scalar) => Ok(Ok(match unit {
-                Unit::Seconds => scalar,
-                Unit::Minutes => scalar * 60.0,
-                Unit::Hours => scalar * 60.0 * 60.0,
-            })),
+            Ok(scalar) => {
+                let secs = match unit {
+                    Unit::Seconds => scalar,
+                    Unit::Minutes => scalar * 60.0,
+                    Unit::Hours => scalar * 60.0 * 60.0,
+                };
+                match Duration::try_from_secs_f64(secs.abs()) {
+                    Ok(duration) => Ok(Ok((duration, secs.is_sign_negative()))),
+                    Err(error) => Ok(Err(UserError::InvalidDuration(error))),
+                }
+            }
             Err(error) => Ok(Err(UserError::InvalidFloat(error))),
         },
         Err(error) => Ok(Err(error)),
@@ -150,25 +158,25 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stderr, "reset stopwatch")?;
                 }
 
-                Command::Change => match read_secs_f64("new value? ")? {
-                    Ok(secs) => {
-                        if secs.is_sign_negative() {
+                Command::Change => match read_duration("new value? ")? {
+                    Ok((dur, is_neg)) => {
+                        if is_neg {
                             writeln!(stderr, "{}", UserError::NegativeDuration)?;
                         } else {
-                            stopwatch.set(Duration::from_secs_f64(secs));
+                            stopwatch.set(dur);
                             writeln!(stderr, "updated elapsed time")?;
                         }
                     }
                     Err(error) => writeln!(stderr, "{}", error)?,
                 },
 
-                Command::Offset => match read_secs_f64("offset by? ")? {
-                    Ok(secs) => {
-                        if secs.is_sign_negative() {
-                            stopwatch.sub(Duration::from_secs_f64(secs.abs()));
+                Command::Offset => match read_duration("offset by? ")? {
+                    Ok((dur, is_neg)) => {
+                        if is_neg {
+                            stopwatch.sub(dur);
                             writeln!(stderr, "subtracted from elapsed time")?;
                         } else {
-                            stopwatch.add(Duration::from_secs_f64(secs));
+                            stopwatch.add(dur);
                             writeln!(stderr, "added to elapsed time")?;
                         }
                     }

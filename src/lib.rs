@@ -18,6 +18,8 @@
 #![warn(clippy::pedantic)]
 #![warn(missing_docs)]
 
+#![feature(duration_checked_float)]
+
 //! Backend for `sw`, containing a stopwatch abstraction and runtime errors.
 
 mod error;

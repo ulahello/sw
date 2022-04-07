@@ -19,6 +19,7 @@
 use std::fmt;
 use std::io;
 use std::num::ParseFloatError;
+use std::time::FromFloatSecsError;
 
 /// Fatal runtime errors
 #[derive(Debug)]
@@ -54,6 +55,10 @@ pub enum UserError {
     UnrecognizedUnit(String),
     /// Negative value passed for duration
     NegativeDuration,
+    /// Failed to create a `Duration` from floating point seconds
+    ///
+    /// Contains the conversion error.
+    InvalidDuration(FromFloatSecsError),
     /// Invalid floating point number
     ///
     /// Contains the parse error.
@@ -66,6 +71,7 @@ impl fmt::Display for UserError {
             Self::UnrecognizedCommand(command) => write!(f, "unrecognized command `{}`", command),
             Self::UnrecognizedUnit(unit) => write!(f, "unrecognized unit `{}`", unit),
             Self::NegativeDuration => write!(f, "duration can't be negative"),
+            Self::InvalidDuration(error) => write!(f, "invalid duration ({})", error),
             Self::InvalidFloat(error) => write!(f, "invalid f64 ({})", error),
         }
     }
