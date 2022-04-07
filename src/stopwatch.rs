@@ -107,7 +107,8 @@ impl Stopwatch {
     #[must_use]
     pub fn elapsed(&self) -> Duration {
         if let Some(start) = self.start {
-            self.elapsed.saturating_add(start.elapsed())
+            self.elapsed
+                .saturating_add(Instant::now().saturating_duration_since(start))
         } else {
             self.elapsed
         }
