@@ -39,14 +39,13 @@ enum Command {
     Reset,
     Change,
     Offset,
+    Name,
 }
 
 impl Command {
-    pub fn from_stdin(running: bool) -> Result<Result<Self, UserError>, FatalError> {
-        match read_input(if running { "> " } else { "< " })?
-            .to_lowercase()
-            .as_ref()
-        {
+    pub fn from_stdin(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
+        let prompt = format!("{} {} ", msg, if running { '>' } else { '<' });
+        match read_input(&prompt)?.to_lowercase().as_ref() {
             "q" => Ok(Ok(Self::Quit)),
             "h" => Ok(Ok(Self::Help)),
             "" => Ok(Ok(Self::Display)),
@@ -54,6 +53,7 @@ impl Command {
             "r" => Ok(Ok(Self::Reset)),
             "c" => Ok(Ok(Self::Change)),
             "o" => Ok(Ok(Self::Offset)),
+            "n" => Ok(Ok(Self::Name)),
             other => Ok(Err(UserError::UnrecognizedCommand(other.into()))),
         }
     }
@@ -124,9 +124,12 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
     writeln!(stderr, "type \"h\" for help")?;
     writeln!(stderr)?;
 
+    // stopwatch name is empty to start
+    let mut name = String::new();
+
     loop {
         // respond to command
-        match Command::from_stdin(stopwatch.is_running())? {
+        match Command::from_stdin(&name, stopwatch.is_running())? {
             Ok(command) => match command {
                 Command::Quit => return Ok(()),
 
@@ -135,11 +138,12 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| ---     | ---                  |")?;
                     writeln!(stdout, "| q       | quit                 |")?;
                     writeln!(stdout, "| h       | print this message   |")?;
+                    writeln!(stdout, "| <enter> | display elapsed time |")?;
                     writeln!(stdout, "| s       | toggle stopwatch     |")?;
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
                     writeln!(stdout, "| c       | change elapsed time  |")?;
                     writeln!(stdout, "| o       | offset elapsed time  |")?;
-                    writeln!(stdout, "| <enter> | display elapsed time |")?;
+                    writeln!(stdout, "| n       | set stopwatch name   |")?;
                 }
 
                 Command::Display => writeln!(stdout, "{}", stopwatch)?,
@@ -182,6 +186,8 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     }
                     Err(error) => writeln!(stderr, "{}", error)?,
                 },
+
+                Command::Name => name = read_input("new name? ")?,
             },
 
             Err(error) => writeln!(stderr, "{}", error)?,

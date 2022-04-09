@@ -1,6 +1,7 @@
 # changelog
 
 ## [unreleased]
+* added stopwatch naming
 
 ## [0.5.0] - 2022-04-09
 * prompt now indicates stopwatch status
