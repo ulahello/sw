@@ -192,5 +192,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
 
             Err(error) => writeln!(stderr, "{}", error)?,
         }
+
+        writeln!(stdout)?;
     }
 }
