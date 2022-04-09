@@ -1,8 +1,11 @@
 # changelog
 
 ## [unreleased]
+
+## [0.5.0] - 2022-04-09
 * prompt now indicates stopwatch status
 * fixed panic on invalid float to duration conversion
+* replaced calls to functions which may (but don't) panic
 
 ## [0.4.0] - 2022-04-02
 * changed set command to `c` (c for change)
