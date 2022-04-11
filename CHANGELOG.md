@@ -2,6 +2,7 @@
 
 ## [unreleased]
 * added stopwatch naming
+* print license in splash text
 
 ## [0.5.0] - 2022-04-09
 * prompt now indicates stopwatch status

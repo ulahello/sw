@@ -116,10 +116,13 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
     // splash text
     writeln!(
         stderr,
-        "{} {}",
+        "{} {}: {}",
         env!("CARGO_PKG_NAME"),
-        env!("CARGO_PKG_VERSION")
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_PKG_DESCRIPTION"),
     )?;
+    writeln!(stderr, "licensed under GPL-3.0-or-later")?;
+    writeln!(stderr)?;
 
     writeln!(stderr, "type \"h\" for help")?;
     writeln!(stderr)?;
