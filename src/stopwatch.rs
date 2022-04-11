@@ -41,8 +41,7 @@ impl Stopwatch {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::AlreadyStarted`] if the stopwatch has already been
-    /// started.
+    /// Returns [`Error::AlreadyStarted`] if the stopwatch is running.
     pub fn start(&mut self) -> Result<(), Error> {
         if self.is_running() {
             Err(Error::AlreadyStarted)
@@ -58,8 +57,7 @@ impl Stopwatch {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::AlreadyStopped`] if the stopwatch has already been
-    /// stopped.
+    /// Returns [`Error::AlreadyStopped`] if the stopwatch is not running.
     pub fn stop(&mut self) -> Result<(), Error> {
         if let Some(start) = self.start {
             self.add(Instant::now().saturating_duration_since(start));
@@ -146,8 +144,8 @@ impl fmt::Display for Stopwatch {
 /// Errors associated with [`Stopwatch`]
 #[derive(Clone, Copy)]
 pub enum Error {
-    /// Called [`Stopwatch::start`] while already running
+    /// Called [`Stopwatch::start`] while running
     AlreadyStarted,
-    /// Called [`Stopwatch::stop`] while already stopped
+    /// Called [`Stopwatch::stop`] while stopped
     AlreadyStopped,
 }
