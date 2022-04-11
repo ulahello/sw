@@ -15,6 +15,10 @@ as a stopwatch.
 >>> t += time() - start
 ```
 
+## note on installation
+
+`sw` requires the nightly build of rustc.
+
 ## contributions
 
 tickets and improvements are welcome and appreciated!
