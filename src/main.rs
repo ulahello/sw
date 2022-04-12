@@ -34,6 +34,7 @@ fn main() {
 enum Command {
     Quit,
     Help,
+    License,
     Display,
     Toggle,
     Reset,
@@ -48,6 +49,7 @@ impl Command {
         match read_input(&prompt)?.to_lowercase().as_ref() {
             "q" => Ok(Ok(Self::Quit)),
             "h" => Ok(Ok(Self::Help)),
+            "l" => Ok(Ok(Self::License)),
             "" => Ok(Ok(Self::Display)),
             "s" => Ok(Ok(Self::Toggle)),
             "r" => Ok(Ok(Self::Reset)),
@@ -121,10 +123,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
         env!("CARGO_PKG_VERSION"),
         env!("CARGO_PKG_DESCRIPTION"),
     )?;
-    writeln!(stderr, "copyright (C) 2022  Ula Shipman")?;
-    writeln!(stderr, "licensed under GPL-3.0-or-later")?;
-    writeln!(stderr)?;
-    writeln!(stderr, "type \"h\" for help")?;
+    writeln!(stderr, "type \"h\" for help, \"l\" for license")?;
     writeln!(stderr)?;
 
     // stopwatch name is empty to start
@@ -141,12 +140,18 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| ---     | ---                  |")?;
                     writeln!(stdout, "| q       | quit                 |")?;
                     writeln!(stdout, "| h       | print this message   |")?;
+                    writeln!(stdout, "| l       | print license info   |")?;
                     writeln!(stdout, "| <enter> | display elapsed time |")?;
                     writeln!(stdout, "| s       | toggle stopwatch     |")?;
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
                     writeln!(stdout, "| c       | change elapsed time  |")?;
                     writeln!(stdout, "| o       | offset elapsed time  |")?;
                     writeln!(stdout, "| n       | name stopwatch       |")?;
+                }
+
+                Command::License => {
+                    writeln!(stderr, "copyright (C) 2022  Ula Shipman")?;
+                    writeln!(stderr, "licensed under GPL-3.0-or-later")?;
                 }
 
                 Command::Display => writeln!(stdout, "{}", stopwatch)?,
