@@ -16,11 +16,13 @@
 
 #![feature(duration_checked_float)]
 
-use std::io::{self, Write};
+use std::io::{self, BufRead, Read, Write};
 use std::time::Duration;
 
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, UserError};
+
+const READ_LIMIT: u64 = 128;
 
 fn main() {
     match control_stopwatch(Stopwatch::new()) {
@@ -83,11 +85,14 @@ impl Unit {
 
 fn read_input(msg: &str) -> Result<String, FatalError> {
     let mut stdout = io::stdout();
+    let stdin = io::stdin().lock();
+    let mut input = String::new();
+
     write!(stdout, "{}", msg)?;
     stdout.flush()?;
 
-    let mut input = String::new();
-    io::stdin().read_line(&mut input)?;
+    stdin.take(READ_LIMIT).read_line(&mut input)?;
+
     Ok(input.trim().into())
 }
 

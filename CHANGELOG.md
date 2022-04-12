@@ -3,6 +3,7 @@
 ## [unreleased]
 * moved license & copyright to separate command
 * name command: improved help and added status messages
+* buffered input so memory allocation never depends on user input
 
 ## [0.6.0] - 2022-04-11
 * added stopwatch naming
