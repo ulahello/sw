@@ -190,7 +190,14 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     Err(error) => writeln!(stderr, "{}", error)?,
                 },
 
-                Command::Name => name = read_input("new name? ")?,
+                Command::Name => {
+                    name = read_input("new name? ")?;
+                    if name.is_empty() {
+                        writeln!(stderr, "cleared stopwatch name")?;
+                    } else {
+                        writeln!(stderr, "updated stopwatch name")?;
+                    }
+                }
             },
 
             Err(error) => writeln!(stderr, "{}", error)?,
