@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.6.1] - 2022-04-12
 * moved license & copyright to separate command
 * name command: improved help and added status messages
 * buffered input so memory allocation never depends on user input
