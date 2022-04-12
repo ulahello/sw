@@ -98,6 +98,11 @@ impl Stopwatch {
 
     /// Subtract `sub` from the total elapsed time.
     pub fn sub(&mut self, sub: Duration) {
+        if let Some(start) = self.start {
+            let now = Instant::now();
+            self.add(now.saturating_duration_since(start));
+            self.start = Some(now);
+        }
         self.elapsed = self.elapsed.saturating_sub(sub);
     }
 
