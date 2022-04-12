@@ -146,7 +146,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
                     writeln!(stdout, "| c       | change elapsed time  |")?;
                     writeln!(stdout, "| o       | offset elapsed time  |")?;
-                    writeln!(stdout, "| n       | set stopwatch name   |")?;
+                    writeln!(stdout, "| n       | name stopwatch       |")?;
                 }
 
                 Command::Display => writeln!(stdout, "{}", stopwatch)?,
