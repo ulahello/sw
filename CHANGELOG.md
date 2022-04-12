@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.6.0] - 2022-04-11
 * added stopwatch naming
 * print license in splash text
 
