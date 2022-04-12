@@ -1,6 +1,7 @@
 # changelog
 
 ## [unreleased]
+* moved license & copyright to separate command
 * name command: improved help and added status messages
 
 ## [0.6.0] - 2022-04-11
