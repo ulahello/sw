@@ -32,30 +32,30 @@ fn main() {
 }
 
 enum Command {
-    Quit,
     Help,
-    License,
     Display,
     Toggle,
     Reset,
     Change,
     Offset,
     Name,
+    License,
+    Quit,
 }
 
 impl Command {
     pub fn from_stdin(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
         let prompt = format!("{} {} ", msg, if running { '>' } else { '<' });
         match read_input(&prompt)?.to_lowercase().as_ref() {
-            "q" => Ok(Ok(Self::Quit)),
             "h" => Ok(Ok(Self::Help)),
-            "l" => Ok(Ok(Self::License)),
             "" => Ok(Ok(Self::Display)),
             "s" => Ok(Ok(Self::Toggle)),
             "r" => Ok(Ok(Self::Reset)),
             "c" => Ok(Ok(Self::Change)),
             "o" => Ok(Ok(Self::Offset)),
             "n" => Ok(Ok(Self::Name)),
+            "l" => Ok(Ok(Self::License)),
+            "q" => Ok(Ok(Self::Quit)),
             other => Ok(Err(UserError::UnrecognizedCommand(other.into()))),
         }
     }
@@ -133,25 +133,18 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
         // respond to command
         match Command::from_stdin(&name, stopwatch.is_running())? {
             Ok(command) => match command {
-                Command::Quit => return Ok(()),
-
                 Command::Help => {
                     writeln!(stdout, "| command | description          |")?;
                     writeln!(stdout, "| ---     | ---                  |")?;
-                    writeln!(stdout, "| q       | quit                 |")?;
                     writeln!(stdout, "| h       | print this message   |")?;
-                    writeln!(stdout, "| l       | print license info   |")?;
                     writeln!(stdout, "| <enter> | display elapsed time |")?;
                     writeln!(stdout, "| s       | toggle stopwatch     |")?;
                     writeln!(stdout, "| r       | reset stopwatch      |")?;
                     writeln!(stdout, "| c       | change elapsed time  |")?;
                     writeln!(stdout, "| o       | offset elapsed time  |")?;
                     writeln!(stdout, "| n       | name stopwatch       |")?;
-                }
-
-                Command::License => {
-                    writeln!(stderr, "copyright (C) 2022  Ula Shipman")?;
-                    writeln!(stderr, "licensed under GPL-3.0-or-later")?;
+                    writeln!(stdout, "| l       | print license info   |")?;
+                    writeln!(stdout, "| q       | quit                 |")?;
                 }
 
                 Command::Display => writeln!(stdout, "{}", stopwatch)?,
@@ -203,6 +196,13 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                         writeln!(stderr, "updated stopwatch name")?;
                     }
                 }
+
+                Command::License => {
+                    writeln!(stderr, "copyright (C) 2022  Ula Shipman")?;
+                    writeln!(stderr, "licensed under GPL-3.0-or-later")?;
+                }
+
+                Command::Quit => return Ok(()),
             },
 
             Err(error) => writeln!(stderr, "{}", error)?,
