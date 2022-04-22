@@ -149,7 +149,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| o       | offset elapsed time  |")?;
                     writeln!(stdout, "| n       | name stopwatch       |")?;
                     writeln!(stdout, "| l       | print license info   |")?;
-                    writeln!(stdout, "| q       | quit                 |")?;
+                    writeln!(stdout, "| q       | Abandon all Data     |")?;
                 }
 
                 Command::Display => writeln!(stdout, "{}", stopwatch)?,
