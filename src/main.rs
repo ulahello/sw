@@ -17,7 +17,7 @@
 #![feature(duration_checked_float)]
 
 use log::{error, info};
-use std::io::{self, BufRead, Read, Write};
+use std::io::{self, BufRead, BufWriter, Read, Write};
 use std::process;
 use std::time::Duration;
 
@@ -127,7 +127,7 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
 }
 
 fn print_splash() -> Result<(), FatalError> {
-    let mut stderr = io::stderr();
+    let mut stderr = BufWriter::new(io::stderr());
 
     // splash text
     writeln!(
@@ -140,11 +140,13 @@ fn print_splash() -> Result<(), FatalError> {
     writeln!(stderr, "type \"h\" for help, \"l\" for license")?;
     writeln!(stderr)?;
 
+    stderr.flush()?;
+
     Ok(())
 }
 
 fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
-    let mut stdout = io::stdout();
+    let mut stdout = BufWriter::new(io::stdout());
 
     // stopwatch name is empty to start
     let mut name = String::new();
@@ -229,5 +231,6 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
         }
 
         writeln!(stdout)?;
+        stdout.flush()?;
     }
 }
