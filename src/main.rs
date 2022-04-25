@@ -22,8 +22,6 @@ use std::time::Duration;
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, UserError};
 
-const READ_LIMIT: u64 = 128;
-
 fn main() {
     match control_stopwatch(Stopwatch::new()) {
         Ok(()) => (),
@@ -84,6 +82,8 @@ impl Unit {
 }
 
 fn read_stdin(msg: &str) -> Result<String, FatalError> {
+    const READ_LIMIT: u64 = 128;
+
     let mut stdout = io::stdout();
     let stdin = io::stdin().lock();
     let mut input = String::new();
