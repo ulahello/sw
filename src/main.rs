@@ -93,7 +93,7 @@ fn read_stdin(msg: &str) -> Result<String, FatalError> {
 
     stdin.take(READ_LIMIT).read_line(&mut input)?;
 
-    Ok(input.trim().into())
+    Ok(input.trim().escape_default().to_string())
 }
 
 fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, FatalError> {

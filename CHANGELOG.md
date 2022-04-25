@@ -1,6 +1,7 @@
 # changelog
 
 ## [unreleased]
+* fix: escape control characters when taking input
 
 ## [0.6.2] - 2022-04-12
 * fixed incorrect stopwatch subtraction behavior
