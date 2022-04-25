@@ -6,6 +6,9 @@ edition = "2021"
 description = "terminal stopwatch"
 license = "GPL-3.0-or-later"
 
+[dependencies]
+log = "0.4"
+
 [profile.release]
 lto = true
 codegen-units = 1

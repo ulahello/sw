@@ -16,12 +16,13 @@
 
 #![feature(duration_checked_float)]
 
+use log::{error, info};
 use std::io::{self, BufRead, Read, Write};
 use std::process;
 use std::time::Duration;
 
 use sw::stopwatch::Stopwatch;
-use sw::{FatalError, UserError};
+use sw::{FatalError, Logger, UserError};
 
 fn main() {
     if let Err(error) = try_main() {
@@ -33,6 +34,7 @@ fn main() {
 fn try_main() -> Result<(), FatalError> {
     let mut sw = Stopwatch::new();
 
+    Logger::init()?;
     print_splash()?;
     control_stopwatch(&mut sw)?;
 
@@ -143,7 +145,6 @@ fn print_splash() -> Result<(), FatalError> {
 
 fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
     let mut stdout = io::stdout();
-    let mut stderr = io::stderr();
 
     // stopwatch name is empty to start
     let mut name = String::new();
@@ -171,60 +172,60 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
                 Command::Toggle => {
                     stopwatch.toggle();
                     if stopwatch.is_running() {
-                        writeln!(stderr, "started stopwatch")?;
+                        info!("started stopwatch");
                     } else {
-                        writeln!(stderr, "stopped stopwatch")?;
+                        info!("stopped stopwatch");
                     }
                 }
 
                 Command::Reset => {
                     stopwatch.reset();
-                    writeln!(stderr, "reset stopwatch")?;
+                    info!("reset stopwatch");
                 }
 
                 Command::Change => match read_duration("new value? ")? {
                     Ok((dur, is_neg)) => {
                         if is_neg {
-                            writeln!(stderr, "{}", UserError::NegativeDuration)?;
+                            error!("{}", UserError::NegativeDuration);
                         } else {
                             stopwatch.set(dur);
-                            writeln!(stderr, "updated elapsed time")?;
+                            info!("updated elapsed time");
                         }
                     }
-                    Err(error) => writeln!(stderr, "{}", error)?,
+                    Err(error) => error!("{}", error),
                 },
 
                 Command::Offset => match read_duration("offset by? ")? {
                     Ok((dur, is_neg)) => {
                         if is_neg {
                             stopwatch.sub(dur);
-                            writeln!(stderr, "subtracted from elapsed time")?;
+                            info!("subtracted from elapsed time");
                         } else {
                             stopwatch.add(dur);
-                            writeln!(stderr, "added to elapsed time")?;
+                            info!("added to elapsed time");
                         }
                     }
-                    Err(error) => writeln!(stderr, "{}", error)?,
+                    Err(error) => error!("{}", error),
                 },
 
                 Command::Name => {
                     name = read_stdin("new name? ")?;
                     if name.is_empty() {
-                        writeln!(stderr, "cleared stopwatch name")?;
+                        info!("cleared stopwatch name");
                     } else {
-                        writeln!(stderr, "updated stopwatch name")?;
+                        info!("updated stopwatch name");
                     }
                 }
 
                 Command::License => {
-                    writeln!(stderr, "copyright (C) 2022  Ula Shipman")?;
-                    writeln!(stderr, "licensed under GPL-3.0-or-later")?;
+                    writeln!(stdout, "copyright (C) 2022  Ula Shipman")?;
+                    writeln!(stdout, "licensed under GPL-3.0-or-later")?;
                 }
 
                 Command::Quit => return Ok(()),
             },
 
-            Err(error) => writeln!(stderr, "{}", error)?,
+            Err(error) => error!("{}", error),
         }
 
         writeln!(stdout)?;

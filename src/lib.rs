@@ -23,6 +23,8 @@
 //! Backend for `sw`, containing a stopwatch abstraction and runtime errors.
 
 mod error;
+mod logger;
 pub mod stopwatch;
 
 pub use error::{FatalError, UserError};
+pub use logger::Logger;
