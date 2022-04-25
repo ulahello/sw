@@ -5,6 +5,10 @@ pub struct Logger;
 
 impl Logger {
     /// One-time initialize the logger.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`SetLoggerError`] if the logger has already been initialized.
     pub fn init() -> Result<(), SetLoggerError> {
         log::set_logger(&Self).map(|()| log::set_max_level(LevelFilter::Info))
     }
