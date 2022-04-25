@@ -46,9 +46,9 @@ enum Command {
 }
 
 impl Command {
-    pub fn from_stdin(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
+    pub fn read(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
         let prompt = format!("{} {} ", msg, if running { '>' } else { '<' });
-        match read_input(&prompt)?.to_lowercase().as_ref() {
+        match read_stdin(&prompt)?.to_lowercase().as_ref() {
             "h" => Ok(Ok(Self::Help)),
             "" => Ok(Ok(Self::Display)),
             "s" => Ok(Ok(Self::Toggle)),
@@ -70,11 +70,11 @@ enum Unit {
 }
 
 impl Unit {
-    pub fn from_stdin() -> Result<Result<Self, UserError>, FatalError> {
+    pub fn read() -> Result<Result<Self, UserError>, FatalError> {
         let mut stdout = io::stdout();
         writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
 
-        Ok(match read_input("which unit? ")?.to_lowercase().as_ref() {
+        Ok(match read_stdin("which unit? ")?.to_lowercase().as_ref() {
             "s" => Ok(Self::Seconds),
             "m" => Ok(Self::Minutes),
             "h" => Ok(Self::Hours),
@@ -83,7 +83,7 @@ impl Unit {
     }
 }
 
-fn read_input(msg: &str) -> Result<String, FatalError> {
+fn read_stdin(msg: &str) -> Result<String, FatalError> {
     let mut stdout = io::stdout();
     let stdin = io::stdin().lock();
     let mut input = String::new();
@@ -97,8 +97,8 @@ fn read_input(msg: &str) -> Result<String, FatalError> {
 }
 
 fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, FatalError> {
-    match Unit::from_stdin()? {
-        Ok(unit) => match read_input(msg)?.parse::<f64>() {
+    match Unit::read()? {
+        Ok(unit) => match read_stdin(msg)?.parse::<f64>() {
             Ok(scalar) => {
                 let secs = match unit {
                     Unit::Seconds => scalar,
@@ -136,7 +136,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
 
     loop {
         // respond to command
-        match Command::from_stdin(&name, stopwatch.is_running())? {
+        match Command::read(&name, stopwatch.is_running())? {
             Ok(command) => match command {
                 Command::Help => {
                     writeln!(stdout, "| command | description          |")?;
@@ -194,7 +194,7 @@ fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
                 },
 
                 Command::Name => {
-                    name = read_input("new name? ")?;
+                    name = read_stdin("new name? ")?;
                     if name.is_empty() {
                         writeln!(stderr, "cleared stopwatch name")?;
                     } else {
