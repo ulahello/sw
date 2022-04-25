@@ -1,6 +1,7 @@
 # changelog
 
 ## [unreleased]
+* colored logs
 
 ## [0.6.3] - 2022-04-24
 * fixed: escape control characters when taking input

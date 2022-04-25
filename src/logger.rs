@@ -1,4 +1,6 @@
-use log::{self, LevelFilter, Log, Metadata, Record, SetLoggerError};
+use log::{self, Level, LevelFilter, Log, Metadata, Record, SetLoggerError};
+use std::io::Write;
+use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 
 /// Simple logging implementation for `sw` non-fatal events.
 pub struct Logger;
@@ -21,7 +23,28 @@ impl Log for Logger {
 
     fn log(&self, record: &Record) {
         if self.enabled(record.metadata()) {
-            eprintln!("{}", record.args());
+            let stderr = BufferWriter::stderr(ColorChoice::Auto);
+            let mut buffer = stderr.buffer();
+
+            // set log color based on level
+            buffer
+                .set_color(ColorSpec::new().set_fg(Some(match record.level() {
+                    Level::Error => Color::Ansi256(9), // bright red
+                    Level::Warn => Color::Yellow,      // unused
+                    Level::Info => Color::Ansi256(13), // bright magenta
+                    Level::Debug => Color::Blue,       // unused
+                    Level::Trace => Color::Green,      // unused
+                })))
+                .unwrap();
+
+            // print log contents
+            writeln!(buffer, "{}", record.args()).unwrap();
+
+            // reset color
+            buffer.reset().unwrap();
+
+            // flush buffer
+            stderr.print(&buffer).unwrap();
         }
     }
 
