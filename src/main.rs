@@ -23,7 +23,8 @@ use sw::stopwatch::Stopwatch;
 use sw::{FatalError, UserError};
 
 fn main() {
-    match control_stopwatch(Stopwatch::new()) {
+    let mut sw = Stopwatch::new();
+    match control_stopwatch(&mut sw) {
         Ok(()) => (),
         Err(err) => {
             eprintln!("fatal: {}", err);
@@ -116,7 +117,7 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
     }
 }
 
-fn control_stopwatch(mut stopwatch: Stopwatch) -> Result<(), FatalError> {
+fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
     let mut stdout = io::stdout();
     let mut stderr = io::stderr();
 
