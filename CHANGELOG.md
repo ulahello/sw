@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.7.0] - 2022-04-24
 * colored logs
 
 ## [0.6.3] - 2022-04-24
