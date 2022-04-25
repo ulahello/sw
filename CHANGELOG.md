@@ -1,7 +1,7 @@
 # changelog
 
 ## [unreleased]
-* fix: escape control characters when taking input
+* fixed: escape control characters when taking input
 * changed `quit` help message
 
 ## [0.6.2] - 2022-04-12
