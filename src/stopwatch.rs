@@ -147,10 +147,142 @@ impl fmt::Display for Stopwatch {
 }
 
 /// Errors associated with [`Stopwatch`]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Error {
     /// Called [`Stopwatch::start`] while running
     AlreadyStarted,
     /// Called [`Stopwatch::stop`] while stopped
     AlreadyStopped,
+}
+
+#[cfg(test)]
+mod test {
+    use crate::stopwatch::{Error, Stopwatch};
+    use std::thread;
+    use std::time::Duration;
+
+    const SANE_TOLERANCE: Duration = Duration::from_millis(20);
+    const SANE_DELAY: Duration = Duration::from_millis(200);
+
+    #[test]
+    fn new() {
+        assert_eq!(Stopwatch::new().elapsed(), Duration::ZERO);
+    }
+
+    #[test]
+    fn is_running() {
+        let mut sw = Stopwatch::new();
+        assert!(!sw.is_running());
+
+        sw.start().unwrap();
+        assert!(sw.is_running());
+
+        sw.stop().unwrap();
+        assert!(!sw.is_running());
+    }
+
+    #[test]
+    fn toggle() {
+        let mut sw = Stopwatch::new();
+        assert!(!sw.is_running());
+
+        sw.toggle();
+        assert!(sw.is_running());
+
+        sw.toggle();
+        assert!(!sw.is_running());
+    }
+
+    #[test]
+    fn reset() {
+        let mut sw = Stopwatch::new();
+
+        sw.start().unwrap();
+        thread::sleep(SANE_DELAY);
+
+        sw.reset();
+
+        assert!(!sw.is_running());
+        assert_eq!(sw.elapsed(), Duration::ZERO)
+    }
+
+    #[test]
+    fn set() {
+        let mut sw = Stopwatch::new();
+
+        sw.start().unwrap();
+        sw.set(SANE_DELAY);
+
+        assert!(!sw.is_running());
+        assert_eq!(sw.elapsed(), SANE_DELAY);
+    }
+
+    #[test]
+    fn add() {
+        let mut sw = Stopwatch::new();
+
+        sw.add(SANE_DELAY); // 1
+
+        sw.start().unwrap();
+        sw.add(SANE_DELAY); // 2
+        assert!(sw.is_running());
+
+        sw.stop().unwrap();
+        sw.add(SANE_DELAY); // 3
+        assert!(!sw.is_running());
+
+        assert!(sw.elapsed() >= SANE_DELAY * 3);
+        assert!(sw.elapsed() - (SANE_DELAY * 3) < SANE_TOLERANCE);
+    }
+
+    #[test]
+    fn sub() {
+        let mut sw = Stopwatch::new();
+
+        sw.start().unwrap();
+        thread::sleep(SANE_DELAY);
+
+        sw.sub(SANE_DELAY);
+        assert!(sw.elapsed() < SANE_TOLERANCE);
+        assert!(sw.is_running());
+
+        sw.set(SANE_DELAY * 4);
+        sw.sub(SANE_DELAY * 3);
+        assert!(sw.elapsed() >= SANE_DELAY);
+        assert!(sw.elapsed - SANE_DELAY < SANE_TOLERANCE);
+    }
+
+    #[test]
+    fn double_starts_stops_errs() {
+        let mut sw = Stopwatch::new();
+
+        assert_eq!(sw.start(), Ok(()));
+        assert_eq!(sw.start(), Err(Error::AlreadyStarted));
+
+        assert_eq!(sw.stop(), Ok(()));
+        assert_eq!(sw.stop(), Err(Error::AlreadyStopped));
+    }
+
+    #[test]
+    fn sane_elapsed_halted() {
+        let mut sw = Stopwatch::new();
+
+        sw.start().unwrap();
+        thread::sleep(SANE_DELAY);
+        sw.stop().unwrap();
+
+        assert!(sw.elapsed() >= SANE_DELAY);
+        assert!(sw.elapsed() - SANE_DELAY < SANE_TOLERANCE);
+    }
+
+    #[test]
+    fn sane_elapsed_active() {
+        let mut sw = Stopwatch::new();
+
+        sw.start().unwrap();
+        thread::sleep(SANE_DELAY);
+
+        assert!(sw.elapsed() >= SANE_DELAY);
+        assert!(sw.elapsed() - SANE_DELAY < SANE_TOLERANCE);
+    }
 }
