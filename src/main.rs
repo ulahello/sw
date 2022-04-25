@@ -17,19 +17,26 @@
 #![feature(duration_checked_float)]
 
 use std::io::{self, BufRead, Read, Write};
+use std::process;
 use std::time::Duration;
 
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, UserError};
 
 fn main() {
-    let mut sw = Stopwatch::new();
-    match control_stopwatch(&mut sw) {
-        Ok(()) => (),
-        Err(err) => {
-            eprintln!("fatal: {}", err);
-        }
+    if let Err(error) = try_main() {
+        eprintln!("fatal: {}", error);
+        process::exit(1);
     }
+}
+
+fn try_main() -> Result<(), FatalError> {
+    let mut sw = Stopwatch::new();
+
+    print_splash()?;
+    control_stopwatch(&mut sw)?;
+
+    Ok(())
 }
 
 enum Command {
@@ -117,8 +124,7 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
     }
 }
 
-fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
-    let mut stdout = io::stdout();
+fn print_splash() -> Result<(), FatalError> {
     let mut stderr = io::stderr();
 
     // splash text
@@ -131,6 +137,13 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
     )?;
     writeln!(stderr, "type \"h\" for help, \"l\" for license")?;
     writeln!(stderr)?;
+
+    Ok(())
+}
+
+fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
+    let mut stdout = io::stdout();
+    let mut stderr = io::stderr();
 
     // stopwatch name is empty to start
     let mut name = String::new();
