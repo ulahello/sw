@@ -16,7 +16,7 @@
 
 #![feature(duration_checked_float)]
 
-use log::{error, info};
+use log::{error, info, trace};
 use std::io::{self, BufRead, BufWriter, Read, Write};
 use std::process;
 use std::time::Duration;
@@ -151,6 +151,9 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
     // stopwatch name is empty to start
     let mut name = String::new();
 
+    let mut since_stop = Stopwatch::new();
+    since_stop.toggle();
+
     loop {
         // respond to command
         match Command::read(&name, stopwatch.is_running())? {
@@ -175,6 +178,10 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
                     stopwatch.toggle();
                     if stopwatch.is_running() {
                         info!("started stopwatch");
+                        trace!(
+                            "{:.2} seconds since stopped",
+                            since_stop.elapsed().as_secs_f32()
+                        );
                     } else {
                         info!("stopped stopwatch");
                     }
@@ -228,6 +235,12 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
             },
 
             Err(error) => error!("{}", error),
+        }
+
+        if stopwatch.is_running() && since_stop.is_running() {
+            since_stop.reset();
+        } else if !stopwatch.is_running() && !since_stop.is_running() {
+            since_stop.toggle();
         }
 
         writeln!(stdout)?;

@@ -12,7 +12,7 @@ impl Logger {
     ///
     /// Returns [`SetLoggerError`] if the logger has already been initialized.
     pub fn init() -> Result<(), SetLoggerError> {
-        log::set_logger(&Self).map(|()| log::set_max_level(LevelFilter::Info))
+        log::set_logger(&Self).map(|()| log::set_max_level(LevelFilter::Trace))
     }
 }
 
@@ -33,7 +33,7 @@ impl Log for Logger {
                     Level::Warn => Color::Yellow,      // unused
                     Level::Info => Color::Ansi256(13), // bright magenta
                     Level::Debug => Color::Blue,       // unused
-                    Level::Trace => Color::Green,      // unused
+                    Level::Trace => Color::Ansi256(8), // gray
                 })))
                 .unwrap();
 
