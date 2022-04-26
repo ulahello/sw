@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.8.0] - 2022-04-25
 * added precision command
   * allows user to change the display precision on the fly
 * made display command prettier
