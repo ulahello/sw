@@ -46,7 +46,7 @@ impl Log for Logger {
             buffer
                 .set_color(ColorSpec::new().set_fg(Some(match record.level() {
                     Level::Error => Color::Ansi256(9), // bright red
-                    Level::Warn => Color::Yellow,      // unused
+                    Level::Warn => Color::Yellow,
                     Level::Info => Color::Ansi256(13), // bright magenta
                     Level::Debug => Color::Green,
                     Level::Trace => Color::Ansi256(8), // gray
