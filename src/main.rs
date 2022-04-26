@@ -16,7 +16,7 @@
 
 #![feature(duration_checked_float)]
 
-use log::{error, info, trace};
+use log::{debug, error, info, trace, warn};
 use std::io::{self, BufRead, BufWriter, Read, Write};
 use std::process;
 use std::time::Duration;
@@ -171,8 +171,23 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
                     writeln!(stdout, "| l       | print license info   |")?;
                     writeln!(stdout, "| q       | Abandon all Data     |")?;
                 }
+                Command::Display => {
+                    let elapsed = stopwatch.elapsed().as_secs_f32();
 
-                Command::Display => writeln!(stdout, "{}", stopwatch)?,
+                    // display time elapsed in different units
+                    writeln!(stdout, "{:.2} seconds", elapsed)?;
+                    writeln!(stdout, "{:.2} minutes", elapsed / 60.0)?;
+                    writeln!(stdout, "{:.2} hours", elapsed / 60.0 / 60.0)?;
+
+                    stdout.flush()?;
+
+                    // indicate status
+                    if stopwatch.is_running() {
+                        debug!("running");
+                    } else {
+                        warn!("stopped");
+                    }
+                }
 
                 Command::Toggle => {
                     stopwatch.toggle();

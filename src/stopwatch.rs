@@ -16,7 +16,6 @@
 
 //! Defines an abstraction for stopwatches
 
-use std::fmt;
 use std::time::{Duration, Instant};
 
 /// A stopwatch abstraction. Measures and accumulates time between starts and
@@ -121,28 +120,6 @@ impl Stopwatch {
     #[must_use]
     pub const fn is_running(&self) -> bool {
         self.start.is_some()
-    }
-}
-
-impl fmt::Display for Stopwatch {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        let elapsed = self.elapsed().as_secs_f64();
-
-        // display time elapsed in different units
-        writeln!(f, "{:.4} seconds", elapsed)?;
-        writeln!(f, "{:.4} minutes", elapsed / 60.0)?;
-        writeln!(f, "{:.4} hours", elapsed / 60.0 / 60.0)?;
-
-        // indicate status
-        write!(
-            f,
-            "status: {}",
-            if self.is_running() {
-                "running"
-            } else {
-                "stopped"
-            }
-        )
     }
 }
 

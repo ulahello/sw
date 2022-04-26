@@ -32,7 +32,7 @@ impl Log for Logger {
                     Level::Error => Color::Ansi256(9), // bright red
                     Level::Warn => Color::Yellow,      // unused
                     Level::Info => Color::Ansi256(13), // bright magenta
-                    Level::Debug => Color::Blue,       // unused
+                    Level::Debug => Color::Green,
                     Level::Trace => Color::Ansi256(8), // gray
                 })))
                 .unwrap();
