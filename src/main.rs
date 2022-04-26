@@ -159,6 +159,7 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
     // dynamic precision
     let mut precision: usize = INIT_PRECISION;
 
+    // keep track of time spanning stops to starts
     let mut since_stop = Stopwatch::new();
     since_stop.toggle();
 
