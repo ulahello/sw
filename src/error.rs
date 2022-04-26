@@ -92,7 +92,7 @@ impl fmt::Display for UserError {
             Self::UnrecognizedUnit(unit) => write!(f, "unrecognized unit `{}`", unit),
             Self::NegativeDuration => write!(f, "duration can't be negative"),
             Self::InvalidDuration(error) => write!(f, "invalid duration ({})", error),
-            Self::InvalidFloat(error) => write!(f, "invalid f64 ({})", error),
+            Self::InvalidFloat(error) => write!(f, "invalid float ({})", error),
             Self::InvalidInt(error) => write!(f, "invalid int ({})", error),
         }
     }
