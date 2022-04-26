@@ -24,6 +24,8 @@ use std::time::Duration;
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, Logger, UserError};
 
+const PRECISION: usize = 2;
+
 fn main() {
     if let Err(error) = try_main() {
         eprintln!("fatal: {}", error);
@@ -175,9 +177,9 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
                     let elapsed = stopwatch.elapsed().as_secs_f32();
 
                     // display time elapsed in different units
-                    writeln!(stdout, "{:.2} seconds", elapsed)?;
-                    writeln!(stdout, "{:.2} minutes", elapsed / 60.0)?;
-                    writeln!(stdout, "{:.2} hours", elapsed / 60.0 / 60.0)?;
+                    writeln!(stdout, "{:.*} seconds", PRECISION, elapsed)?;
+                    writeln!(stdout, "{:.*} minutes", PRECISION, elapsed / 60.0)?;
+                    writeln!(stdout, "{:.*} hours", PRECISION, elapsed / 60.0 / 60.0)?;
 
                     stdout.flush()?;
 
@@ -194,7 +196,8 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
                     if stopwatch.is_running() {
                         info!("started stopwatch");
                         trace!(
-                            "{:.2} seconds since stopped",
+                            "{:.*} seconds since stopped",
+                            PRECISION,
                             since_stop.elapsed().as_secs_f32()
                         );
                     } else {
