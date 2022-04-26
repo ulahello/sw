@@ -60,20 +60,25 @@ pub enum UserError {
     ///
     /// Contains the string which was passed.
     UnrecognizedCommand(String),
+
     /// Unrecognized unit
     ///
     /// Contains the string which was passed.
     UnrecognizedUnit(String),
+
     /// Negative value passed for duration
     NegativeDuration,
+
     /// Failed to create a `Duration` from floating point seconds
     ///
     /// Contains the conversion error.
     InvalidDuration(FromFloatSecsError),
+
     /// Invalid floating point number
     ///
     /// Contains the parse error.
     InvalidFloat(ParseFloatError),
+
     /// Invalid integer
     ///
     /// Contains the parse error.
