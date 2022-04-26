@@ -24,9 +24,6 @@ use std::time::Duration;
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, Logger, UserError};
 
-const INIT_PRECISION: usize = 2;
-const MAX_PRECISION: usize = 9; // nanosecond precision
-
 fn main() {
     if let Err(error) = try_main() {
         eprintln!("fatal: {}", error);
@@ -151,6 +148,9 @@ fn print_splash() -> Result<(), FatalError> {
 }
 
 fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
+    const INIT_PRECISION: usize = 2;
+    const MAX_PRECISION: usize = 9; // nanosecond precision
+
     let mut stdout = BufWriter::new(io::stdout());
 
     // stopwatch name is empty to start
