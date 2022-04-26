@@ -1,6 +1,7 @@
 # changelog
 
 ## [unreleased]
+* print time since last stop
 
 ## [0.7.0] - 2022-04-24
 * colored logs
