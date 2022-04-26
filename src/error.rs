@@ -19,7 +19,7 @@
 use log::SetLoggerError;
 use std::fmt;
 use std::io;
-use std::num::ParseFloatError;
+use std::num::{ParseFloatError, ParseIntError};
 use std::time::FromFloatSecsError;
 
 /// Fatal runtime errors
@@ -74,6 +74,10 @@ pub enum UserError {
     ///
     /// Contains the parse error.
     InvalidFloat(ParseFloatError),
+    /// Invalid integer
+    ///
+    /// Contains the parse error.
+    InvalidInt(ParseIntError),
 }
 
 impl fmt::Display for UserError {
@@ -84,6 +88,7 @@ impl fmt::Display for UserError {
             Self::NegativeDuration => write!(f, "duration can't be negative"),
             Self::InvalidDuration(error) => write!(f, "invalid duration ({})", error),
             Self::InvalidFloat(error) => write!(f, "invalid f64 ({})", error),
+            Self::InvalidInt(error) => write!(f, "invalid int ({})", error),
         }
     }
 }

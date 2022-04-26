@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+* added precision command
+  * allows user to change the display precision on the fly
 * made display command prettier
 * print time since last stop
 

@@ -24,7 +24,8 @@ use std::time::Duration;
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, Logger, UserError};
 
-const PRECISION: usize = 2;
+const INIT_PRECISION: usize = 2;
+const MAX_PRECISION: usize = 9; // nanosecond precision
 
 fn main() {
     if let Err(error) = try_main() {
@@ -51,6 +52,7 @@ enum Command {
     Change,
     Offset,
     Name,
+    Precision,
     License,
     Quit,
 }
@@ -66,6 +68,7 @@ impl Command {
             "c" => Ok(Ok(Self::Change)),
             "o" => Ok(Ok(Self::Offset)),
             "n" => Ok(Ok(Self::Name)),
+            "p" => Ok(Ok(Self::Precision)),
             "l" => Ok(Ok(Self::License)),
             "q" => Ok(Ok(Self::Quit)),
             other => Ok(Err(UserError::UnrecognizedCommand(other.into()))),
@@ -153,6 +156,9 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
     // stopwatch name is empty to start
     let mut name = String::new();
 
+    // dynamic precision
+    let mut precision: usize = INIT_PRECISION;
+
     let mut since_stop = Stopwatch::new();
     since_stop.toggle();
 
@@ -161,25 +167,26 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
         match Command::read(&name, stopwatch.is_running())? {
             Ok(command) => match command {
                 Command::Help => {
-                    writeln!(stdout, "| command | description          |")?;
-                    writeln!(stdout, "| ---     | ---                  |")?;
-                    writeln!(stdout, "| h       | print this message   |")?;
-                    writeln!(stdout, "| <enter> | display elapsed time |")?;
-                    writeln!(stdout, "| s       | toggle stopwatch     |")?;
-                    writeln!(stdout, "| r       | reset stopwatch      |")?;
-                    writeln!(stdout, "| c       | change elapsed time  |")?;
-                    writeln!(stdout, "| o       | offset elapsed time  |")?;
-                    writeln!(stdout, "| n       | name stopwatch       |")?;
-                    writeln!(stdout, "| l       | print license info   |")?;
-                    writeln!(stdout, "| q       | Abandon all Data     |")?;
+                    writeln!(stdout, "| command | description           |")?;
+                    writeln!(stdout, "| ---     | ---                   |")?;
+                    writeln!(stdout, "| h       | print this message    |")?;
+                    writeln!(stdout, "| <enter> | display elapsed time  |")?;
+                    writeln!(stdout, "| s       | toggle stopwatch      |")?;
+                    writeln!(stdout, "| r       | reset stopwatch       |")?;
+                    writeln!(stdout, "| c       | change elapsed time   |")?;
+                    writeln!(stdout, "| o       | offset elapsed time   |")?;
+                    writeln!(stdout, "| n       | name stopwatch        |")?;
+                    writeln!(stdout, "| p       | set display precision |")?;
+                    writeln!(stdout, "| l       | print license info    |")?;
+                    writeln!(stdout, "| q       | Abandon all Data      |")?;
                 }
                 Command::Display => {
                     let elapsed = stopwatch.elapsed().as_secs_f32();
 
                     // display time elapsed in different units
-                    writeln!(stdout, "{:.*} seconds", PRECISION, elapsed)?;
-                    writeln!(stdout, "{:.*} minutes", PRECISION, elapsed / 60.0)?;
-                    writeln!(stdout, "{:.*} hours", PRECISION, elapsed / 60.0 / 60.0)?;
+                    writeln!(stdout, "{:.*} seconds", precision, elapsed)?;
+                    writeln!(stdout, "{:.*} minutes", precision, elapsed / 60.0)?;
+                    writeln!(stdout, "{:.*} hours", precision, elapsed / 60.0 / 60.0)?;
 
                     stdout.flush()?;
 
@@ -197,7 +204,7 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
                         info!("started stopwatch");
                         trace!(
                             "{:.*} seconds since stopped",
-                            PRECISION,
+                            precision,
                             since_stop.elapsed().as_secs_f32()
                         );
                     } else {
@@ -243,6 +250,19 @@ fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
                         info!("updated stopwatch name");
                     }
                 }
+
+                Command::Precision => match read_stdin("new precision? ")?.parse::<usize>() {
+                    Ok(int) => {
+                        if int <= MAX_PRECISION {
+                            precision = int;
+                            info!("updated precision");
+                        } else {
+                            precision = MAX_PRECISION;
+                            warn!("precision clamped to {}", MAX_PRECISION);
+                        }
+                    }
+                    Err(error) => error!("{}", UserError::InvalidInt(error)),
+                },
 
                 Command::License => {
                     writeln!(stdout, "copyright (C) 2022  Ula Shipman")?;
