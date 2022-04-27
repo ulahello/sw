@@ -131,7 +131,6 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
 fn print_splash() -> Result<(), FatalError> {
     let mut stderr = BufWriter::new(io::stderr());
 
-    // splash text
     writeln!(
         stderr,
         "{} {}: {}",
