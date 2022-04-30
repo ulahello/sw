@@ -1,11 +1,12 @@
 # sw
 
-`sw` is a simple terminal stopwatch.
+`sw` is a simple terminal stopwatch which runs as a shell.
 
-it runs as a shell; you interact with it by typing single-character commands,
-and responding to any prompts which follow. reads are blocking, so there's no
-fancy live display of the current elapsed time, but that also means that when
-it's idling, it does literally nothing.
+you interact with it by typing single-character commands, and responding to any
+prompts which follow.
+
+reads are blocking, so there's no fancy live display of the current elapsed
+time, but that also means that when it's idling, it does literally nothing.
 
 ## usage
 
