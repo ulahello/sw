@@ -4,16 +4,22 @@
 
 ## the Use Case
 
-allegedly, this improves on the experience of using an interactive python shell
-as a stopwatch.
+the original use case was to improve on the experience of using an interactive
+python shell as a stopwatch.
+
+if you're tired of this specifically, you are probably me:
 
 ```python
->>> from time import time
->>> t = 0
->>> start = time()
->>> # work on stuff
->>> t += time() - start
+from time import time
+t = 0
+start = time()
+# do whatever is being timed
+t += time() - start
 ```
+
+anyhow, `sw` has progressed since then, and is useful in a more general context.
+if you're looking for a lightweight stopwatch that runs as a shell, this is for
+you.
 
 ## note on installation
 
