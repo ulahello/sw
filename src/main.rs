@@ -32,65 +32,13 @@ fn main() {
 }
 
 fn try_main() -> Result<(), FatalError> {
-    let mut sw = Stopwatch::new();
+    let mut state = State::new();
 
     Logger::init()?;
     print_splash()?;
-    control_stopwatch(&mut sw)?;
+    state.control()?;
 
     Ok(())
-}
-
-enum Command {
-    Help,
-    Display,
-    Toggle,
-    Reset,
-    Change,
-    Offset,
-    Name,
-    Precision,
-    License,
-    Quit,
-}
-
-impl Command {
-    pub fn read(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
-        let prompt = format!("{} {} ", msg, if running { '>' } else { '<' });
-        match read_stdin(&prompt)?.to_lowercase().as_ref() {
-            "h" => Ok(Ok(Self::Help)),
-            "" => Ok(Ok(Self::Display)),
-            "s" => Ok(Ok(Self::Toggle)),
-            "r" => Ok(Ok(Self::Reset)),
-            "c" => Ok(Ok(Self::Change)),
-            "o" => Ok(Ok(Self::Offset)),
-            "n" => Ok(Ok(Self::Name)),
-            "p" => Ok(Ok(Self::Precision)),
-            "l" => Ok(Ok(Self::License)),
-            "q" => Ok(Ok(Self::Quit)),
-            other => Ok(Err(UserError::UnrecognizedCommand(other.into()))),
-        }
-    }
-}
-
-enum Unit {
-    Seconds,
-    Minutes,
-    Hours,
-}
-
-impl Unit {
-    pub fn read() -> Result<Result<Self, UserError>, FatalError> {
-        let mut stdout = io::stdout();
-        writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
-
-        Ok(match read_stdin("which unit? ")?.to_lowercase().as_ref() {
-            "s" => Ok(Self::Seconds),
-            "m" => Ok(Self::Minutes),
-            "h" => Ok(Self::Hours),
-            other => Err(UserError::UnrecognizedUnit(other.into())),
-        })
-    }
 }
 
 fn read_stdin(msg: &str) -> Result<String, FatalError> {
@@ -146,142 +94,224 @@ fn print_splash() -> Result<(), FatalError> {
     Ok(())
 }
 
-fn control_stopwatch(stopwatch: &mut Stopwatch) -> Result<(), FatalError> {
-    const INIT_PRECISION: usize = 2;
-    const MAX_PRECISION: usize = 9; // nanosecond precision
+struct State {
+    sw: Stopwatch,
+    since_stop: Stopwatch,
+    name: String,
+    prec: usize,
+}
 
-    let mut stdout = BufWriter::new(io::stdout());
+impl State {
+    const PRECISION_INIT: usize = 2;
+    const PRECISION_MAX: usize = 9; // nanosecond precision
 
-    // stopwatch name is empty to start
-    let mut name = String::new();
+    pub fn new() -> Self {
+        Self {
+            sw: Stopwatch::new(Duration::ZERO, false),
+            since_stop: Stopwatch::new(Duration::ZERO, true),
+            name: String::new(),
+            prec: Self::PRECISION_INIT,
+        }
+    }
 
-    // dynamic precision
-    let mut precision: usize = INIT_PRECISION;
+    /// Sets the precision of displayed values. If the precision was clamped, it
+    /// returns what it was clamped to.
+    pub fn set_precision(&mut self, prec: usize) -> Option<usize> {
+        if prec <= State::PRECISION_MAX {
+            self.prec = prec;
+            None
+        } else {
+            self.prec = State::PRECISION_MAX;
+            Some(State::PRECISION_MAX)
+        }
+    }
 
-    // keep track of time spanning stops to starts
-    let mut since_stop = Stopwatch::new();
-    since_stop.toggle();
+    pub fn control(&mut self) -> Result<(), FatalError> {
+        let mut stdout = BufWriter::new(io::stdout());
 
-    loop {
-        // respond to command
-        match Command::read(&name, stopwatch.is_running())? {
-            Ok(command) => match command {
-                Command::Help => {
-                    writeln!(stdout, "| command | description           |")?;
-                    writeln!(stdout, "| ---     | ---                   |")?;
-                    writeln!(stdout, "| h       | print this message    |")?;
-                    writeln!(stdout, "| <enter> | display elapsed time  |")?;
-                    writeln!(stdout, "| s       | toggle stopwatch      |")?;
-                    writeln!(stdout, "| r       | reset stopwatch       |")?;
-                    writeln!(stdout, "| c       | change elapsed time   |")?;
-                    writeln!(stdout, "| o       | offset elapsed time   |")?;
-                    writeln!(stdout, "| n       | name stopwatch        |")?;
-                    writeln!(stdout, "| p       | set display precision |")?;
-                    writeln!(stdout, "| l       | print license info    |")?;
-                    writeln!(stdout, "| q       | Abandon all Data      |")?;
+        loop {
+            // respond to command
+            match Command::read(&self.name, self.sw.is_running())? {
+                Ok(command) => {
+                    if command.execute(self, &mut stdout)? {
+                        return Ok(());
+                    }
                 }
-                Command::Display => {
-                    let elapsed = stopwatch.elapsed().as_secs_f32();
+                Err(error) => error!("{}", error),
+            }
 
-                    // display time elapsed in different units
-                    writeln!(stdout, "{:.*} seconds", precision, elapsed)?;
-                    writeln!(stdout, "{:.*} minutes", precision, elapsed / 60.0)?;
-                    writeln!(stdout, "{:.*} hours", precision, elapsed / 60.0 / 60.0)?;
+            if self.sw.is_running() && self.since_stop.is_running() {
+                self.since_stop.reset();
+            } else if !self.sw.is_running() && !self.since_stop.is_running() {
+                self.since_stop.toggle();
+            }
+        }
+    }
+}
 
-                    stdout.flush()?;
+enum Command {
+    Help,
+    Display,
+    Toggle,
+    Reset,
+    Change,
+    Offset,
+    Name,
+    Precision,
+    License,
+    Quit,
+}
 
-                    // indicate status
-                    if stopwatch.is_running() {
-                        debug!("running");
+impl Command {
+    pub fn read(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
+        let prompt = format!("{} {} ", msg, if running { '>' } else { '<' });
+        match read_stdin(&prompt)?.to_lowercase().as_ref() {
+            "h" => Ok(Ok(Self::Help)),
+            "" => Ok(Ok(Self::Display)),
+            "s" => Ok(Ok(Self::Toggle)),
+            "r" => Ok(Ok(Self::Reset)),
+            "c" => Ok(Ok(Self::Change)),
+            "o" => Ok(Ok(Self::Offset)),
+            "n" => Ok(Ok(Self::Name)),
+            "p" => Ok(Ok(Self::Precision)),
+            "l" => Ok(Ok(Self::License)),
+            "q" => Ok(Ok(Self::Quit)),
+            other => Ok(Err(UserError::UnrecognizedCommand(other.into()))),
+        }
+    }
+
+    /// Execute the command on `state`, writing to `stdout`. Returns whether the
+    /// state should quit.
+    pub fn execute(&self, state: &mut State, stdout: &mut impl Write) -> Result<bool, FatalError> {
+        match self {
+            Command::Help => {
+                writeln!(stdout, "| command | description           |")?;
+                writeln!(stdout, "| ---     | ---                   |")?;
+                writeln!(stdout, "| h       | print this message    |")?;
+                writeln!(stdout, "| <enter> | display elapsed time  |")?;
+                writeln!(stdout, "| s       | toggle stopwatch      |")?;
+                writeln!(stdout, "| r       | reset stopwatch       |")?;
+                writeln!(stdout, "| c       | change elapsed time   |")?;
+                writeln!(stdout, "| o       | offset elapsed time   |")?;
+                writeln!(stdout, "| n       | name stopwatch        |")?;
+                writeln!(stdout, "| p       | set display precision |")?;
+                writeln!(stdout, "| l       | print license info    |")?;
+                writeln!(stdout, "| q       | Abandon all Data      |")?;
+            }
+
+            Command::Display => {
+                let elapsed = state.sw.elapsed().as_secs_f32();
+
+                // display time elapsed in different units
+                writeln!(stdout, "{:.*} seconds", state.prec, elapsed)?;
+                writeln!(stdout, "{:.*} minutes", state.prec, elapsed / 60.0)?;
+                writeln!(stdout, "{:.*} hours", state.prec, elapsed / 60.0 / 60.0)?;
+
+                stdout.flush()?;
+
+                // indicate status
+                if state.sw.is_running() {
+                    debug!("running");
+                } else {
+                    warn!("stopped");
+                }
+            }
+
+            Command::Toggle => {
+                state.sw.toggle();
+                if state.sw.is_running() {
+                    info!("started stopwatch");
+                    trace!(
+                        "{:.*} seconds since stopped",
+                        state.prec,
+                        state.since_stop.elapsed().as_secs_f32()
+                    );
+                } else {
+                    info!("stopped stopwatch");
+                }
+            }
+
+            Command::Reset => {
+                state.sw.reset();
+                info!("reset stopwatch");
+            }
+
+            Command::Change => match read_duration("new value? ")? {
+                Ok((dur, is_neg)) => {
+                    if is_neg {
+                        error!("{}", UserError::NegativeDuration);
                     } else {
-                        warn!("stopped");
+                        state.sw.set(dur);
+                        info!("updated elapsed time");
                     }
                 }
-
-                Command::Toggle => {
-                    stopwatch.toggle();
-                    if stopwatch.is_running() {
-                        info!("started stopwatch");
-                        trace!(
-                            "{:.*} seconds since stopped",
-                            precision,
-                            since_stop.elapsed().as_secs_f32()
-                        );
-                    } else {
-                        info!("stopped stopwatch");
-                    }
-                }
-
-                Command::Reset => {
-                    stopwatch.reset();
-                    info!("reset stopwatch");
-                }
-
-                Command::Change => match read_duration("new value? ")? {
-                    Ok((dur, is_neg)) => {
-                        if is_neg {
-                            error!("{}", UserError::NegativeDuration);
-                        } else {
-                            stopwatch.set(dur);
-                            info!("updated elapsed time");
-                        }
-                    }
-                    Err(error) => error!("{}", error),
-                },
-
-                Command::Offset => match read_duration("offset by? ")? {
-                    Ok((dur, is_neg)) => {
-                        if is_neg {
-                            stopwatch.sub(dur);
-                            info!("subtracted from elapsed time");
-                        } else {
-                            stopwatch.add(dur);
-                            info!("added to elapsed time");
-                        }
-                    }
-                    Err(error) => error!("{}", error),
-                },
-
-                Command::Name => {
-                    name = read_stdin("new name? ")?;
-                    if name.is_empty() {
-                        info!("cleared stopwatch name");
-                    } else {
-                        info!("updated stopwatch name");
-                    }
-                }
-
-                Command::Precision => match read_stdin("new precision? ")?.parse::<usize>() {
-                    Ok(int) => {
-                        if int <= MAX_PRECISION {
-                            precision = int;
-                            info!("updated precision");
-                        } else {
-                            precision = MAX_PRECISION;
-                            warn!("precision clamped to {}", MAX_PRECISION);
-                        }
-                    }
-                    Err(error) => error!("{}", UserError::InvalidInt(error)),
-                },
-
-                Command::License => {
-                    writeln!(stdout, "copyright (C) 2022  Ula Shipman")?;
-                    writeln!(stdout, "licensed under GPL-3.0-or-later")?;
-                }
-
-                Command::Quit => return Ok(()),
+                Err(error) => error!("{}", error),
             },
 
-            Err(error) => error!("{}", error),
-        }
+            Command::Offset => match read_duration("offset by? ")? {
+                Ok((dur, is_neg)) => {
+                    if is_neg {
+                        state.sw.sub(dur);
+                        info!("subtracted from elapsed time");
+                    } else {
+                        state.sw.add(dur);
+                        info!("added to elapsed time");
+                    }
+                }
+                Err(error) => error!("{}", error),
+            },
 
-        if stopwatch.is_running() && since_stop.is_running() {
-            since_stop.reset();
-        } else if !stopwatch.is_running() && !since_stop.is_running() {
-            since_stop.toggle();
-        }
+            Command::Name => {
+                state.name = read_stdin("new name? ")?;
+                if state.name.is_empty() {
+                    info!("cleared stopwatch name");
+                } else {
+                    info!("updated stopwatch name");
+                }
+            }
+
+            Command::Precision => match read_stdin("new precision? ")?.parse::<usize>() {
+                Ok(int) => {
+                    if let Some(clamped) = state.set_precision(int) {
+                        warn!("precision clamped to {}", clamped);
+                    } else {
+                        info!("updated precision");
+                    }
+                }
+                Err(error) => error!("{}", UserError::InvalidInt(error)),
+            },
+
+            Command::License => {
+                writeln!(stdout, "copyright (C) 2022  Ula Shipman")?;
+                writeln!(stdout, "licensed under GPL-3.0-or-later")?;
+            }
+
+            Command::Quit => return Ok(true),
+        };
 
         writeln!(stdout)?;
         stdout.flush()?;
+
+        Ok(false)
+    }
+}
+
+enum Unit {
+    Seconds,
+    Minutes,
+    Hours,
+}
+
+impl Unit {
+    pub fn read() -> Result<Result<Self, UserError>, FatalError> {
+        let mut stdout = io::stdout();
+        writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
+
+        Ok(match read_stdin("which unit? ")?.to_lowercase().as_ref() {
+            "s" => Ok(Self::Seconds),
+            "m" => Ok(Self::Minutes),
+            "h" => Ok(Self::Hours),
+            other => Err(UserError::UnrecognizedUnit(other.into())),
+        })
     }
 }

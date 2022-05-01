@@ -16,6 +16,7 @@
 
 //! Defines an abstraction for stopwatches
 
+use std::default::Default;
 use std::time::{Duration, Instant};
 
 /// A stopwatch abstraction. Measures and accumulates time between starts and
@@ -28,11 +29,11 @@ pub struct Stopwatch {
 }
 
 impl Stopwatch {
-    /// Creates a stopped [`Stopwatch`] with zero time elapsed.
-    pub const fn new() -> Self {
+    /// Creates a [`Stopwatch`] with the given elapsed time.
+    pub fn new(elapsed: Duration, running: bool) -> Self {
         Self {
-            start: None,
-            elapsed: Duration::ZERO,
+            elapsed,
+            start: if running { Some(Instant::now()) } else { None },
         }
     }
 
@@ -123,6 +124,15 @@ impl Stopwatch {
     }
 }
 
+impl Default for Stopwatch {
+    fn default() -> Self {
+        Self {
+            elapsed: Duration::ZERO,
+            start: None,
+        }
+    }
+}
+
 /// Errors associated with [`Stopwatch`]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Error {
@@ -143,12 +153,12 @@ mod test {
 
     #[test]
     fn new() {
-        assert_eq!(Stopwatch::new().elapsed(), Duration::ZERO);
+        assert_eq!(Stopwatch::default().elapsed(), Duration::ZERO);
     }
 
     #[test]
     fn is_running() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
         assert!(!sw.is_running());
 
         sw.start().unwrap();
@@ -160,7 +170,7 @@ mod test {
 
     #[test]
     fn toggle() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
         assert!(!sw.is_running());
 
         sw.toggle();
@@ -172,7 +182,7 @@ mod test {
 
     #[test]
     fn reset() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
 
         sw.start().unwrap();
         thread::sleep(SANE_DELAY);
@@ -185,7 +195,7 @@ mod test {
 
     #[test]
     fn set() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
 
         sw.start().unwrap();
         sw.set(SANE_DELAY);
@@ -196,7 +206,7 @@ mod test {
 
     #[test]
     fn add() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
 
         sw.add(SANE_DELAY); // 1
 
@@ -214,7 +224,7 @@ mod test {
 
     #[test]
     fn sub() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
 
         sw.start().unwrap();
         thread::sleep(SANE_DELAY);
@@ -231,7 +241,7 @@ mod test {
 
     #[test]
     fn double_starts_stops_errs() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
 
         assert_eq!(sw.start(), Ok(()));
         assert_eq!(sw.start(), Err(Error::AlreadyStarted));
@@ -242,7 +252,7 @@ mod test {
 
     #[test]
     fn sane_elapsed_halted() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
 
         sw.start().unwrap();
         thread::sleep(SANE_DELAY);
@@ -254,7 +264,7 @@ mod test {
 
     #[test]
     fn sane_elapsed_active() {
-        let mut sw = Stopwatch::new();
+        let mut sw = Stopwatch::default();
 
         sw.start().unwrap();
         thread::sleep(SANE_DELAY);
