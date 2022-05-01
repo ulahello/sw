@@ -41,7 +41,7 @@ fn try_main() -> Result<(), FatalError> {
     Ok(())
 }
 
-fn read_stdin(msg: &str) -> Result<String, FatalError> {
+fn readln(msg: &str) -> Result<String, FatalError> {
     const READ_LIMIT: u64 = 128;
 
     let mut stdout = io::stdout();
@@ -58,7 +58,7 @@ fn read_stdin(msg: &str) -> Result<String, FatalError> {
 
 fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, FatalError> {
     match Unit::read()? {
-        Ok(unit) => match read_stdin(msg)?.parse::<f64>() {
+        Ok(unit) => match readln(msg)?.parse::<f64>() {
             Ok(scalar) => {
                 let secs = match unit {
                     Unit::Seconds => scalar,
@@ -165,7 +165,7 @@ enum Command {
 impl Command {
     pub fn read(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
         let prompt = format!("{} {} ", msg, if running { '>' } else { '<' });
-        match read_stdin(&prompt)?.to_lowercase().as_ref() {
+        match readln(&prompt)?.to_lowercase().as_ref() {
             "h" => Ok(Ok(Self::Help)),
             "" => Ok(Ok(Self::Display)),
             "s" => Ok(Ok(Self::Toggle)),
@@ -262,7 +262,7 @@ impl Command {
             },
 
             Command::Name => {
-                state.name = read_stdin("new name? ")?;
+                state.name = readln("new name? ")?;
                 if state.name.is_empty() {
                     info!("cleared stopwatch name");
                 } else {
@@ -270,7 +270,7 @@ impl Command {
                 }
             }
 
-            Command::Precision => match read_stdin("new precision? ")?.parse::<usize>() {
+            Command::Precision => match readln("new precision? ")?.parse::<usize>() {
                 Ok(int) => {
                     if let Some(clamped) = state.set_precision(int) {
                         warn!("precision clamped to {}", clamped);
@@ -307,7 +307,7 @@ impl Unit {
         let mut stdout = io::stdout();
         writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
 
-        Ok(match read_stdin("which unit? ")?.to_lowercase().as_ref() {
+        Ok(match readln("which unit? ")?.to_lowercase().as_ref() {
             "s" => Ok(Self::Seconds),
             "m" => Ok(Self::Minutes),
             "h" => Ok(Self::Hours),
