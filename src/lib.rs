@@ -15,9 +15,7 @@
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #![forbid(unsafe_code)]
-#![warn(clippy::pedantic)]
-#![warn(missing_docs)]
-
+#![warn(clippy::pedantic, missing_docs)]
 #![feature(duration_checked_float)]
 
 //! Backend for `sw`, containing a stopwatch abstraction and runtime errors.
