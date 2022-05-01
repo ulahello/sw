@@ -152,7 +152,7 @@ mod test {
     const SANE_DELAY: Duration = Duration::from_millis(200);
 
     #[test]
-    fn new() {
+    fn default() {
         assert_eq!(Stopwatch::default().elapsed(), Duration::ZERO);
     }
 
