@@ -2,6 +2,9 @@
 
 ## [unreleased]
 
+## [0.8.1] - 2022-05-02
+* refactored internals
+
 ## [0.8.0] - 2022-04-25
 * added precision command
   * allows user to change the display precision on the fly
