@@ -98,11 +98,7 @@ impl Stopwatch {
 
     /// Subtract `sub` from the total elapsed time.
     pub fn sub(&mut self, sub: Duration) {
-        if let Some(start) = self.start {
-            let now = Instant::now();
-            self.add(now.saturating_duration_since(start));
-            self.start = Some(now);
-        }
+        self.sync_elapsed();
         self.elapsed = self.elapsed.saturating_sub(sub);
     }
 
@@ -121,6 +117,16 @@ impl Stopwatch {
     #[must_use]
     pub const fn is_running(&self) -> bool {
         self.start.is_some()
+    }
+
+    /// Sync changes in the elapsed time, effectively toggling the stopwatch
+    /// twice.
+    fn sync_elapsed(&mut self) {
+        if let Some(start) = self.start {
+            let now = Instant::now();
+            self.add(now.saturating_duration_since(start));
+            self.start = Some(now);
+        }
     }
 }
 
