@@ -302,8 +302,7 @@ enum Unit {
 
 impl Unit {
     pub fn read() -> Result<Result<Self, UserError>, FatalError> {
-        let mut stdout = io::stdout();
-        writeln!(stdout, "(s)econds | (m)inutes | (h)ours")?;
+        writeln!(io::stdout(), "(s)econds | (m)inutes | (h)ours")?;
 
         Ok(match readln("which unit? ")?.to_lowercase().as_ref() {
             "s" => Ok(Self::Seconds),
