@@ -50,8 +50,11 @@ fn try_main() -> Result<(), FatalError> {
         }
 
         writeln!(stdout)?;
+        // bufwriter flushes sparingly so must do this manually
         stdout.flush()?;
 
+        // update since_stop. the idea is for since_stop to be running while the
+        // state.sw is stopped, and to reset as soon as state.sw starts
         if state.sw.is_running() && state.since_stop.is_running() {
             state.since_stop.reset();
         } else if !state.sw.is_running() && !state.since_stop.is_running() {
@@ -67,11 +70,14 @@ fn readln(msg: &str) -> Result<String, FatalError> {
     let stdin = io::stdin().lock();
     let mut input = String::new();
 
+    // print prompt (must flush)
     write!(stdout, "{}", msg)?;
     stdout.flush()?;
 
+    // read a limited number of bytes from stdin
     stdin.take(READ_LIMIT).read_line(&mut input)?;
 
+    // trim whitespace and escape weird characters
     Ok(input.trim().escape_default().to_string())
 }
 
