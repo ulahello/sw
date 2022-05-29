@@ -49,6 +49,9 @@ fn try_main() -> Result<(), FatalError> {
             Err(error) => error!("{}", error),
         }
 
+        writeln!(stdout)?;
+        stdout.flush()?;
+
         if state.sw.is_running() && state.since_stop.is_running() {
             state.since_stop.reset();
         } else if !state.sw.is_running() && !state.since_stop.is_running() {
@@ -254,9 +257,6 @@ impl State {
 
             Command::Quit => return Ok(true),
         };
-
-        writeln!(stdout)?;
-        stdout.flush()?;
 
         Ok(false)
     }
