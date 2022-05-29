@@ -214,14 +214,14 @@ mod test {
     fn add() {
         let mut sw = Stopwatch::default();
 
-        sw.add(SANE_DELAY); // 1
+        sw.add(SANE_DELAY);
 
         sw.start().unwrap();
-        sw.add(SANE_DELAY); // 2
+        sw.add(SANE_DELAY);
         assert!(sw.is_running());
 
         sw.stop().unwrap();
-        sw.add(SANE_DELAY); // 3
+        sw.add(SANE_DELAY);
         assert!(!sw.is_running());
 
         assert!(sw.elapsed() >= SANE_DELAY * 3);
