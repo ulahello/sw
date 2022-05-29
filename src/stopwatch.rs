@@ -140,7 +140,7 @@ impl Default for Stopwatch {
 }
 
 /// Errors associated with [`Stopwatch`]
-#[derive(Clone, Copy, Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Error {
     /// Called [`Stopwatch::start`] while running
     AlreadyStarted,
