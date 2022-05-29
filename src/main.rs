@@ -147,10 +147,10 @@ impl State {
 
     /// Updates the state with a [`Command`], returning [true] if the command
     /// was [`Quit`](Command::Quit).
-    pub fn update(
+    pub fn update<W: Write>(
         &mut self,
         command: Command,
-        stdout: &mut impl Write,
+        stdout: &mut W,
     ) -> Result<bool, FatalError> {
         match command {
             Command::Help => {
