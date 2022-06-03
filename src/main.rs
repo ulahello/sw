@@ -18,16 +18,18 @@
 
 use log::{debug, error, info, trace, warn};
 use std::io::{self, BufRead, BufWriter, Read, Write};
-use std::process;
+use std::process::ExitCode;
 use std::time::Duration;
 
 use sw::stopwatch::Stopwatch;
 use sw::{FatalError, Logger, UserError};
 
-fn main() {
+fn main() -> ExitCode {
     if let Err(error) = try_main() {
         eprintln!("fatal: {}", error);
-        process::exit(1);
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
     }
 }
 
