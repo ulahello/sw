@@ -16,7 +16,6 @@
 
 //! Defines an abstraction for stopwatches
 
-use std::default::Default;
 use std::time::{Duration, Instant};
 
 /// A stopwatch abstraction. Measures and accumulates time between starts and
