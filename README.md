@@ -49,6 +49,13 @@ you.
 
 tickets and improvements are welcome and appreciated!
 
+## versioning
+
+`sw` follows [semver](https://semver.org).
+
+unfortunately, 0.4.0 made breaking changes. everything else should be correct
+though.
+
 ## license
 
 `GPL-3.0-or-later`, see [LICENSE](./LICENSE).
