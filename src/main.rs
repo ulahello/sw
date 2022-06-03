@@ -161,7 +161,7 @@ impl State {
         match command {
             Command::Help => {
                 writeln!(stdout, "| command | description           |")?;
-                writeln!(stdout, "| ---     | ---                   |")?;
+                writeln!(stdout, "| ------- | --------------------- |")?;
                 writeln!(stdout, "| h       | print this message    |")?;
                 writeln!(stdout, "| <enter> | display elapsed time  |")?;
                 writeln!(stdout, "| s       | toggle stopwatch      |")?;

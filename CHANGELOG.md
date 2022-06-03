@@ -2,6 +2,7 @@
 
 ## [unreleased]
 * fixed error message formatting
+* improved help message formatting
 
 ## [0.8.1] - 2022-05-02
 * refactored internals
