@@ -1,9 +1,13 @@
 # changelog
 
 ## [unreleased]
+
+## [0.8.2] - 2022-06-03
 * fixed error message formatting
   * error messages weren't followed with two newlines, like normal output
 * improved help message formatting
+* improved exit code portability
+  * now using std defined failure/success codes
 
 ## [0.8.1] - 2022-05-02
 * refactored internals
