@@ -48,7 +48,10 @@ impl fmt::Display for FatalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             Self::Io(err) => write!(f, "io: {}", err),
-            Self::LogInit(err) => write!(f, "internal: {}", err),
+            Self::LogInit(err) => {
+                writeln!(f, "internal: {}", err)?;
+                write!(f, "this is a bug.")
+            }
         }
     }
 }
