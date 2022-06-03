@@ -16,7 +16,6 @@
 
 #![allow(clippy::module_name_repetitions)]
 
-use log::SetLoggerError;
 use std::fmt;
 use std::io;
 use std::num::{ParseFloatError, ParseIntError};
@@ -27,15 +26,6 @@ use std::time::FromFloatSecsError;
 pub enum FatalError {
     /// I/O error
     Io(io::Error),
-
-    /// [`Logger`](crate::Logger) initialized twice
-    LogInit(SetLoggerError),
-}
-
-impl From<SetLoggerError> for FatalError {
-    fn from(err: SetLoggerError) -> Self {
-        Self::LogInit(err)
-    }
 }
 
 impl From<io::Error> for FatalError {
@@ -48,10 +38,6 @@ impl fmt::Display for FatalError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match self {
             Self::Io(err) => write!(f, "io: {}", err),
-            Self::LogInit(err) => {
-                writeln!(f, "internal: {}", err)?;
-                write!(f, "this is a bug.")
-            }
         }
     }
 }

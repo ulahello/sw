@@ -34,7 +34,7 @@ fn main() -> ExitCode {
 }
 
 fn try_main() -> Result<(), FatalError> {
-    Logger::init()?;
+    Logger::init().unwrap();
     print_splash()?;
 
     let mut state = State::new();
