@@ -2,6 +2,7 @@
 
 ## [unreleased]
 * fixed error message formatting
+  * error messages weren't followed with two newlines, like normal output
 * improved help message formatting
 
 ## [0.8.1] - 2022-05-02
@@ -24,7 +25,7 @@
 * fixed incorrect stopwatch subtraction behavior
 
 ## [0.6.1] - 2022-04-12
-* moved license & copyright to separate command
+* added license command `l`
 * name command: improved help and added status messages
 * buffered input so memory allocation never depends on user input
 
