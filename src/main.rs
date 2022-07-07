@@ -259,8 +259,8 @@ impl State {
             },
 
             Command::License => {
-                writeln!(stdout, "copyright (C) 2022  Ula Shipman")?;
-                writeln!(stdout, "licensed under GPL-3.0-or-later")?;
+                writeln!(stdout, "copyright (C) 2022  {}", env!("CARGO_PKG_AUTHORS"))?;
+                writeln!(stdout, "licensed under {}", env!("CARGO_PKG_LICENSE"))?;
             }
 
             Command::Quit => return Ok(true),
