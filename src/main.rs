@@ -144,12 +144,12 @@ impl State {
     /// Sets the precision of displayed values. If the precision was clamped, it
     /// returns what it was clamped to.
     pub fn set_precision(&mut self, prec: usize) -> Option<usize> {
-        if prec <= State::PRECISION_MAX {
+        if prec <= Self::PRECISION_MAX {
             self.prec = prec;
             None
         } else {
-            self.prec = State::PRECISION_MAX;
-            Some(State::PRECISION_MAX)
+            self.prec = Self::PRECISION_MAX;
+            Some(Self::PRECISION_MAX)
         }
     }
 
