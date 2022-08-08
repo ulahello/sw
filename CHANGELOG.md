@@ -1,7 +1,9 @@
 # changelog
 
 ## [unreleased]
-* move stopwatch to `libsw`
+
+## [0.8.3] - 2022-08-07
+* moved stopwatch to `libsw`
 
 ## [0.8.2] - 2022-06-03
 * fixed error message formatting
