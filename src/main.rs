@@ -16,13 +16,14 @@
 
 #![feature(duration_checked_float)]
 
+use sw::{FatalError, Logger, UserError};
+
+use libsw::Stopwatch;
 use log::{debug, error, info, trace, warn};
+
 use std::io::{self, BufRead, BufWriter, Read, Write};
 use std::process::ExitCode;
 use std::time::Duration;
-
-use sw::stopwatch::Stopwatch;
-use sw::{FatalError, Logger, UserError};
 
 fn main() -> ExitCode {
     if let Err(error) = try_main() {
@@ -228,10 +229,10 @@ impl State {
             Command::Offset => match read_duration("offset by? ")? {
                 Ok((dur, is_neg)) => {
                     if is_neg {
-                        self.sw.sub(dur);
+                        self.sw -= dur;
                         info!("subtracted from elapsed time");
                     } else {
-                        self.sw.add(dur);
+                        self.sw += dur;
                         info!("added to elapsed time");
                     }
                 }

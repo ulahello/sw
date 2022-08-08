@@ -18,11 +18,10 @@
 #![warn(clippy::pedantic, missing_docs)]
 #![feature(duration_checked_float)]
 
-//! Backend for `sw`, containing a stopwatch abstraction and runtime errors.
+//! Backend for `sw`, containing logging and runtime errors.
 
 mod error;
 mod logger;
-pub mod stopwatch;
 
 pub use error::{FatalError, UserError};
 pub use logger::Logger;

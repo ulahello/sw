@@ -9,6 +9,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
+name = "libsw"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3024f040117cdff6ced296cb14dda9e0f2c0005cb8d66103a8b45d3ed36e25e7"
+
+[[package]]
 name = "log"
 version = "0.4.17"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -21,6 +27,7 @@ dependencies = [
 name = "sw"
 version = "0.8.2"
 dependencies = [
+ "libsw",
  "log",
  "termcolor",
 ]
