@@ -8,8 +8,9 @@ license = "GPL-3.0-or-later"
 
 [dependencies]
 libsw = "0"
-log = "0.4"
-termcolor = "1.1"
+log = "0"
+regex = "1"
+termcolor = "1"
 
 [profile.release]
 lto = true

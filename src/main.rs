@@ -20,6 +20,7 @@ use sw::{FatalError, Logger, UserError};
 
 use libsw::Stopwatch;
 use log::{debug, error, info, trace, warn};
+use regex::Regex;
 
 use std::io::{self, BufRead, BufWriter, Read, Write};
 use std::process::ExitCode;
@@ -82,26 +83,6 @@ fn readln(msg: &str) -> Result<String, FatalError> {
 
     // trim whitespace and escape weird characters
     Ok(input.trim().escape_default().to_string())
-}
-
-fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, FatalError> {
-    match Unit::read()? {
-        Ok(unit) => match readln(msg)?.parse::<f64>() {
-            Ok(scalar) => {
-                let secs = match unit {
-                    Unit::Seconds => scalar,
-                    Unit::Minutes => scalar * 60.0,
-                    Unit::Hours => scalar * 60.0 * 60.0,
-                };
-                match Duration::try_from_secs_f64(secs.abs()) {
-                    Ok(duration) => Ok(Ok((duration, secs.is_sign_negative()))),
-                    Err(error) => Ok(Err(UserError::InvalidDuration(error))),
-                }
-            }
-            Err(error) => Ok(Err(UserError::InvalidFloat(error))),
-        },
-        Err(error) => Ok(Err(error)),
-    }
 }
 
 fn print_splash() -> Result<(), FatalError> {
@@ -310,14 +291,38 @@ enum Unit {
 }
 
 impl Unit {
-    pub fn read() -> Result<Result<Self, UserError>, FatalError> {
-        writeln!(io::stdout(), "(s)econds | (m)inutes | (h)ours")?;
-
-        Ok(match readln("which unit? ")?.to_lowercase().as_ref() {
+    pub fn from_str(s: &str) -> Result<Self, UserError> {
+        match s {
             "s" => Ok(Self::Seconds),
             "m" => Ok(Self::Minutes),
             "h" => Ok(Self::Hours),
-            other => Err(UserError::UnrecognizedUnit(other.into())),
-        })
+            s => Err(UserError::UnrecognizedUnit(s.into())),
+        }
+    }
+}
+
+fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, FatalError> {
+    let re = Regex::new(r"(.*)(.)").unwrap();
+    if let Some(cap) = re.captures(&readln(msg)?) {
+        match cap[1].parse::<f64>() {
+            Ok(scalar) => {
+                let unit = match Unit::from_str(&cap[2]) {
+                    Ok(unit) => unit,
+                    Err(error) => return Ok(Err(error)),
+                };
+                let secs = match unit {
+                    Unit::Seconds => scalar,
+                    Unit::Minutes => scalar * 60.0,
+                    Unit::Hours => scalar * 60.0 * 60.0,
+                };
+                match Duration::try_from_secs_f64(secs.abs()) {
+                    Ok(duration) => Ok(Ok((duration, secs.is_sign_negative()))),
+                    Err(error) => Ok(Err(UserError::InvalidDuration(error))),
+                }
+            }
+            Err(error) => Ok(Err(UserError::InvalidFloat(error))),
+        }
+    } else {
+        Ok(Err(UserError::InvalidDurationParse))
     }
 }
