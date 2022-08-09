@@ -58,9 +58,6 @@ pub enum UserError {
     /// Negative value passed for duration
     NegativeDuration,
 
-    /// Failed to parse input into float and unit
-    InvalidDurationParse,
-
     /// Failed to create a `Duration` from floating point seconds
     ///
     /// Contains the conversion error.
@@ -88,10 +85,6 @@ impl fmt::Display for UserError {
             ),
             Self::NegativeDuration => write!(f, "duration can't be negative"),
             Self::InvalidDuration(error) => write!(f, "invalid duration ({})", error),
-            Self::InvalidDurationParse => write!(
-                f,
-                "expected <float><unit>, where unit is one of 's', 'm', 'h'"
-            ),
             Self::InvalidFloat(error) => write!(f, "invalid float ({})", error),
             Self::InvalidInt(error) => write!(f, "invalid int ({})", error),
         }

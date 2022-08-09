@@ -1,7 +1,7 @@
 # changelog
 
 ## [unreleased]
-* use regex to parse duration and unit together
+* feat: parse duration and unit together
 
 ## [0.8.3] - 2022-08-07
 * moved stopwatch to `libsw`
