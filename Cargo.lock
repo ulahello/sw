@@ -10,9 +10,9 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "libsw"
-version = "0.2.0"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c8f421306fe40c41e911af5d26e605b73a7f0c965bcd21cd7c260f91efb7dca4"
+checksum = "42dab8d5c0a4c26705d055c5ba6e49dddd88ed6c9b970010210c3ed5baf3a8aa"
 
 [[package]]
 name = "log"

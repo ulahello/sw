@@ -7,7 +7,7 @@ description = "terminal stopwatch"
 license = "GPL-3.0-or-later"
 
 [dependencies]
-libsw = "0"
+libsw = "1"
 log = "0"
 termcolor = "1"
 

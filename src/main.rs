@@ -115,8 +115,8 @@ impl State {
 
     pub fn new() -> Self {
         Self {
-            sw: Stopwatch::new(Duration::ZERO, false),
-            since_stop: Stopwatch::new(Duration::ZERO, true),
+            sw: Stopwatch::new(),
+            since_stop: Stopwatch::new_started(),
             name: String::new(),
             prec: Self::PRECISION_INIT,
         }
