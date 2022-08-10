@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.9.0] - 2022-08-09
 * feat: parse duration and unit together
 
 ## [0.8.3] - 2022-08-07
