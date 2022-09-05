@@ -23,15 +23,17 @@ use libsw::Stopwatch;
 
 use core::time::Duration;
 use std::io::{self, BufRead, Read, Write};
+use std::time::Instant;
 
 /// Stopwatch state.
 pub struct State {
     /// Main [`Stopwatch`].
     pub sw: Stopwatch,
     /// Records the time elapsed while `sw` is stopped.
-    pub since_stop: Stopwatch,
+    since_stop: Stopwatch,
     /// Name of the stopwatch.
     pub name: String,
+    /// Precision, in digits, for displaying the time
     prec: usize,
 }
 
@@ -110,7 +112,10 @@ impl State {
             }
 
             Command::Toggle => {
-                self.sw.toggle();
+                let now = Instant::now();
+                self.sw.toggle_at(now);
+                self.since_stop.toggle_at(now);
+
                 if self.sw.is_running() {
                     magenta("started stopwatch")?;
                     grey(format!(
@@ -118,12 +123,16 @@ impl State {
                         self.prec,
                         self.since_stop.elapsed().as_secs_f32(),
                     ))?;
+                    self.since_stop.reset();
                 } else {
                     magenta("stopped stopwatch")?;
                 }
             }
 
             Command::Reset => {
+                if self.sw.is_running() {
+                    self.since_stop.start().unwrap();
+                }
                 self.sw.reset();
                 magenta("reset stopwatch")?;
             }
@@ -133,6 +142,9 @@ impl State {
                     if is_neg {
                         red(UserError::NegativeDuration)?;
                     } else {
+                        if self.sw.is_running() {
+                            self.since_stop.start().unwrap();
+                        }
                         self.sw.set(dur);
                         magenta("updated elapsed time")?;
                     }
@@ -180,6 +192,9 @@ impl State {
 
             Command::Quit => return Ok(true),
         }
+
+        // sw and since_stop are inverse
+        assert_eq!(self.sw.is_running(), self.since_stop.is_stopped());
 
         Ok(false)
     }

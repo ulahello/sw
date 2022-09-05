@@ -52,14 +52,6 @@ fn try_main() -> Result<(), FatalError> {
         writeln!(stdout)?;
         // bufwriter flushes sparingly so must do this manually
         stdout.flush()?;
-
-        // update since_stop. the idea is for since_stop to be running while the
-        // state.sw is stopped, and to reset as soon as state.sw starts
-        if state.sw.is_running() && state.since_stop.is_running() {
-            state.since_stop.reset();
-        } else if state.sw.is_stopped() && state.since_stop.is_stopped() {
-            state.since_stop.start().unwrap();
-        }
     }
 }
 
