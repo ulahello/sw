@@ -72,6 +72,7 @@ impl State {
     ///
     /// - The command may be invalid
     /// - Reading and writing to the terminal may fail
+    #[allow(clippy::missing_panics_doc)]
     pub fn update<W: Write>(
         &mut self,
         command: &Command,
