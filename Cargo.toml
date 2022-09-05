@@ -8,7 +8,6 @@ license = "GPL-3.0-or-later"
 
 [dependencies]
 libsw = "1"
-log = "0"
 termcolor = "1"
 
 [profile.release]

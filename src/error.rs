@@ -14,6 +14,8 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+//! `sw` errors.
+
 #![allow(clippy::module_name_repetitions)]
 
 use std::fmt;

@@ -1,6 +1,7 @@
 # changelog
 
 ## [unreleased]
+* remove dependency on `log` crate
 
 ## [0.9.0] - 2022-08-09
 * feat: parse duration and unit together

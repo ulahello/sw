@@ -18,10 +18,8 @@
 #![warn(clippy::pedantic, missing_docs)]
 #![feature(duration_checked_float)]
 
-//! Backend for `sw`, containing logging and runtime errors.
+//! Backend for `sw`.
 
-mod error;
-mod logger;
-
-pub use error::{FatalError, UserError};
-pub use logger::Logger;
+pub mod color;
+pub mod error;
+pub mod state;
