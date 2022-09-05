@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.9.1] - 2022-09-05
 * remove dependency on `log` crate
 * make "x seconds since start" msg more accurate
 * refactored internals
