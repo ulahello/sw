@@ -3,6 +3,7 @@
 ## [unreleased]
 * remove dependency on `log` crate
 * make "x seconds since start" msg more accurate
+* refactored internals
 
 ## [0.9.0] - 2022-08-09
 * feat: parse duration and unit together
