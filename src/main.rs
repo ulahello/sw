@@ -60,8 +60,8 @@ fn try_main() -> Result<(), FatalError> {
         // state.sw is stopped, and to reset as soon as state.sw starts
         if state.sw.is_running() && state.since_stop.is_running() {
             state.since_stop.reset();
-        } else if !state.sw.is_running() && !state.since_stop.is_running() {
-            state.since_stop.toggle();
+        } else if state.sw.is_stopped() && state.since_stop.is_stopped() {
+            state.since_stop.start().unwrap();
         }
     }
 }
