@@ -4,8 +4,8 @@
 * fixed portability of colors
 
 ## [0.9.1] - 2022-09-05
-* remove dependency on `log` crate
-* make "x seconds since start" msg more accurate
+* removed dependency on `log` crate
+* made "x seconds since start" msg more accurate
 * refactored internals
 
 ## [0.9.0] - 2022-08-09
