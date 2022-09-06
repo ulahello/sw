@@ -29,7 +29,7 @@ use std::io::{self, stderr, Write};
 ///
 /// Writing to `stderr` may fail.
 pub fn red(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Ansi256(9), msg)
+    writeln_color(stderr(), Color::Red, msg)
 }
 
 /// Writes a yellow message to [`stderr`].
@@ -47,7 +47,7 @@ pub fn yellow(msg: impl Display) -> io::Result<()> {
 ///
 /// Writing to `stderr` may fail.
 pub fn magenta(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Ansi256(13), msg)
+    writeln_color(stderr(), Color::Magenta, msg)
 }
 
 /// Writes a green message to [`stderr`].
@@ -64,8 +64,8 @@ pub fn green(msg: impl Display) -> io::Result<()> {
 /// # Errors
 ///
 /// Writing to `stderr` may fail.
-pub fn grey(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Ansi256(8), msg)
+pub fn cyan(msg: impl Display) -> io::Result<()> {
+    writeln_color(stderr(), Color::Cyan, msg)
 }
 
 /// Writes a colored message to `writer`, with a newline at the end.

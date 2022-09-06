@@ -16,7 +16,7 @@
 
 //! `sw` state.
 
-use crate::color::{green, grey, magenta, red, yellow};
+use crate::color::{cyan, green, magenta, red, yellow};
 use crate::error::{FatalError, UserError};
 
 use libsw::Stopwatch;
@@ -119,7 +119,7 @@ impl State {
 
                 if self.sw.is_running() {
                     magenta("started stopwatch")?;
-                    grey(format!(
+                    cyan(format!(
                         "{:.*} seconds since stopped",
                         self.prec,
                         self.since_stop.elapsed().as_secs_f32(),
