@@ -23,7 +23,7 @@ use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 use core::fmt::Display;
 use std::io::{self, Write};
 
-/// Writes a red message to [`stderr`].
+/// Writes a red message to `stderr`.
 ///
 /// # Errors
 ///
@@ -32,7 +32,7 @@ pub fn red(msg: impl Display) -> io::Result<()> {
     writeln_color(Color::Red, msg)
 }
 
-/// Writes a yellow message to [`stderr`].
+/// Writes a yellow message to `stderr`.
 ///
 /// # Errors
 ///
@@ -41,7 +41,7 @@ pub fn yellow(msg: impl Display) -> io::Result<()> {
     writeln_color(Color::Yellow, msg)
 }
 
-/// Writes a magenta message to [`stderr`].
+/// Writes a magenta message to `stderr`.
 ///
 /// # Errors
 ///
@@ -50,7 +50,7 @@ pub fn magenta(msg: impl Display) -> io::Result<()> {
     writeln_color(Color::Magenta, msg)
 }
 
-/// Writes a green message to [`stderr`].
+/// Writes a green message to `stderr`.
 ///
 /// # Errors
 ///
@@ -59,7 +59,7 @@ pub fn green(msg: impl Display) -> io::Result<()> {
     writeln_color(Color::Green, msg)
 }
 
-/// Writes a grey message to [`stderr`].
+/// Writes a grey message to `stderr`.
 ///
 /// # Errors
 ///
