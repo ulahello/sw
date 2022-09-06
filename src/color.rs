@@ -18,10 +18,10 @@
 
 //! Functions for printing colored messages.
 
-use termcolor::{Buffer, Color, ColorSpec, WriteColor};
+use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 
 use core::fmt::Display;
-use std::io::{self, stderr, Write};
+use std::io::{self, Write};
 
 /// Writes a red message to [`stderr`].
 ///
@@ -29,7 +29,7 @@ use std::io::{self, stderr, Write};
 ///
 /// Writing to `stderr` may fail.
 pub fn red(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Red, msg)
+    writeln_color(Color::Red, msg)
 }
 
 /// Writes a yellow message to [`stderr`].
@@ -38,7 +38,7 @@ pub fn red(msg: impl Display) -> io::Result<()> {
 ///
 /// Writing to `stderr` may fail.
 pub fn yellow(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Yellow, msg)
+    writeln_color(Color::Yellow, msg)
 }
 
 /// Writes a magenta message to [`stderr`].
@@ -47,7 +47,7 @@ pub fn yellow(msg: impl Display) -> io::Result<()> {
 ///
 /// Writing to `stderr` may fail.
 pub fn magenta(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Magenta, msg)
+    writeln_color(Color::Magenta, msg)
 }
 
 /// Writes a green message to [`stderr`].
@@ -56,7 +56,7 @@ pub fn magenta(msg: impl Display) -> io::Result<()> {
 ///
 /// Writing to `stderr` may fail.
 pub fn green(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Green, msg)
+    writeln_color(Color::Green, msg)
 }
 
 /// Writes a grey message to [`stderr`].
@@ -65,16 +65,17 @@ pub fn green(msg: impl Display) -> io::Result<()> {
 ///
 /// Writing to `stderr` may fail.
 pub fn cyan(msg: impl Display) -> io::Result<()> {
-    writeln_color(stderr(), Color::Cyan, msg)
+    writeln_color(Color::Cyan, msg)
 }
 
-/// Writes a colored message to `writer`, with a newline at the end.
+/// Writes a colored message to `stderr`, with a newline at the end.
 ///
 /// # Errors
 ///
-/// Writing to the `writer` may fail.
-fn writeln_color(mut writer: impl Write, color: Color, msg: impl Display) -> io::Result<()> {
-    let mut buffer = Buffer::ansi();
+/// Writing to `stderr` may fail.
+fn writeln_color(color: Color, msg: impl Display) -> io::Result<()> {
+    let writer = BufferWriter::stderr(ColorChoice::Auto);
+    let mut buffer = writer.buffer();
     let mut spec = ColorSpec::new();
 
     spec.set_fg(Some(color));
@@ -82,6 +83,6 @@ fn writeln_color(mut writer: impl Write, color: Color, msg: impl Display) -> io:
     writeln!(buffer, "{}", msg)?;
     buffer.reset()?;
 
-    writer.write_all(buffer.as_slice())?;
+    writer.print(&buffer)?;
     Ok(())
 }
