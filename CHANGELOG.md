@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.9.2] - 2022-09-05
 * fixed portability of colors
 
 ## [0.9.1] - 2022-09-05

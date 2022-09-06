@@ -10,7 +10,7 @@ checksum = "efc585330c4a2f9497b006b34703281e7ba20d7158b04ed6a2d1439b30daa7bd"
 
 [[package]]
 name = "sw"
-version = "0.9.1"
+version = "0.9.2"
 dependencies = [
  "libsw",
  "termcolor",
