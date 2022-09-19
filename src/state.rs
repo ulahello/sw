@@ -249,21 +249,23 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
     }
 
     impl Unit {
-        fn from_str(s: &str) -> Result<Self, UserError> {
-            match s {
-                "s" => Ok(Self::Seconds),
-                "m" => Ok(Self::Minutes),
-                "h" => Ok(Self::Hours),
+        fn new(chr: char) -> Result<Self, UserError> {
+            match chr {
+                's' => Ok(Self::Seconds),
+                'm' => Ok(Self::Minutes),
+                'h' => Ok(Self::Hours),
                 s => Err(UserError::UnrecognizedUnit(s.into())),
             }
         }
     }
 
-    let mut s = readln(msg)?;
-    let try_unit = s.pop().map(|chr| chr.to_string()).unwrap_or_default();
-    match s.parse::<f64>() {
+    let mut input = readln(msg)?;
+    let try_unit = input.pop();
+    let input: &str = input.trim();
+    match input.parse::<f64>() {
         Ok(scalar) => {
-            let unit = match Unit::from_str(&try_unit) {
+            let unit = match Unit::new(try_unit.expect("if input is empty, it is an invalid float"))
+            {
                 Ok(unit) => unit,
                 Err(error) => return Ok(Err(error)),
             };
@@ -277,6 +279,7 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
                 Err(error) => Ok(Err(UserError::InvalidDuration(error))),
             }
         }
+        Err(_) if input.is_empty() => Ok(Err(UserError::UnrecognizedUnit(String::new()))),
         Err(error) => Ok(Err(UserError::InvalidFloat(error))),
     }
 }
