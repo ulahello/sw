@@ -2,6 +2,7 @@
 
 ## [unreleased]
 * changed prompt from "<" and ">" to ";" and "*"
+* changed empty precision input to reset to default
 * improved error messages for parsing durations
 
 ## [0.9.2] - 2022-09-05

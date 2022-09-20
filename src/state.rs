@@ -174,16 +174,26 @@ impl State {
                 }
             }
 
-            Command::Precision => match readln("new precision? ")?.parse::<usize>() {
-                Ok(int) => {
-                    if let Some(clamped) = self.set_precision(int) {
-                        yellow(format!("precision clamped to {}", clamped))?;
-                    } else {
-                        magenta("updated precision")?;
+            Command::Precision => {
+                let input = readln("new precision? ")?;
+                match input.parse::<usize>() {
+                    Ok(int) => {
+                        if let Some(clamped) = self.set_precision(int) {
+                            yellow(format!("precision clamped to {}", clamped))?;
+                        } else {
+                            magenta("updated precision")?;
+                        }
                     }
+                    Err(_) if input.is_empty() => {
+                        self.set_precision(Self::PRECISION_INIT);
+                        magenta(format!(
+                            "reset precision to default ({})",
+                            Self::PRECISION_INIT
+                        ))?;
+                    }
+                    Err(error) => red(UserError::InvalidInt(error))?,
                 }
-                Err(error) => red(UserError::InvalidInt(error))?,
-            },
+            }
 
             Command::License => {
                 writeln!(stdout, "copyright (C) 2022  {}", env!("CARGO_PKG_AUTHORS"))?;
