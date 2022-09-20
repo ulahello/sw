@@ -224,7 +224,7 @@ impl Command {
     /// - Reading from `stdin` may fail
     /// - The user may enter an invalid command
     pub fn read(msg: &str, running: bool) -> Result<Result<Self, UserError>, FatalError> {
-        let prompt = format!("{} {} ", msg, if running { '>' } else { '<' });
+        let prompt = format!("{} {} ", msg, if running { '*' } else { ';' });
         match readln(&prompt)?.to_lowercase().as_ref() {
             "h" => Ok(Ok(Self::Help)),
             "" => Ok(Ok(Self::Display)),
