@@ -82,7 +82,7 @@ impl fmt::Display for UserError {
             Self::UnrecognizedCommand(command) => write!(f, "unrecognized command `{}`", command),
             Self::UnrecognizedUnit(unit) => write!(
                 f,
-                // TODO: this can be invalidated by changes to Unit constructor
+                // NOTE: this can be invalidated by changes to Unit constructor
                 "unrecognized unit `{}` (expected one of 's', 'm', 'h')",
                 unit
             ),

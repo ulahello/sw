@@ -259,6 +259,8 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
 
     impl Unit {
         fn new(chr: char) -> Result<Self, UserError> {
+            // NOTE: changes here must be reflected in Display impl of
+            // UserError::UnrecognizedUnit
             match chr {
                 's' => Ok(Self::Seconds),
                 'm' => Ok(Self::Minutes),
