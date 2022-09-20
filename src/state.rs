@@ -278,6 +278,7 @@ fn read_duration(msg: &str) -> Result<Result<(Duration, bool), UserError>, Fatal
                 Ok(unit) => unit,
                 Err(error) => return Ok(Err(error)),
             };
+            // TODO: overflow? way to not use floats here?
             let secs = match unit {
                 Unit::Seconds => scalar,
                 Unit::Minutes => scalar * 60.0,
