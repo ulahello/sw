@@ -4,6 +4,7 @@
 * changed prompt from "<" and ">" to ";" and "*"
 * changed empty precision input to reset to default
 * improved error messages for parsing durations
+* fixed incorrect unit plurals (1 second vs 2 seconds)
 
 ## [0.9.2] - 2022-09-05
 * fixed portability of colors
