@@ -21,6 +21,7 @@ use crate::error::{FatalError, UserError};
 
 use libsw::Stopwatch;
 
+use core::fmt;
 use core::time::Duration;
 use std::io::{self, BufRead, Read, Write};
 use std::time::Instant;
@@ -95,13 +96,12 @@ impl State {
             }
 
             Command::Display => {
-                let elapsed = self.sw.elapsed().as_secs_f32();
-
-                // display time elapsed in different units
-                writeln!(stdout, "{:.*} seconds", self.prec, elapsed)?;
-                writeln!(stdout, "{:.*} minutes", self.prec, elapsed / 60.0)?;
-                writeln!(stdout, "{:.*} hours", self.prec, elapsed / 60.0 / 60.0)?;
-
+                // display time elapsed
+                writeln!(
+                    stdout,
+                    "{:?}",
+                    DurationFmt::new(self.sw.elapsed(), self.prec)
+                )?;
                 stdout.flush()?;
 
                 // indicate status
@@ -120,9 +120,8 @@ impl State {
                 if self.sw.is_running() {
                     magenta("started stopwatch")?;
                     cyan(format!(
-                        "{:.*} seconds since stopped",
-                        self.prec,
-                        self.since_stop.elapsed().as_secs_f32(),
+                        "{} since stopped",
+                        DurationFmt::new(self.since_stop.elapsed(), self.prec)
                     ))?;
                     self.since_stop.reset();
                 } else {
@@ -300,4 +299,35 @@ fn readln(msg: &str) -> Result<String, FatalError> {
 
     // trim whitespace and escape weird characters
     Ok(input.trim().escape_default().to_string())
+}
+
+struct DurationFmt {
+    dur: Duration,
+    prec: usize,
+}
+
+impl DurationFmt {
+    pub fn new(dur: Duration, prec: usize) -> Self {
+        Self { dur, prec }
+    }
+}
+
+impl fmt::Debug for DurationFmt {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        // TODO: don't use floats
+        let m = self.dur.as_secs_f64() / 60.0;
+        let h = m / 60.0;
+        writeln!(f, "{}", self)?;
+        writeln!(f, "{:.*} minutes", self.prec, m)?;
+        write!(f, "{:.*} hours", self.prec, h)?;
+        Ok(())
+    }
+}
+
+impl fmt::Display for DurationFmt {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        // TODO: don't use floats
+        let s = self.dur.as_secs_f64();
+        write!(f, "{:.*} seconds", self.prec, s)
+    }
 }
