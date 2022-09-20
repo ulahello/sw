@@ -310,6 +310,14 @@ impl DurationFmt {
     pub fn new(dur: Duration, prec: usize) -> Self {
         Self { dur, prec }
     }
+
+    fn plural(&self, x: f64) -> &'static str {
+        if format!("{:.*}", self.prec, x) == "1" {
+            ""
+        } else {
+            "s"
+        }
+    }
 }
 
 impl fmt::Debug for DurationFmt {
@@ -318,8 +326,8 @@ impl fmt::Debug for DurationFmt {
         let m = self.dur.as_secs_f64() / 60.0;
         let h = m / 60.0;
         writeln!(f, "{}", self)?;
-        writeln!(f, "{:.*} minutes", self.prec, m)?;
-        write!(f, "{:.*} hours", self.prec, h)?;
+        writeln!(f, "{:.*} minute{}", self.prec, m, self.plural(m))?;
+        write!(f, "{:.*} hour{}", self.prec, h, self.plural(h))?;
         Ok(())
     }
 }
@@ -328,6 +336,6 @@ impl fmt::Display for DurationFmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         // TODO: don't use floats
         let s = self.dur.as_secs_f64();
-        write!(f, "{:.*} seconds", self.prec, s)
+        write!(f, "{:.*} second{}", self.prec, s, self.plural(s))
     }
 }
