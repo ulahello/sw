@@ -20,6 +20,18 @@ you can change it with `c`, or offset it by a positive or negative duration with
 there are some extra features too, like giving the stopwatch a name which prefixes the prompt.
 this is useful when you have several instances open.
 
+### duration format
+
+the offset and change commands accept a duration input with the following formatting:
+
+```
+float unit
+```
+
+`float` is a floating point number, and `unit` is one of "s", "m", or "h", meaning seconds, minutes, and hours respectively.
+
+whitespace is ignored, so this is: `1s`, is just as valid as `1 s`.
+
 ## the Use Case
 
 the original use case was to improve on the experience of using an interactive python shell as a stopwatch.
