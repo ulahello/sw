@@ -30,7 +30,7 @@ float unit
 
 `float` is a floating point number, and `unit` is one of "s", "m", or "h", meaning seconds, minutes, and hours respectively.
 
-whitespace is ignored, so this is: `1s`, is just as valid as `1 s`.
+whitespace is ignored, so `1s` is just as valid as `1 s`.
 
 ## the Use Case
 
