@@ -2,9 +2,7 @@
 
 `sw` is a simple terminal stopwatch which runs as a shell.
 
-you interact with it by typing single-character commands, and responding to any prompts which follow.
-
-reads are blocking, so there's no fancy live display of the current elapsed time, but that also means that when it's idling, it does literally nothing.
+you interact with it by typing commands, and responding to prompts.
 
 ## usage
 
@@ -46,8 +44,7 @@ start = time()
 t += time() - start
 ```
 
-anyhow, `sw` has progressed since then, and is useful in a more general context.
-if you're looking for a lightweight stopwatch that runs as a shell, this is for you.
+anyways, `sw` has progressed since then, and is useful in a more general context.
 
 ## note on installation
 
@@ -56,13 +53,6 @@ if you're looking for a lightweight stopwatch that runs as a shell, this is for 
 ## contributions
 
 tickets and improvements are welcome and appreciated!
-
-## versioning
-
-`sw` follows [semver](https://semver.org).
-
-unfortunately, 0.4.0 made breaking changes.
-everything else should be correct though.
 
 ## license
 
