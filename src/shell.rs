@@ -29,10 +29,10 @@ pub fn read(prompt: impl fmt::Display) -> io::Result<String> {
     Ok(input.trim().into())
 }
 
-pub fn log(color: Color, body: impl fmt::Display) -> io::Result<()> {
+pub fn log(color: impl Into<Option<Color>>, body: impl fmt::Display) -> io::Result<()> {
     let bufwtr = BufferWriter::stderr(ColorChoice::Auto);
     let mut buffer = bufwtr.buffer();
-    buffer.set_color(ColorSpec::new().set_fg(Some(color)))?;
+    buffer.set_color(ColorSpec::new().set_fg(color.into()))?;
     writeln!(&mut buffer, "{body}")?;
     buffer.reset()?;
     bufwtr.print(&buffer)?;
@@ -54,6 +54,8 @@ pub fn splash_text() -> io::Result<()> {
 }
 
 pub fn read_dur(prompt: impl fmt::Display) -> io::Result<Option<ReadDur>> {
+    let prompt = prompt.to_string();
+    let prompt_len = prompt.chars().count();
     let input = read(prompt)?;
     if input.is_empty() {
         return Ok(None);
@@ -63,7 +65,7 @@ pub fn read_dur(prompt: impl fmt::Display) -> io::Result<Option<ReadDur>> {
     Ok(match parsed {
         Ok(dur) => Some(dur),
         Err(err) => {
-            log(Color::Red, err)?;
+            err.log(prompt_len)?;
             None
         }
     })

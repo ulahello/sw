@@ -4,8 +4,7 @@
 * changed time display formatting
 * changed prompt from "<" and ">" to ";" and "*"
 * changed empty precision input to reset to default
-* improved error messages for parsing durations
-* changed some error messages
+* improved error messages
 
 ## [0.9.2] - 2022-09-05
 * fixed portability of colors
