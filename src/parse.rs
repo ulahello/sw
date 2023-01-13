@@ -127,7 +127,7 @@ pub struct ReadDur {
 
 impl ReadDur {
     pub fn parse(s: &str) -> Result<Self, ParseErr> {
-        // float + whitespace? + unit
+        // whitespace? + float + whitespace? + unit
 
         let mut graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
         let maybe_unit = graphs.clone().last();
@@ -141,7 +141,7 @@ impl ReadDur {
                         break;
                     }
                 }
-                let float_str = &s[..up_to];
+                let float_str = &s[..up_to].trim();
                 if float_str.is_empty() {
                     return Err(ParseErr::new(
                         s,
