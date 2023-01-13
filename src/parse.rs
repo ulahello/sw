@@ -97,6 +97,7 @@ impl<'a> ParseErr<'a> {
         buffer.set_color(&spec)?;
         writeln!(&mut buffer, "{self}")?;
 
+        // flush buffer
         spec.clear();
         buffer.set_color(&spec)?;
 
