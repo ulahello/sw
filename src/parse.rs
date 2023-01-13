@@ -115,7 +115,6 @@ impl fmt::Display for ParseErr<'_> {
             ErrKind::Float(err) => write!(f, "{err}")?,
             ErrKind::Dur(err) => write!(f, "{err}")?,
         }
-
         Ok(())
     }
 }
@@ -143,6 +142,7 @@ impl ReadDur {
                     }
                 }
                 let float_str = &s[..up_to].trim();
+
                 if float_str.is_empty() {
                     return Err(ParseErr::new(
                         s,
@@ -157,10 +157,13 @@ impl ReadDur {
                             Unit::Minute => float *= f64::from(SEC_PER_MIN),
                             Unit::Hour => float *= f64::from(SEC_PER_HOUR),
                         }
-                        let is_neg = float.is_sign_negative();
                         let secs = float.abs();
+
                         match Duration::try_from_secs_f64(secs) {
-                            Ok(dur) => Ok(ReadDur { dur, is_neg }),
+                            Ok(dur) => {
+                                let is_neg = float.is_sign_negative();
+                                Ok(ReadDur { dur, is_neg })
+                            }
                             Err(dur_err) => Err(ParseErr::new(
                                 s,
                                 ByteSpan::new(0, up_to),
