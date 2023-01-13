@@ -13,6 +13,10 @@ use std::io;
 
 use ErrKind::*;
 
+const SEC_PER_MIN: u8 = 60;
+const MIN_PER_HOUR: u8 = 60;
+const SEC_PER_HOUR: u16 = 3600;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Unit {
     Second,
@@ -102,8 +106,8 @@ impl ReadDur {
                             let is_neg = val.is_sign_negative();
                             match unit {
                                 Unit::Second => (),
-                                Unit::Minute => val *= 60.0,
-                                Unit::Hour => val *= 60.0 * 60.0,
+                                Unit::Minute => val *= f64::from(SEC_PER_MIN),
+                                Unit::Hour => val *= f64::from(SEC_PER_HOUR),
                             }
                             match Duration::try_from_secs_f64(val.abs()) {
                                 Ok(dur) => Ok(ReadDur { dur, is_neg }),
