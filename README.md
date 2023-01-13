@@ -46,10 +46,6 @@ t += time() - start
 
 anyways, `sw` has progressed since then, and is useful in a more general context.
 
-## note on installation
-
-`sw` requires the nightly build of rustc.
-
 ## contributions
 
 tickets and improvements are welcome and appreciated!
