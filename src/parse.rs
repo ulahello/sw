@@ -25,6 +25,7 @@ enum Unit {
 }
 
 impl Unit {
+    #[inline]
     pub const fn from_char(chr: char) -> Result<Self, char> {
         match chr {
             's' => Ok(Self::Second),
