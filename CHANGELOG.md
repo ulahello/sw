@@ -5,6 +5,7 @@
 * changed prompt from "<" and ">" to ";" and "*"
 * changed empty precision input to reset to default
 * improved error messages
+* msrv bumped to `1.66.1`
 
 ## [0.9.2] - 2022-09-05
 * fixed portability of colors
