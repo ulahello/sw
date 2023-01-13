@@ -121,8 +121,8 @@ impl fmt::Display for ParseErr<'_> {
                     f,
                     "note: use 's' for seconds, 'm' for minutes, and 'h' for hours"
                 )?,
-                ErrKind::Float(err) => (),
-                ErrKind::Dur(err) => (),
+                ErrKind::Float(_) => (),
+                ErrKind::Dur(_) => (),
             }
         } else {
             // error message
