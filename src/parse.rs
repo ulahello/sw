@@ -97,6 +97,12 @@ impl<'a> ParseErr<'a> {
         buffer.set_color(&spec)?;
         writeln!(&mut buffer, "{self}")?;
 
+        // write help message
+        spec.clear();
+        spec.set_dimmed(true);
+        buffer.set_color(&spec)?;
+        writeln!(&mut buffer, "{self:#}")?;
+
         // flush buffer
         spec.clear();
         buffer.set_color(&spec)?;
@@ -108,12 +114,25 @@ impl<'a> ParseErr<'a> {
 
 impl fmt::Display for ParseErr<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match &self.kind {
-            ErrKind::UnitMissing => write!(f, "missing unit")?,
-            ErrKind::UnitUnknown(missing) => write!(f, "unrecognised unit '{missing}'")?,
-            ErrKind::FloatMissing => write!(f, "unit given, but missing value")?,
-            ErrKind::Float(err) => write!(f, "{err}")?,
-            ErrKind::Dur(err) => write!(f, "{err}")?,
+        if f.alternate() {
+            // help message
+            match &self.kind {
+                ErrKind::FloatMissing | ErrKind::UnitMissing | ErrKind::UnitUnknown(_) => write!(
+                    f,
+                    "note: use 's' for seconds, 'm' for minutes, and 'h' for hours"
+                )?,
+                ErrKind::Float(err) => (),
+                ErrKind::Dur(err) => (),
+            }
+        } else {
+            // error message
+            match &self.kind {
+                ErrKind::UnitMissing => write!(f, "missing unit")?,
+                ErrKind::UnitUnknown(missing) => write!(f, "unrecognised unit '{missing}'")?,
+                ErrKind::FloatMissing => write!(f, "unit given, but missing value")?,
+                ErrKind::Float(err) => write!(f, "{err}")?,
+                ErrKind::Dur(err) => write!(f, "{err}")?,
+            }
         }
         Ok(())
     }
