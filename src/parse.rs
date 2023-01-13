@@ -11,7 +11,7 @@ use core::time::{Duration, TryFromFloatSecsError};
 use std::io::{self, Write};
 
 const SEC_PER_MIN: u8 = 60;
-const MIN_PER_HOUR: u8 = 60;
+const _MIN_PER_HOUR: u8 = 60;
 const SEC_PER_HOUR: u16 = 3600;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
