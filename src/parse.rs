@@ -119,7 +119,7 @@ impl fmt::Display for ParseErr<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct ReadDur {
     pub dur: Duration,
     pub is_neg: bool,
