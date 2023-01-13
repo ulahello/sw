@@ -126,6 +126,7 @@ pub struct ReadDur {
 }
 
 impl ReadDur {
+    // TODO: support HH:MM:SS.ss format
     pub fn parse(s: &str) -> Result<Self, ParseErr> {
         // whitespace? + float + whitespace? + unit
 
