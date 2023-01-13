@@ -54,8 +54,6 @@ pub fn splash_text() -> io::Result<()> {
 }
 
 pub fn read_dur(prompt: impl fmt::Display) -> io::Result<Option<ReadDur>> {
-    let prompt = prompt.to_string();
-    let prompt_len = prompt.chars().count();
     let input = read(prompt)?;
     if input.is_empty() {
         return Ok(None);
@@ -65,7 +63,7 @@ pub fn read_dur(prompt: impl fmt::Display) -> io::Result<Option<ReadDur>> {
     Ok(match parsed {
         Ok(dur) => Some(dur),
         Err(err) => {
-            err.log(prompt_len)?;
+            err.log()?;
             None
         }
     })

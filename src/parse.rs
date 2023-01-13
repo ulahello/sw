@@ -2,16 +2,13 @@
 // copyright (C) 2022 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use crate::shell::log;
-
-use termcolor::Color;
+use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
+use unicode_segmentation::UnicodeSegmentation;
 
 use core::fmt;
 use core::num::ParseFloatError;
 use core::time::{Duration, TryFromFloatSecsError};
-use std::io;
-
-use ErrKind::*;
+use std::io::{self, Write};
 
 const SEC_PER_MIN: u8 = 60;
 const MIN_PER_HOUR: u8 = 60;
@@ -26,52 +23,89 @@ enum Unit {
 
 impl Unit {
     #[inline]
-    pub const fn from_char(chr: char) -> Result<Self, char> {
-        match chr {
-            's' => Ok(Self::Second),
-            'm' => Ok(Self::Minute),
-            'h' => Ok(Self::Hour),
+    pub fn from_grapheme(grapheme: &str) -> Result<Self, &str> {
+        match grapheme {
+            "s" => Ok(Self::Second),
+            "m" => Ok(Self::Minute),
+            "h" => Ok(Self::Hour),
             unk => Err(unk),
         }
     }
 }
 
-pub struct ParseErr {
-    span: (usize, usize),
-    kind: ErrKind,
+struct ByteSpan {
+    start: usize,
+    up_to: Option<usize>,
 }
 
-enum ErrKind {
+impl ByteSpan {
+    #[must_use]
+    #[inline]
+    pub fn new(start: usize, up_to: impl Into<Option<usize>>) -> Self {
+        Self {
+            start,
+            up_to: up_to.into(),
+        }
+    }
+}
+
+pub struct ParseErr<'a> {
+    src: &'a str,
+    span: ByteSpan,
+    kind: ErrKind<'a>,
+}
+
+enum ErrKind<'a> {
     UnitMissing,
-    UnitUnknown(char),
+    UnitUnknown(&'a str),
     FloatMissing,
     Float(ParseFloatError),
     Dur(TryFromFloatSecsError),
 }
 
-impl ParseErr {
+impl<'a> ParseErr<'a> {
     #[inline]
-    const fn new(span: (usize, usize), kind: ErrKind) -> Self {
-        Self { span, kind }
+    const fn new(src: &'a str, span: ByteSpan, kind: ErrKind<'a>) -> Self {
+        Self { src, span, kind }
     }
 
-    pub fn log(&self, where_does_input_start: usize) -> io::Result<()> {
-        log(
-            Color::Red,
-            format!(
-                "{}{}{}",
-                " ".repeat(where_does_input_start),
-                " ".repeat(self.span.0.min(self.span.1)),
-                "^".repeat(self.span.0.abs_diff(self.span.1) + 1)
-            ),
-        )?;
-        log(Color::Red, self)?;
+    pub fn log(&self) -> io::Result<()> {
+        let bufwtr = BufferWriter::stdout(ColorChoice::Auto);
+        let mut buffer = bufwtr.buffer();
+        let mut spec = ColorSpec::new();
 
+        // write source text with span red and bold
+        write!(&mut buffer, "{}", &self.src[..self.span.start])?;
+
+        spec.set_fg(Some(Color::Red));
+        spec.set_bold(true);
+        buffer.set_color(&spec)?;
+        if let Some(up_to) = self.span.up_to {
+            write!(&mut buffer, "{}", &self.src[self.span.start..up_to])?;
+
+            spec.clear();
+            buffer.set_color(&spec)?;
+            writeln!(&mut buffer, "{}", &self.src[up_to..])?;
+        } else {
+            writeln!(&mut buffer, "{}", &self.src[self.span.start..])?;
+            spec.clear();
+            buffer.set_color(&spec)?;
+        }
+
+        // write error message
+        spec.set_fg(Some(Color::Red));
+        buffer.set_color(&spec)?;
+        writeln!(&mut buffer, "{self}")?;
+
+        spec.clear();
+        buffer.set_color(&spec)?;
+
+        bufwtr.print(&buffer)?;
         Ok(())
     }
 }
 
-impl fmt::Display for ParseErr {
+impl fmt::Display for ParseErr<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match &self.kind {
             ErrKind::UnitMissing => write!(f, "missing unit")?,
@@ -93,46 +127,65 @@ pub struct ReadDur {
 
 impl ReadDur {
     pub fn parse(s: &str) -> Result<Self, ParseErr> {
-        let len = s.chars().count();
-        let mut chars = s.chars().rev();
-        let maybe_unit: Option<char> = chars.next();
-        let try_val: String = chars.rev().collect();
+        // float + whitespace? + unit
 
+        let mut graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
+        let maybe_unit = graphs.clone().last();
         if let Some(try_unit) = maybe_unit {
-            match Unit::from_char(try_unit) {
-                Ok(unit) => {
-                    let span = (0, len.saturating_sub(2));
-                    match try_val.trim().parse::<f64>() {
-                        Ok(mut val) => {
-                            let is_neg = val.is_sign_negative();
-                            match unit {
-                                Unit::Second => (),
-                                Unit::Minute => val *= f64::from(SEC_PER_MIN),
-                                Unit::Hour => val *= f64::from(SEC_PER_HOUR),
-                            }
-                            match Duration::try_from_secs_f64(val.abs()) {
-                                Ok(dur) => Ok(ReadDur { dur, is_neg }),
-                                Err(err) => Err(ParseErr::new(span, Dur(err))),
-                            }
-                        }
-
-                        Err(err) => {
-                            if try_val.is_empty() {
-                                Err(ParseErr::new(span, FloatMissing))
-                            } else {
-                                Err(ParseErr::new(span, Float(err)))
-                            }
-                        }
+            if let Ok(unit) = Unit::from_grapheme(try_unit.1) {
+                let mut up_to = 0;
+                while let Some((idx, _)) = graphs.next() {
+                    up_to = idx;
+                    if graphs.peek().is_none() {
+                        // skip last grapheme which is the unit
+                        break;
                     }
                 }
-
-                Err(err) => Err(ParseErr::new(
-                    (len.saturating_sub(1), len.saturating_sub(1)),
-                    UnitUnknown(err),
-                )),
+                let float_str = &s[..up_to];
+                if float_str.is_empty() {
+                    return Err(ParseErr::new(
+                        s,
+                        ByteSpan::new(0, up_to),
+                        ErrKind::FloatMissing,
+                    ));
+                }
+                match float_str.parse::<f64>() {
+                    Ok(mut float) => {
+                        match unit {
+                            Unit::Second => (),
+                            Unit::Minute => float *= f64::from(SEC_PER_MIN),
+                            Unit::Hour => float *= f64::from(SEC_PER_HOUR),
+                        }
+                        let is_neg = float.is_sign_negative();
+                        let secs = float.abs();
+                        match Duration::try_from_secs_f64(secs) {
+                            Ok(dur) => Ok(ReadDur { dur, is_neg }),
+                            Err(dur_err) => Err(ParseErr::new(
+                                s,
+                                ByteSpan::new(0, up_to),
+                                ErrKind::Dur(dur_err),
+                            )),
+                        }
+                    }
+                    Err(float_err) => Err(ParseErr::new(
+                        s,
+                        ByteSpan::new(0, up_to),
+                        ErrKind::Float(float_err),
+                    )),
+                }
+            } else {
+                Err(ParseErr::new(
+                    s,
+                    ByteSpan::new(try_unit.0, None),
+                    ErrKind::UnitUnknown(try_unit.1),
+                ))
             }
         } else {
-            Err(ParseErr::new((0, 0), UnitMissing))
+            Err(ParseErr::new(
+                s,
+                ByteSpan::new(0, None),
+                ErrKind::UnitMissing,
+            ))
         }
     }
 }
