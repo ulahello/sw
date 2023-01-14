@@ -2,6 +2,8 @@
 // copyright (C) 2022 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
+#![warn(clippy::pedantic)]
+
 mod command;
 mod parse;
 mod shell;

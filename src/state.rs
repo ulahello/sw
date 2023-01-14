@@ -208,7 +208,7 @@ impl fmt::Display for DurationFmt {
             write!(
                 f,
                 ".{:0>width$}",
-                nanos / 10_u32.pow(9 - self.prec as u32),
+                nanos / 10_u32.pow(9 - u32::from(self.prec)),
                 width = self.prec.into()
             )?;
         }

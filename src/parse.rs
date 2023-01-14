@@ -49,6 +49,7 @@ impl ByteSpan {
     }
 }
 
+#[allow(clippy::module_name_repetitions)]
 pub struct ParseErr<'a> {
     src: &'a str,
     span: ByteSpan,
@@ -121,8 +122,7 @@ impl fmt::Display for ParseErr<'_> {
                     f,
                     "note: use 's' for seconds, 'm' for minutes, and 'h' for hours"
                 )?,
-                ErrKind::Float(_) => (),
-                ErrKind::Dur(_) => (),
+                ErrKind::Float(_) | ErrKind::Dur(_) => (),
             }
         } else {
             // error message
