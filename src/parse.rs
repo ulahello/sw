@@ -99,10 +99,12 @@ impl<'a> ParseErr<'a> {
         writeln!(&mut buffer, "{self}")?;
 
         // write help message
-        spec.clear();
-        spec.set_dimmed(true);
-        buffer.set_color(&spec)?;
-        writeln!(&mut buffer, "{self:#}")?;
+        if let Some(msg) = self.help_message() {
+            spec.clear();
+            spec.set_dimmed(true);
+            buffer.set_color(&spec)?;
+            writeln!(&mut buffer, "{msg}")?;
+        }
 
         // flush buffer
         spec.clear();
@@ -113,28 +115,26 @@ impl<'a> ParseErr<'a> {
     }
 }
 
+impl ParseErr<'_> {
+    fn help_message(&self) -> Option<&'static str> {
+        match &self.kind {
+            ErrKind::UnitMissing | ErrKind::UnitUnknown(_) => {
+                Some("note: use 's' for seconds, 'm' for minutes, and 'h' for hours")
+            }
+            ErrKind::Float(_) | ErrKind::FloatMissing | ErrKind::Dur(_) => None,
+        }
+    }
+}
+
 impl fmt::Display for ParseErr<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        if f.alternate() {
-            // help message
-            match &self.kind {
-                ErrKind::FloatMissing | ErrKind::UnitMissing | ErrKind::UnitUnknown(_) => write!(
-                    f,
-                    "note: use 's' for seconds, 'm' for minutes, and 'h' for hours"
-                )?,
-                ErrKind::Float(_) | ErrKind::Dur(_) => (),
-            }
-        } else {
-            // error message
-            match &self.kind {
-                ErrKind::UnitMissing => write!(f, "missing unit")?,
-                ErrKind::UnitUnknown(missing) => write!(f, "unrecognised unit '{missing}'")?,
-                ErrKind::FloatMissing => write!(f, "unit given, but missing value")?,
-                ErrKind::Float(err) => write!(f, "{err}")?,
-                ErrKind::Dur(err) => write!(f, "{err}")?,
-            }
+        match &self.kind {
+            ErrKind::UnitMissing => write!(f, "missing unit"),
+            ErrKind::UnitUnknown(missing) => write!(f, "unrecognised unit '{missing}'"),
+            ErrKind::FloatMissing => write!(f, "unit given, but missing value"),
+            ErrKind::Float(err) => write!(f, "{err}"),
+            ErrKind::Dur(err) => write!(f, "{err}"),
         }
-        Ok(())
     }
 }
 
