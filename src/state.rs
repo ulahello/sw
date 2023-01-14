@@ -206,7 +206,7 @@ impl fmt::Display for DurationFmt {
             let nanos = self.dur.subsec_nanos();
             write!(
                 f,
-                ".{:0<width$}",
+                ".{:0>width$}",
                 nanos / 10_u32.pow(9 - self.prec as u32),
                 width = self.prec.into()
             )?;
