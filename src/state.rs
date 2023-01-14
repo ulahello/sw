@@ -183,6 +183,7 @@ impl State {
     }
 }
 
+#[derive(Debug)]
 struct DurationFmt {
     dur: Duration,
     prec: u8,
