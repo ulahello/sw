@@ -3,6 +3,7 @@
 ## [unreleased]
 ### added
 * overhauled error messages
+* added message when subtracting clamps to zero
 
 ### changed
 * changed time display formatting

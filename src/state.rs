@@ -127,8 +127,13 @@ impl State {
             Command::Offset => {
                 if let Some(ReadDur { dur, is_neg }) = shell::read_dur("offset by? ")? {
                     if is_neg {
-                        self.sw -= dur;
                         shell::log(Color::Magenta, "subtracted from elapsed time")?;
+                        if let Some(new_sw) = self.sw.checked_sub(dur) {
+                            self.sw = new_sw;
+                        } else {
+                            self.sw.set_in_place(Duration::ZERO);
+                            shell::log(Color::Yellow, "elapsed time clamped to zero")?;
+                        }
                     } else {
                         self.sw += dur;
                         shell::log(Color::Magenta, "added to elapsed time")?;
