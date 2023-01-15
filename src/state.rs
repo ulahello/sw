@@ -1,5 +1,5 @@
 // sw: terminal stopwatch
-// copyright (C) 2022 Ula Shipman <ula.hello@mailbox.org>
+// copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
 use crate::command::Command;
@@ -177,7 +177,10 @@ impl State {
             }
 
             Command::License => {
-                shell::write(format!("copyright (C) 2022  {}", env!("CARGO_PKG_AUTHORS")))?;
+                shell::write(format!(
+                    "copyright (C) 2022-2023 {}",
+                    env!("CARGO_PKG_AUTHORS")
+                ))?;
                 shell::write(format!("licensed under {}", env!("CARGO_PKG_LICENSE")))?;
             }
 

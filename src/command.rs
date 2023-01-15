@@ -1,5 +1,5 @@
 // sw: terminal stopwatch
-// copyright (C) 2022 Ula Shipman <ula.hello@mailbox.org>
+// copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
 use crate::shell;
