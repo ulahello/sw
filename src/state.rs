@@ -184,7 +184,7 @@ impl State {
                 shell::write(format!("licensed under {}", env!("CARGO_PKG_LICENSE")))?;
             }
 
-            Command::Quit => (),
+            Command::Quit => return Ok(()),
         }
 
         // visually separate command outputs
