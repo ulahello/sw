@@ -187,6 +187,9 @@ impl State {
             Command::Quit => (),
         }
 
+        // visually separate command outputs
+        shell::write("")?;
+
         Ok(())
     }
 }

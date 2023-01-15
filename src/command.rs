@@ -24,7 +24,7 @@ pub enum Command {
 
 impl Command {
     pub fn read(name: &str, is_running: bool) -> io::Result<Option<Self>> {
-        let prompt = format!("\n{name} {} ", if is_running { "*" } else { ";" });
+        let prompt = format!("{name} {} ", if is_running { "*" } else { ";" });
         let command = match shell::read(prompt)?.to_lowercase().as_ref() {
             "h" => Self::Help,
             "" => Self::Display,

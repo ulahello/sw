@@ -49,6 +49,7 @@ pub fn splash_text() -> io::Result<()> {
         env!("CARGO_PKG_DESCRIPTION")
     )?;
     writeln!(stderr, r#"type "h" for help, "l" for license"#)?;
+    writeln!(stderr)?;
     stderr.flush()?;
     Ok(())
 }
