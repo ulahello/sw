@@ -9,8 +9,7 @@ you interact with it by typing commands, and responding to prompts.
 after running `sw`, type `h` (for "help") to list the commands.
 this is all you really need to know.
 
-the core commands are `<enter>` to display the elapsed time, `s` to start or
-stop timing, and `r` to reset the stopwatch state.
+the core commands are `<enter>` to display the elapsed time, `s` to start or stop timing, and `r` to reset the stopwatch state.
 
 `sw` also allows you to modify the elapsed time.
 you can change it with `c`, or offset it by a positive or negative duration with `o`.
