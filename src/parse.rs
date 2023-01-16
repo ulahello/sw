@@ -71,7 +71,7 @@ impl<'a> ParseErr<'a> {
     }
 
     pub fn log(&self) -> io::Result<()> {
-        let bufwtr = BufferWriter::stdout(ColorChoice::Auto);
+        let bufwtr = BufferWriter::stderr(ColorChoice::Auto);
         let mut buffer = bufwtr.buffer();
         let mut spec = ColorSpec::new();
 
