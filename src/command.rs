@@ -8,7 +8,7 @@ use termcolor::Color;
 
 use std::io;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Command {
     Help,
     Display,

@@ -194,7 +194,7 @@ impl State {
     }
 }
 
-#[derive(Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct DurationFmt {
     dur: Duration,
     prec: u8,

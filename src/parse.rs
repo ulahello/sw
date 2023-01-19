@@ -14,7 +14,7 @@ const SEC_PER_MIN: u8 = 60;
 const _MIN_PER_HOUR: u8 = 60;
 const SEC_PER_HOUR: u16 = 3600;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
 enum Unit {
     Second,
     Minute,
@@ -33,6 +33,7 @@ impl Unit {
     }
 }
 
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct ByteSpan {
     start: usize,
     up_to: Option<usize>,
@@ -50,12 +51,14 @@ impl ByteSpan {
 }
 
 #[allow(clippy::module_name_repetitions)]
+#[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ParseErr<'a> {
     src: &'a str,
     span: ByteSpan,
     kind: ErrKind<'a>,
 }
 
+#[derive(Clone, Debug, PartialEq, Eq)]
 enum ErrKind<'a> {
     UnitMissing,
     UnitUnknown(&'a str),
@@ -138,7 +141,7 @@ impl fmt::Display for ParseErr<'_> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct ReadDur {
     pub dur: Duration,
     pub is_neg: bool,
