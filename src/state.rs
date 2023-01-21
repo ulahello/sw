@@ -54,7 +54,7 @@ impl State {
         }
     }
 
-    pub fn update(&mut self, command: &Command) -> io::Result<()> {
+    pub fn update(&mut self, command: Command) -> io::Result<()> {
         match command {
             Command::Help => {
                 shell::write(concat!(

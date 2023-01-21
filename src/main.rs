@@ -30,7 +30,7 @@ fn try_main() -> io::Result<()> {
     let mut state = State::new();
     loop {
         if let Some(command) = Command::read(state.name(), state.sw().is_running())? {
-            state.update(&command)?;
+            state.update(command)?;
             if command == Command::Quit {
                 break;
             }
