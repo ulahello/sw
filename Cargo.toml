@@ -11,7 +11,7 @@ keywords = ["stopwatch"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-libsw = "2.2.0"
+libsw = "3.0.0"
 termcolor = "1.2.0"
 unicode-segmentation = "1.10.0"
 

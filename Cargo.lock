@@ -4,9 +4,9 @@ version = 3
 
 [[package]]
 name = "libsw"
-version = "2.2.0"
+version = "3.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d81b373cd988b6e2b6e32ded4ea80c15085028efcdd5f83e37f9cbfb9c517ca"
+checksum = "f6ab76c1dd8fc3852fef496aeca6c296e53da2543751a09f901623dd0a17c15d"
 
 [[package]]
 name = "sw"

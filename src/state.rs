@@ -6,7 +6,7 @@ use crate::command::Command;
 use crate::parse::ReadDur;
 use crate::shell;
 
-use libsw::Stopwatch;
+use libsw::Sw;
 use termcolor::Color;
 
 use core::fmt;
@@ -16,8 +16,8 @@ use std::time::Instant;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct State {
-    sw: Stopwatch,
-    since_stop: Stopwatch,
+    sw: Sw,
+    since_stop: Sw,
     name: String,
     prec: u8,
 }
@@ -28,8 +28,8 @@ impl State {
 
     pub fn new() -> Self {
         Self {
-            sw: Stopwatch::new(),
-            since_stop: Stopwatch::new_started(),
+            sw: Sw::new(),
+            since_stop: Sw::new_started(),
             name: String::new(),
             prec: Self::DEFAULT_PRECISION,
         }
@@ -39,7 +39,7 @@ impl State {
         &self.name
     }
 
-    pub const fn sw(&self) -> &Stopwatch {
+    pub const fn sw(&self) -> &Sw {
         &self.sw
     }
 
@@ -131,7 +131,7 @@ impl State {
                         if let Some(new_sw) = self.sw.checked_sub(dur) {
                             self.sw = new_sw;
                         } else {
-                            self.sw.set_in_place(Duration::ZERO);
+                            self.sw.reset_in_place();
                             shell::log(Color::Yellow, "elapsed time clamped to zero")?;
                         }
                     } else {
