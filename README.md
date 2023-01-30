@@ -2,7 +2,7 @@
 
 `sw` is a simple terminal stopwatch which runs as a shell.
 
-you interact with it by typing commands, and responding to prompts.
+you interact with it by typing commands and responding to prompts.
 
 ## usage
 
