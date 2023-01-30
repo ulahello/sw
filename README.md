@@ -19,7 +19,10 @@ this is useful when you have several instances open.
 
 ### duration format
 
-the offset and change commands accept a duration input with the following formatting:
+the offset and change commands accept a duration input.
+the following (non-standardised) formats are supported.
+
+#### "unit" format
 
 ```
 float unit
@@ -28,6 +31,26 @@ float unit
 `float` is a floating point number, and `unit` is one of "s", "m", or "h", meaning seconds, minutes, and hours respectively.
 
 leading and trailing whitespace is ignored, so `1s` is just as valid as `1 s` and ` 1s`.
+
+#### HH:MM:SS.ss ("stopwatch") format
+
+```
+hours : minutes : seconds . subseconds
+```
+
+the details shouldn't be surprising, it's a superset of how durations are displayed.
+
+`hours`, `minutes`, `seconds` and `subseconds` are all integers.
+`minutes` and `seconds` must be less than 60.
+
+it's okay to omit separators and values.
+rightmost values are the most important, so the meaning of the input will be inferred from right to left.
+
+some examples of terse inputs:
+- `:5` and `::5` represent 5 seconds
+- `:5:` represents 5 minutes
+- `:.6` represents 0.6 seconds
+- `1::1.1` represents 1 hour and 1.1 seconds
 
 ## the Use Case
 

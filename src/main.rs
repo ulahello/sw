@@ -9,6 +9,9 @@ mod parse;
 mod shell;
 mod state;
 
+#[cfg(test)]
+mod tests;
+
 use crate::command::Command;
 use crate::state::State;
 

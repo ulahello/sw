@@ -1,0 +1,79 @@
+// sw: terminal stopwatch (tests)
+// copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
+// licensed under GPL-3.0-or-later
+
+mod parse {
+    mod sw {
+        // TODO: test subsecond parsing
+
+        use crate::parse::*;
+        use core::time::Duration;
+
+        fn test<'a>(
+            runs: impl Iterator<Item = (&'a [&'static str], Result<ReadDur, ParseErr<'static>>)>,
+        ) {
+            for (inputs, expect) in runs {
+                for input in inputs {
+                    assert_eq!(ReadDur::parse_as_sw(input), expect);
+                }
+            }
+        }
+
+        #[test]
+        fn basic() {
+            let runs: [(&[&'static str], Result<ReadDur, ParseErr<'static>>); 4] = [
+                // TODO: negative variants are algorithmic from the positive runs
+                (
+                    &["3", ":3", "0:3", "::3", "0::3", ":0:3", "0:0:3"],
+                    Ok(ReadDur {
+                        dur: Duration::from_secs(3),
+                        is_neg: false,
+                    }),
+                ),
+                (
+                    &["-3", "-:3", "-0:3", "-::3", "-0::3", "-:0:3", "-0:0:3"],
+                    Ok(ReadDur {
+                        dur: Duration::from_secs(3),
+                        is_neg: true,
+                    }),
+                ),
+                (
+                    &["3:", ":3:", ":3:0", "0:3:", "0:3:0"],
+                    Ok(ReadDur {
+                        dur: Duration::from_secs(180),
+                        is_neg: false,
+                    }),
+                ),
+                (
+                    &["-3:", "-:3:", "-:3:0", "-0:3:", "-0:3:0"],
+                    Ok(ReadDur {
+                        dur: Duration::from_secs(180),
+                        is_neg: true,
+                    }),
+                ),
+            ];
+            test(runs.into_iter());
+        }
+
+        #[test]
+        fn zero_dur_corner_cases() {
+            let runs: [(&[&'static str], Result<ReadDur, ParseErr<'static>>); 2] = [
+                (
+                    &["", ":", ":.", "::", "::."],
+                    Ok(ReadDur {
+                        dur: Duration::ZERO,
+                        is_neg: false,
+                    }),
+                ),
+                (
+                    &["-", "-:", "-:.", "-::", "-::."],
+                    Ok(ReadDur {
+                        dur: Duration::ZERO,
+                        is_neg: true,
+                    }),
+                ),
+            ];
+            test(runs.into_iter());
+        }
+    }
+}
