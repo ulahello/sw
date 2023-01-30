@@ -2,6 +2,7 @@
 
 ## [unreleased]
 ### added
+* support for HH:MM:SS.ss duration format
 * overhauled error messages
 * added message when subtracting clamps to zero
 
