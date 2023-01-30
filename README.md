@@ -52,6 +52,8 @@ some examples of terse inputs:
 - `:.6` represents 0.6 seconds
 - `1::1.1` represents 1 hour and 1.1 seconds
 
+it's also okay to add whitespace between separators.
+
 ## the Use Case
 
 the original use case was to improve on the experience of using an interactive python shell as a stopwatch.
