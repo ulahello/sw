@@ -38,6 +38,7 @@ impl Command {
             "q" => Self::Quit,
             _ => {
                 shell::log(Color::Red, r#"unknown command (try "h" for help)"#)?;
+                shell::write("")?;
                 return Ok(None);
             }
         };
