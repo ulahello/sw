@@ -9,7 +9,6 @@ use core::iter::{Peekable, Rev};
 use core::num::{ParseFloatError, ParseIntError};
 use core::time::{Duration, TryFromFloatSecsError};
 use core::{fmt, ops};
-use std::borrow::Cow;
 use std::io::{self, Write};
 
 const SEC_PER_MIN: u8 = 60;
@@ -148,11 +147,13 @@ impl<'s> ParseErr<'s> {
         writeln!(&mut buffer, "{self}")?;
 
         /* write help message */
-        if let Some(msg) = self.help_message() {
+        if self.has_help_message() {
             spec.clear();
             spec.set_dimmed(true);
             buffer.set_color(&spec)?;
-            writeln!(&mut buffer, "note: {msg}")?;
+            write!(&mut buffer, "note: ")?;
+            self.help_message(&mut buffer)?;
+            writeln!(&mut buffer)?;
         }
 
         /* flush buffer */
@@ -165,32 +166,54 @@ impl<'s> ParseErr<'s> {
 }
 
 impl ParseErr<'_> {
-    fn help_message(&self) -> Option<Cow<'static, str>> {
+    fn has_help_message(&self) -> bool {
+        match &self.kind {
+            ErrKind::UnitUnitMissing
+            | ErrKind::UnitUnitUnknown(_)
+            | ErrKind::SwUnexpectedColon
+            | ErrKind::SwUnexpectedDot(_)
+            | ErrKind::SwDurationOverflow(_)
+            | ErrKind::SwGroupExcess(_) => true,
+
+            ErrKind::UnitFloat(_)
+            | ErrKind::UnitFloatMissing
+            | ErrKind::UnitDur(_)
+            | ErrKind::SwUnexpectedSign { .. }
+            | ErrKind::SwInt(_)
+            | ErrKind::SwSubsecondsTooLong => false,
+        }
+    }
+
+    fn help_message(&self, f: &mut impl io::Write) -> io::Result<()> {
         match &self.kind {
             ErrKind::UnitUnitMissing | ErrKind::UnitUnitUnknown(_) => {
-                Some("use 's' for seconds, 'm' for minutes, and 'h' for hours".into())
+                write!(f, "use 's' for seconds, 'm' for minutes, and 'h' for hours")?;
             }
 
             ErrKind::SwUnexpectedColon => {
-                Some(format!("there is no colon before {}", Group::Hours).into())
+                write!(f, "there is no colon before {}", Group::Hours)?;
             }
-            ErrKind::SwUnexpectedDot(group) => Some({
+            ErrKind::SwUnexpectedDot(group) => {
                 assert_ne!(*group, Group::SecondsSub);
                 if *group == Group::SecondsInt {
-                    format!("decimal point was already given for {}", Group::SecondsSub).into()
+                    write!(
+                        f,
+                        "decimal point was already given for {}",
+                        Group::SecondsSub
+                    )?;
                 } else {
-                    format!(
+                    write!(
+                        f,
                         "parsing {group}, but only {} can have fractional values",
                         Group::SecondsInt
-                    )
-                    .into()
+                    )?;
                 }
-            }),
+            }
             ErrKind::SwDurationOverflow(_) => {
-                Some("this duration is too large to be represented".into())
+                write!(f, "this duration is too large to be represented")?;
             }
             ErrKind::SwGroupExcess(group) => {
-                Some(format!("{group} must be less than {}", group.max()).into())
+                write!(f, "{group} must be less than {}", group.max())?;
             }
 
             ErrKind::UnitFloat(_)
@@ -198,8 +221,9 @@ impl ParseErr<'_> {
             | ErrKind::UnitDur(_)
             | ErrKind::SwUnexpectedSign { .. }
             | ErrKind::SwInt(_)
-            | ErrKind::SwSubsecondsTooLong => None,
+            | ErrKind::SwSubsecondsTooLong => unreachable!(),
         }
+        Ok(())
     }
 }
 
