@@ -72,6 +72,14 @@ impl<'s> ByteSpan<'s> {
     pub fn get(&self) -> &'s str {
         &self.src[self.start..self.start + self.len]
     }
+
+    pub fn get_before(&self) -> &'s str {
+        &self.src[..self.start]
+    }
+
+    pub fn get_after(&self) -> &'s str {
+        &self.src[self.start + self.len..]
+    }
 }
 
 #[allow(clippy::module_name_repetitions)]
@@ -119,7 +127,7 @@ impl<'s> ParseErr<'s> {
 
         /* write source text with span red and bold */
         // text before span
-        write!(&mut buffer, "{}", &self.src[..self.span.start])?;
+        write!(&mut buffer, "{}", self.span.get_before())?;
 
         // red span text
         spec.set_fg(Some(Color::Red));
@@ -132,11 +140,7 @@ impl<'s> ParseErr<'s> {
         buffer.set_color(&spec)?;
 
         // text after span
-        writeln!(
-            &mut buffer,
-            "{}",
-            &self.src[self.span.start + self.span.len..]
-        )?;
+        writeln!(&mut buffer, "{}", self.span.get_after())?;
 
         /* write error message */
         spec.set_fg(Some(Color::Red));
