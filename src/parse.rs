@@ -102,7 +102,7 @@ pub(crate) enum ErrKind<'s> {
     SwUnexpectedColon,
     SwUnexpectedDot(Group),
     SwUnexpectedSign { is_neg: bool },
-    SwInt(ParseIntError),
+    SwInt { group: Group, err: ParseIntError },
     SwDurationOverflow(Group),
     SwSubsecondsTooLong,
     SwGroupExcess(Group),
@@ -173,13 +173,13 @@ impl ParseErr<'_> {
             | ErrKind::SwUnexpectedColon
             | ErrKind::SwUnexpectedDot(_)
             | ErrKind::SwDurationOverflow(_)
+            | ErrKind::SwInt { .. }
             | ErrKind::SwGroupExcess(_) => true,
 
             ErrKind::UnitFloat(_)
             | ErrKind::UnitFloatMissing
             | ErrKind::UnitDur(_)
             | ErrKind::SwUnexpectedSign { .. }
-            | ErrKind::SwInt(_)
             | ErrKind::SwSubsecondsTooLong => false,
         }
     }
@@ -215,12 +215,12 @@ impl ParseErr<'_> {
             ErrKind::SwGroupExcess(group) => {
                 write!(f, "{group} must be less than {}", group.max())?;
             }
+            ErrKind::SwInt { group, err: _ } => write!(f, "{group} are parsed as an integer")?,
 
             ErrKind::UnitFloat(_)
             | ErrKind::UnitFloatMissing
             | ErrKind::UnitDur(_)
             | ErrKind::SwUnexpectedSign { .. }
-            | ErrKind::SwInt(_)
             | ErrKind::SwSubsecondsTooLong => unreachable!(),
         }
         Ok(())
@@ -241,7 +241,7 @@ impl fmt::Display for ParseErr<'_> {
             ErrKind::SwUnexpectedSign { is_neg: _ } => {
                 write!(f, "sign must be given at the beginning")
             }
-            ErrKind::SwInt(err) => write!(f, "{err}"),
+            ErrKind::SwInt { group: _, err } => write!(f, "{err}"),
             ErrKind::SwDurationOverflow(group) => {
                 write!(f, "duration oveflow while parsing {group}")
             }
@@ -446,7 +446,7 @@ impl ReadDur {
                             debug_assert!(digit < 10);
                             nanos += u32::from(digit) * place;
                         }
-                        Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt(err))),
+                        Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt { group, err })),
                     }
                 }
                 dur = dur
@@ -478,7 +478,7 @@ impl ReadDur {
                         })?;
                     }
 
-                    Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt(err))),
+                    Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt { group, err })),
                 }
             }
         }
