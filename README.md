@@ -35,13 +35,16 @@ leading and trailing whitespace is ignored, so `1s` is just as valid as `1 s` an
 #### HH:MM:SS.ss ("stopwatch") format
 
 ```
-hours : minutes : seconds . subseconds
+sign hours : minutes : seconds . subseconds
 ```
 
 the details shouldn't be surprising, it's a superset of how durations are displayed.
 
 `hours`, `minutes`, `seconds` and `subseconds` are all integers.
 `minutes` and `seconds` must be less than 60.
+
+`sign` is optional, and one of `+` or `-`.
+it indicates whether the duration is positive or negative, defaulting to positive.
 
 it's okay to omit separators and values.
 rightmost values are the most important, so the meaning of the input will be inferred from right to left.
