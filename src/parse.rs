@@ -403,7 +403,6 @@ impl ReadDur {
                     if grapheme.chars().all(char::is_whitespace) {
                         err_span.shift_start_right(grapheme.len());
                         graphs.next();
-                        continue;
                     } else {
                         break;
                     }
