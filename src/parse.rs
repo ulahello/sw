@@ -69,8 +69,8 @@ impl<'s> ByteSpan<'s> {
         self.len -= bytes;
     }
 
-    pub fn get(&self) -> Option<&'s str> {
-        self.src.get(self.start..self.start + self.len)
+    pub fn get(&self) -> &'s str {
+        &self.src[self.start..self.start + self.len]
     }
 }
 
@@ -126,7 +126,7 @@ impl<'s> ParseErr<'s> {
         spec.set_bold(true);
         buffer.set_color(&spec)?;
 
-        write!(&mut buffer, "{}", self.span.get().unwrap())?;
+        write!(&mut buffer, "{}", self.span.get())?;
 
         spec.clear();
         buffer.set_color(&spec)?;
@@ -387,7 +387,7 @@ impl ReadDur {
         {
             let group = Group::SecondsSub;
             let span = groups[group];
-            let to_parse = span.get().unwrap();
+            let to_parse = span.get();
             if !to_parse.trim().is_empty() {
                 let mut nanos: u32 = 0;
                 let mut place: u32 = group.max().try_into().unwrap();
@@ -434,7 +434,7 @@ impl ReadDur {
             (Group::Hours, u64::from(SEC_PER_HOUR)),
         ] {
             let span = groups[group];
-            let to_parse = span.get().unwrap().trim();
+            let to_parse = span.get().trim();
             /* NOTE: we're trimming after we get the span, meaning the to_parse
              * doesn't reflect the span. */
             if !to_parse.is_empty() {
