@@ -55,8 +55,18 @@ pub(crate) struct ByteSpan<'s> {
 impl<'s> ByteSpan<'s> {
     #[must_use]
     #[inline]
-    pub fn new(start: usize, len: usize, s: &'s str) -> Self {
+    pub const fn new(start: usize, len: usize, s: &'s str) -> Self {
         Self { start, len, src: s }
+    }
+
+    pub fn shift_start_left(&mut self, bytes: usize) {
+        self.start -= bytes;
+        self.len += bytes;
+    }
+
+    pub fn shift_start_right(&mut self, bytes: usize) {
+        self.start += bytes;
+        self.len -= bytes;
     }
 
     pub fn get(&self) -> Option<&'s str> {
@@ -377,22 +387,33 @@ impl ReadDur {
         {
             let group = Group::SecondsSub;
             let span = groups[group];
-            /* TODO: we're trimming after we get the span, meaning the to_parse
-             * doesn't reflect the span. we use this span to report an error
-             * later, meaning that printing the span could fail. */
-            let to_parse = span.get().unwrap().trim();
-            if !to_parse.is_empty() {
+            let to_parse = span.get().unwrap();
+            if !to_parse.trim().is_empty() {
                 let mut nanos: u32 = 0;
                 let mut place: u32 = group.max().try_into().unwrap();
+                let mut graphs = UnicodeSegmentation::graphemes(to_parse, true).peekable();
+
+                // skip whitespace but maintain accurate span
                 let mut err_span = span;
-                for (idx, chr) in UnicodeSegmentation::grapheme_indices(to_parse, true) {
+                while let Some(grapheme) = graphs.peek() {
+                    if grapheme.chars().all(char::is_whitespace) {
+                        err_span.shift_start_right(grapheme.len());
+                        graphs.next();
+                        continue;
+                    } else {
+                        break;
+                    }
+                }
+
+                for chr in graphs {
                     if place == 1 {
-                        err_span.start += idx;
                         return Err(ParseErr::new(err_span, ErrKind::SwSubsecondsTooLong));
                     }
                     debug_assert!(place % 10 == 0, "{place} must be divisible by 10");
                     place /= 10;
-                    err_span.len -= chr.len();
+
+                    err_span.shift_start_right(chr.len());
+
                     match chr.parse::<u8>() {
                         Ok(digit) => {
                             debug_assert!(digit < 10);
@@ -492,9 +513,7 @@ impl<'s> Iterator for SwLexer<'s> {
                         // TODO: handling single grapheme tokens in two places
                         ":" | "." | "+" | "-" => break,
                         _ => {
-                            let len = d_next.1.len();
-                            span.start -= len;
-                            span.len += len;
+                            span.shift_start_left(d_next.1.len());
                             self.content.next();
                             continue;
                         }
