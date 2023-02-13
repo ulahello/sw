@@ -436,14 +436,14 @@ impl ReadDur {
                     if place == 1 {
                         return Err(ParseErr::new(err_span, ErrKind::SwSubsecondsTooLong));
                     }
-                    debug_assert!(place % 10 == 0, "{place} must be divisible by 10");
+                    assert!(place % 10 == 0, "{place} must be divisible by 10");
                     place /= 10;
 
                     err_span.shift_start_right(chr.len());
 
                     match chr.parse::<u8>() {
                         Ok(digit) => {
-                            debug_assert!(digit < 10);
+                            assert!(digit < 10);
                             nanos += u32::from(digit) * place;
                         }
                         Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt { group, err })),
