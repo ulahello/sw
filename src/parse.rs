@@ -204,7 +204,7 @@ impl ParseErr<'_> {
                 } else {
                     write!(
                         f,
-                        "parsing {group}, but only {} can have fractional values",
+                        "found in {group}, but only {} can have fractional values",
                         Group::SecondsInt
                     )?;
                 }
