@@ -407,66 +407,22 @@ impl ReadDur {
             }
         }
 
-        // secs (int)
-        {
-            let group = Group::SecondsInt;
+        for (group, sec_per_unit) in [
+            (Group::SecondsInt, 1),
+            (Group::Minutes, u64::from(SEC_PER_MIN)),
+            (Group::Hours, u64::from(SEC_PER_HOUR)),
+        ] {
             let span = groups[group];
             let to_parse = span.get().unwrap().trim();
             /* NOTE: we're trimming after we get the span, meaning the to_parse
              * doesn't reflect the span. */
             if !to_parse.is_empty() {
                 match to_parse.parse::<u64>() {
-                    Ok(secs) => {
-                        if secs >= group.max() {
+                    Ok(units) => {
+                        if units >= group.max() {
                             return Err(ParseErr::new(span, ErrKind::SwGroupExcess(group)));
                         }
-                        dur = dur.checked_add(Duration::from_secs(secs)).ok_or_else(|| {
-                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
-                        })?;
-                    }
-
-                    Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt(err))),
-                }
-            }
-        }
-
-        // mins
-        {
-            let group = Group::Minutes;
-            let span = groups[group];
-            let to_parse = span.get().unwrap().trim();
-            /* NOTE: we're trimming after we get the span, meaning the to_parse
-             * doesn't reflect the span. */
-            if !to_parse.is_empty() {
-                match to_parse.parse::<u64>() {
-                    Ok(mins) => {
-                        if mins >= group.max() {
-                            return Err(ParseErr::new(span, ErrKind::SwGroupExcess(group)));
-                        }
-                        let secs = mins.checked_mul(SEC_PER_MIN.into()).ok_or_else(|| {
-                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
-                        })?;
-                        dur = dur.checked_add(Duration::from_secs(secs)).ok_or_else(|| {
-                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
-                        })?;
-                    }
-
-                    Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt(err))),
-                }
-            }
-        }
-
-        // hours
-        {
-            let group = Group::Hours;
-            let span = groups[group];
-            let to_parse = span.get().unwrap().trim();
-            /* NOTE: we're trimming after we get the span, meaning the to_parse
-             * doesn't reflect the span. */
-            if !to_parse.is_empty() {
-                match to_parse.parse::<u64>() {
-                    Ok(hours) => {
-                        let secs = hours.checked_mul(SEC_PER_HOUR.into()).ok_or_else(|| {
+                        let secs = units.checked_mul(sec_per_unit).ok_or_else(|| {
                             ParseErr::new(span, ErrKind::SwDurationOverflow(group))
                         })?;
                         dur = dur.checked_add(Duration::from_secs(secs)).ok_or_else(|| {
