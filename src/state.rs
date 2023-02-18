@@ -204,11 +204,15 @@ impl State {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct DurationFmt {
     dur: Duration,
-    prec: u8,
+    prec: u8, // <= 9
 }
 
 impl DurationFmt {
+    #[allow(clippy::assertions_on_constants)]
+    #[must_use]
     pub const fn new(dur: Duration, prec: u8) -> Self {
+        assert!(prec <= 9);
+        assert!(State::MAX_PRECISION == 9);
         Self { dur, prec }
     }
 }
