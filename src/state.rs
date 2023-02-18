@@ -135,8 +135,15 @@ impl State {
                             shell::log(Color::Yellow, "elapsed time clamped to zero")?;
                         }
                     } else {
-                        self.sw += dur;
-                        shell::log(Color::Magenta, "added to elapsed time")?;
+                        if let Some(new_sw) = self.sw.checked_add(dur) {
+                            self.sw = new_sw;
+                            shell::log(Color::Magenta, "added to elapsed time")?;
+                        } else {
+                            shell::log(
+                                Color::Red,
+                                "cannot add offset, new elapsed time would overflow",
+                            )?;
+                        }
                     }
                 }
             }
