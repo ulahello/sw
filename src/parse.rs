@@ -411,7 +411,36 @@ impl ReadDur {
         /* parse group substrings into an actual duration */
         let mut dur = Duration::ZERO;
 
-        // secs (subs)
+        // hours, minutes, seconds (whole)
+        for (group, sec_per_unit) in [
+            (Group::Hours, u64::from(SEC_PER_HOUR)),
+            (Group::Minutes, u64::from(SEC_PER_MIN)),
+            (Group::SecondsInt, 1),
+        ] {
+            let span = groups[group];
+            let to_parse = span.get().trim();
+            /* NOTE: we're trimming after we get the span, meaning the to_parse
+             * doesn't reflect the span. */
+            if !to_parse.is_empty() {
+                match to_parse.parse::<u64>() {
+                    Ok(units) => {
+                        if units >= group.max() {
+                            return Err(ParseErr::new(span, ErrKind::SwGroupExcess(group)));
+                        }
+                        let secs = units.checked_mul(sec_per_unit).ok_or_else(|| {
+                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
+                        })?;
+                        dur = dur.checked_add(Duration::from_secs(secs)).ok_or_else(|| {
+                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
+                        })?;
+                    }
+
+                    Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt { group, err })),
+                }
+            }
+        }
+
+        // subseconds
         {
             let group = Group::SecondsSub;
             let span = groups[group];
@@ -452,34 +481,6 @@ impl ReadDur {
                 dur = dur
                     .checked_add(Duration::from_nanos(nanos.into()))
                     .ok_or_else(|| ParseErr::new(span, ErrKind::SwDurationOverflow(group)))?;
-            }
-        }
-
-        for (group, sec_per_unit) in [
-            (Group::Hours, u64::from(SEC_PER_HOUR)),
-            (Group::Minutes, u64::from(SEC_PER_MIN)),
-            (Group::SecondsInt, 1),
-        ] {
-            let span = groups[group];
-            let to_parse = span.get().trim();
-            /* NOTE: we're trimming after we get the span, meaning the to_parse
-             * doesn't reflect the span. */
-            if !to_parse.is_empty() {
-                match to_parse.parse::<u64>() {
-                    Ok(units) => {
-                        if units >= group.max() {
-                            return Err(ParseErr::new(span, ErrKind::SwGroupExcess(group)));
-                        }
-                        let secs = units.checked_mul(sec_per_unit).ok_or_else(|| {
-                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
-                        })?;
-                        dur = dur.checked_add(Duration::from_secs(secs)).ok_or_else(|| {
-                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
-                        })?;
-                    }
-
-                    Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt { group, err })),
-                }
             }
         }
 
