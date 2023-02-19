@@ -12,6 +12,7 @@
 * changed empty precision input to reset to default
 * check for overflow when applying offset instead of saturating
 * check for overflow when toggling the stopwatch
+* check for overflow when displaying elapsed time
 * msrv bumped to `1.66.1`
 
 ## [0.9.2] - 2022-09-05

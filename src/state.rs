@@ -74,11 +74,15 @@ impl State {
             }
 
             Command::Display => {
-                shell::write(DurationFmt::new(self.sw.elapsed(), self.prec))?;
+                let now = Instant::now();
+                shell::write(DurationFmt::new(self.sw.elapsed_at(now), self.prec))?;
                 if self.sw.is_running() {
                     shell::log(Color::Green, "running")?;
                 } else {
                     shell::log(Color::Yellow, "stopped")?;
+                }
+                if self.sw.checked_elapsed_at(now).is_none() {
+                    shell::log(Color::Red, "elapsed time overflowing")?;
                 }
             }
 
