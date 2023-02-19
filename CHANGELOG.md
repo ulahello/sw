@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.10.0] - 2023-02-19
 ### added
 * support for HH:MM:SS.ss duration format
 * overhauled error messages
