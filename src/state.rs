@@ -92,14 +92,11 @@ impl State {
                 if sw_overflow {
                     self.sw.stop().unwrap();
                 }
-                match self.since_stop.checked_toggle_at(now) {
-                    Some(()) => {}
-                    None => {
-                        /* if this fails, since_stop was (and is) running. so we
-                         * know that sw was stopped but is now running, meaning
-                         * since_stop will be reset in the next condition,
-                         * meaning it's fine for this to fail. */
-                    }
+                if self.since_stop.checked_toggle_at(now).is_none() {
+                    /* if this fails, since_stop was (and is) running. so we
+                     * know that sw was stopped but is now running, meaning
+                     * since_stop will be reset in the next condition, meaning
+                     * it's fine for this to fail. */
                 }
 
                 if self.sw.is_running() {
@@ -148,6 +145,7 @@ impl State {
 
             Command::Offset => {
                 if let Some(ReadDur { dur, is_neg }) = shell::read_dur("offset by? ")? {
+                    #[allow(clippy::collapsible_else_if)]
                     if is_neg {
                         shell::log(Color::Magenta, "subtracted from elapsed time")?;
                         if let Some(new_sw) = self.sw.checked_sub(dur) {
