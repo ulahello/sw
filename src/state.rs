@@ -84,8 +84,19 @@ impl State {
 
             Command::Toggle => {
                 let now = Instant::now();
-                self.sw.toggle_at(now);
-                self.since_stop.toggle_at(now);
+                let sw_overflow = self.sw.checked_toggle_at(now).is_none();
+                if sw_overflow {
+                    self.sw.stop().unwrap();
+                }
+                match self.since_stop.checked_toggle_at(now) {
+                    Some(()) => {}
+                    None => {
+                        /* if this fails, since_stop was (and is) running. so we
+                         * know that sw was stopped but is now running, meaning
+                         * since_stop will be reset in the next condition,
+                         * meaning it's fine for this to fail. */
+                    }
+                }
 
                 if self.sw.is_running() {
                     shell::log(Color::Magenta, "started stopwatch")?;
@@ -93,12 +104,19 @@ impl State {
                         Color::Cyan,
                         format!(
                             "{} since stopped",
-                            DurationFmt::new(self.since_stop.elapsed(), self.prec)
+                            DurationFmt::new(self.since_stop.elapsed_at(now), self.prec)
                         ),
                     )?;
                     self.since_stop.reset();
+                    assert!(!sw_overflow);
                 } else {
                     shell::log(Color::Magenta, "stopped stopwatch")?;
+                    if sw_overflow {
+                        shell::log(
+                            Color::Yellow,
+                            "new elapsed time too large, clamped to maximum",
+                        )?;
+                    }
                 }
             }
 

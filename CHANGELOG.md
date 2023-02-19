@@ -11,6 +11,7 @@
 * changed prompt from "<" and ">" to ";" and "*"
 * changed empty precision input to reset to default
 * check for overflow when applying offset instead of saturating
+* check for overflow when toggling the stopwatch
 * msrv bumped to `1.66.1`
 
 ## [0.9.2] - 2022-09-05
