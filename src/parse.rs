@@ -272,26 +272,20 @@ impl ReadDur {
     pub fn parse_as_unit(s: &str) -> Result<Self, ParseErr> {
         // whitespace? + float + whitespace? + unit
 
-        let mut graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
-        let maybe_unit = graphs.clone().last();
-        if let Some(try_unit) = maybe_unit {
-            if let Ok(unit) = Unit::from_grapheme(try_unit.1) {
-                let mut len = 0;
-                while let Some((_, chr)) = graphs.next() {
-                    if graphs.peek().is_none() {
-                        // skip last grapheme which is the unit
-                        break;
-                    }
-                    len += chr.len();
-                }
+        if let Some((try_unit_idx, try_unit)) = UnicodeSegmentation::grapheme_indices(s, true)
+            .peekable()
+            .last()
+        {
+            if let Ok(unit) = Unit::from_grapheme(try_unit) {
+                let len = try_unit_idx;
                 let float_str = &s[..len].trim();
-
                 if float_str.is_empty() {
                     return Err(ParseErr::new(
                         ByteSpan::new(0, len, s),
                         ErrKind::UnitFloatMissing,
                     ));
                 }
+
                 match float_str.parse::<f64>() {
                     Ok(mut float) => {
                         match unit {
@@ -312,6 +306,7 @@ impl ReadDur {
                             )),
                         }
                     }
+
                     Err(float_err) => Err(ParseErr::new(
                         ByteSpan::new(0, len, s),
                         ErrKind::UnitFloat(float_err),
@@ -319,8 +314,8 @@ impl ReadDur {
                 }
             } else {
                 Err(ParseErr::new(
-                    ByteSpan::new(try_unit.0, try_unit.1.len(), s),
-                    ErrKind::UnitUnitUnknown(try_unit.1),
+                    ByteSpan::new(try_unit_idx, try_unit.len(), s),
+                    ErrKind::UnitUnitUnknown(try_unit),
                 ))
             }
         } else {
