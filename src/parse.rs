@@ -456,9 +456,9 @@ impl ReadDur {
         }
 
         for (group, sec_per_unit) in [
-            (Group::SecondsInt, 1),
-            (Group::Minutes, u64::from(SEC_PER_MIN)),
             (Group::Hours, u64::from(SEC_PER_HOUR)),
+            (Group::Minutes, u64::from(SEC_PER_MIN)),
+            (Group::SecondsInt, 1),
         ] {
             let span = groups[group];
             let to_parse = span.get().trim();
