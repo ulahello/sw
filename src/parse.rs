@@ -262,10 +262,18 @@ pub struct ReadDur {
 
 impl ReadDur {
     pub fn parse(s: &str) -> Result<Self, ParseErr> {
-        if s.as_bytes().contains(&b':') {
-            Self::parse_as_sw(s)
-        } else {
-            Self::parse_as_unit(s)
+        match Self::parse_as_unit(s) {
+            Ok(unit_ok) => Ok(unit_ok),
+            Err(unit_err) => match Self::parse_as_sw(s) {
+                Ok(sw_ok) => Ok(sw_ok),
+                Err(sw_err) => {
+                    if s.as_bytes().contains(&b':') {
+                        Err(sw_err)
+                    } else {
+                        Err(unit_err)
+                    }
+                }
+            },
         }
     }
 
