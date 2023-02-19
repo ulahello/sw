@@ -11,9 +11,9 @@ keywords = ["stopwatch"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-libsw = "3.0.0"
+libsw = "3.1.0"
 termcolor = "1.2.0"
-unicode-segmentation = "1.10.0"
+unicode-segmentation = "1.10.1"
 
 [profile.release]
 lto = true
