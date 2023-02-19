@@ -272,57 +272,54 @@ impl ReadDur {
     pub fn parse_as_unit(s: &str) -> Result<Self, ParseErr> {
         // whitespace? + float + whitespace? + unit
 
-        if let Some((try_unit_idx, try_unit)) = UnicodeSegmentation::grapheme_indices(s, true)
+        let (try_unit_idx, try_unit) = UnicodeSegmentation::grapheme_indices(s, true)
             .peekable()
             .last()
-        {
-            if let Ok(unit) = Unit::from_grapheme(try_unit) {
-                let len = try_unit_idx;
-                let float_str = &s[..len].trim();
-                if float_str.is_empty() {
-                    return Err(ParseErr::new(
-                        ByteSpan::new(0, len, s),
-                        ErrKind::UnitFloatMissing,
-                    ));
-                }
-
-                match float_str.parse::<f64>() {
-                    Ok(mut float) => {
-                        match unit {
-                            Unit::Second => (),
-                            Unit::Minute => float *= f64::from(SEC_PER_MIN),
-                            Unit::Hour => float *= f64::from(SEC_PER_HOUR),
-                        }
-                        let secs = float.abs();
-
-                        match Duration::try_from_secs_f64(secs) {
-                            Ok(dur) => {
-                                let is_neg = float.is_sign_negative();
-                                Ok(ReadDur { dur, is_neg })
-                            }
-                            Err(dur_err) => Err(ParseErr::new(
-                                ByteSpan::new(0, len, s),
-                                ErrKind::UnitDur(dur_err),
-                            )),
-                        }
-                    }
-
-                    Err(float_err) => Err(ParseErr::new(
-                        ByteSpan::new(0, len, s),
-                        ErrKind::UnitFloat(float_err),
-                    )),
-                }
-            } else {
-                Err(ParseErr::new(
-                    ByteSpan::new(try_unit_idx, try_unit.len(), s),
-                    ErrKind::UnitUnitUnknown(try_unit),
-                ))
-            }
-        } else {
-            Err(ParseErr::new(
+            .ok_or(ParseErr::new(
                 ByteSpan::new(0, s.len(), s),
                 ErrKind::UnitUnitMissing,
-            ))
+            ))?;
+
+        let unit = Unit::from_grapheme(try_unit).ok().ok_or(ParseErr::new(
+            ByteSpan::new(try_unit_idx, try_unit.len(), s),
+            ErrKind::UnitUnitUnknown(try_unit),
+        ))?;
+
+        let len = try_unit_idx;
+        let float_str = &s[..len].trim();
+        if float_str.is_empty() {
+            return Err(ParseErr::new(
+                ByteSpan::new(0, len, s),
+                ErrKind::UnitFloatMissing,
+            ));
+        }
+
+        // TODO: don't use floats
+        match float_str.parse::<f64>() {
+            Ok(mut float) => {
+                match unit {
+                    Unit::Second => (),
+                    Unit::Minute => float *= f64::from(SEC_PER_MIN),
+                    Unit::Hour => float *= f64::from(SEC_PER_HOUR),
+                }
+                let secs = float.abs();
+
+                match Duration::try_from_secs_f64(secs) {
+                    Ok(dur) => {
+                        let is_neg = float.is_sign_negative();
+                        Ok(ReadDur { dur, is_neg })
+                    }
+                    Err(dur_err) => Err(ParseErr::new(
+                        ByteSpan::new(0, len, s),
+                        ErrKind::UnitDur(dur_err),
+                    )),
+                }
+            }
+
+            Err(float_err) => Err(ParseErr::new(
+                ByteSpan::new(0, len, s),
+                ErrKind::UnitFloat(float_err),
+            )),
         }
     }
 
