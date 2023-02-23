@@ -11,6 +11,8 @@ use core::time::{Duration, TryFromFloatSecsError};
 use core::{fmt, ops};
 use std::io::{self, Write};
 
+use crate::shell::INFO_LOW;
+
 const SEC_PER_MIN: u8 = 60;
 const MIN_PER_HOUR: u8 = 60;
 const SEC_PER_HOUR: u16 = 3600;
@@ -149,7 +151,7 @@ impl<'s> ParseErr<'s> {
         /* write help message */
         if self.has_help_message() {
             spec.clear();
-            spec.set_dimmed(true);
+            spec.set_fg(Some(INFO_LOW));
             buffer.set_color(&spec)?;
             write!(&mut buffer, "note: ")?;
             self.help_message(&mut buffer)?;
