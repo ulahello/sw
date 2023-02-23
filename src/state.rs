@@ -171,15 +171,15 @@ impl State {
 
             Command::Name => {
                 let new = shell::read("new name? ")?;
-                if new != self.name {
+                if new == self.name {
+                    shell::log(DEBUG, "name unchanged")?;
+                } else {
                     if new.is_empty() {
                         shell::log(INFO, "cleared name")?;
                     } else {
                         shell::log(INFO, "set name")?;
                     }
                     self.name = new;
-                } else {
-                    shell::log(DEBUG, "name unchanged")?;
                 }
             }
 
