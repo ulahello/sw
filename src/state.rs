@@ -4,7 +4,7 @@
 
 use crate::command::Command;
 use crate::parse::ReadDur;
-use crate::shell;
+use crate::shell::{self, DEBUG, ERROR, INFO, WARNING};
 
 use libsw::Sw;
 use termcolor::Color;
@@ -82,7 +82,7 @@ impl State {
                     shell::log(Color::Yellow, "stopped")?;
                 }
                 if self.sw.checked_elapsed_at(now).is_none() {
-                    shell::log(Color::Red, "elapsed time overflowing")?;
+                    shell::log(ERROR, "elapsed time overflowing")?;
                 }
             }
 
@@ -100,9 +100,9 @@ impl State {
                 }
 
                 if self.sw.is_running() {
-                    shell::log(Color::Magenta, "started stopwatch")?;
+                    shell::log(INFO, "started stopwatch")?;
                     shell::log(
-                        Color::Cyan,
+                        DEBUG,
                         format!(
                             "{} since stopped",
                             DurationFmt::new(self.since_stop.elapsed_at(now), self.prec)
@@ -111,12 +111,9 @@ impl State {
                     self.since_stop.reset();
                     assert!(!sw_overflow);
                 } else {
-                    shell::log(Color::Magenta, "stopped stopwatch")?;
+                    shell::log(INFO, "stopped stopwatch")?;
                     if sw_overflow {
-                        shell::log(
-                            Color::Yellow,
-                            "new elapsed time too large, clamped to maximum",
-                        )?;
+                        shell::log(WARNING, "new elapsed time too large, clamped to maximum")?;
                     }
                 }
             }
@@ -126,19 +123,19 @@ impl State {
                     self.since_stop.start().unwrap();
                 }
                 self.sw.reset();
-                shell::log(Color::Magenta, "reset stopwatch")?;
+                shell::log(INFO, "reset stopwatch")?;
             }
 
             Command::Change => {
                 if let Some(ReadDur { dur, is_neg }) = shell::read_dur("new elapsed? ")? {
                     if is_neg {
-                        shell::log(Color::Red, "new elapsed time can't be negative")?;
+                        shell::log(ERROR, "new elapsed time can't be negative")?;
                     } else {
                         if self.sw.is_running() {
                             self.since_stop.start().unwrap();
                         }
                         self.sw.set(dur);
-                        shell::log(Color::Magenta, "updated elapsed time")?;
+                        shell::log(INFO, "updated elapsed time")?;
                     }
                 }
             }
@@ -147,20 +144,20 @@ impl State {
                 if let Some(ReadDur { dur, is_neg }) = shell::read_dur("offset by? ")? {
                     #[allow(clippy::collapsible_else_if)]
                     if is_neg {
-                        shell::log(Color::Magenta, "subtracted from elapsed time")?;
+                        shell::log(INFO, "subtracted from elapsed time")?;
                         if let Some(new_sw) = self.sw.checked_sub(dur) {
                             self.sw = new_sw;
                         } else {
                             self.sw.reset_in_place();
-                            shell::log(Color::Yellow, "elapsed time clamped to zero")?;
+                            shell::log(WARNING, "elapsed time clamped to zero")?;
                         }
                     } else {
                         if let Some(new_sw) = self.sw.checked_add(dur) {
                             self.sw = new_sw;
-                            shell::log(Color::Magenta, "added to elapsed time")?;
+                            shell::log(INFO, "added to elapsed time")?;
                         } else {
                             shell::log(
-                                Color::Red,
+                                ERROR,
                                 "cannot add offset, new elapsed time would overflow",
                             )?;
                         }
@@ -171,7 +168,7 @@ impl State {
             Command::Name => {
                 let new = shell::read("new name? ")?;
                 if new.is_empty() && !self.name.is_empty() {
-                    shell::log(Color::Magenta, "cleared name")?;
+                    shell::log(INFO, "cleared name")?;
                 }
                 self.name = new;
             }
@@ -182,7 +179,7 @@ impl State {
                     if self.prec != Self::DEFAULT_PRECISION {
                         self.prec = Self::DEFAULT_PRECISION;
                         shell::log(
-                            Color::Magenta,
+                            INFO,
                             format!("reset precision to {}", Self::DEFAULT_PRECISION),
                         )?;
                     }
@@ -190,15 +187,12 @@ impl State {
                     match try_prec.parse() {
                         Ok(prec) => {
                             if let Err(clamped) = self.set_prec(prec) {
-                                shell::log(
-                                    Color::Yellow,
-                                    format!("precision clamped to {clamped}"),
-                                )?;
+                                shell::log(WARNING, format!("precision clamped to {clamped}"))?;
                             } else {
-                                shell::log(Color::Magenta, "updated precision")?;
+                                shell::log(INFO, "updated precision")?;
                             }
                         }
-                        Err(err) => shell::log(Color::Red, err)?,
+                        Err(err) => shell::log(ERROR, err)?,
                     }
                 }
             }

@@ -11,6 +11,11 @@ use std::io::{self, stderr, stdin, stdout, BufRead, BufWriter, Read, Write};
 
 const READ_LIMIT: u64 = 64;
 
+pub const WARNING: Color = Color::Yellow;
+pub const ERROR: Color = Color::Red;
+pub const INFO: Color = Color::Magenta;
+pub const DEBUG: Color = Color::Cyan;
+
 pub fn write(s: impl fmt::Display) -> io::Result<()> {
     let mut stdout = BufWriter::new(stdout());
     writeln!(stdout, "{s}")?;
