@@ -1,6 +1,9 @@
 # changelog
 
 ## [unreleased]
+### added
+* added status messages for all commands
+  * commands should never output nothing
 
 ## [0.10.0] - 2023-02-19
 ### added

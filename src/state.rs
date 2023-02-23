@@ -137,6 +137,8 @@ impl State {
                         self.sw.set(dur);
                         shell::log(INFO, "updated elapsed time")?;
                     }
+                } else {
+                    shell::log(DEBUG, "elapsed time unchanged")?;
                 }
             }
 
@@ -162,21 +164,31 @@ impl State {
                             )?;
                         }
                     }
+                } else {
+                    shell::log(DEBUG, "no offset applied")?;
                 }
             }
 
             Command::Name => {
                 let new = shell::read("new name? ")?;
-                if new.is_empty() && !self.name.is_empty() {
-                    shell::log(INFO, "cleared name")?;
+                if new != self.name {
+                    if new.is_empty() {
+                        shell::log(INFO, "cleared name")?;
+                    } else {
+                        shell::log(INFO, "set name")?;
+                    }
+                    self.name = new;
+                } else {
+                    shell::log(DEBUG, "name unchanged")?;
                 }
-                self.name = new;
             }
 
             Command::Precision => {
                 let try_prec = shell::read("new precision? ")?;
                 if try_prec.is_empty() {
-                    if self.prec != Self::DEFAULT_PRECISION {
+                    if self.prec == Self::DEFAULT_PRECISION {
+                        shell::log(DEBUG, "precision unchanged")?;
+                    } else {
                         self.prec = Self::DEFAULT_PRECISION;
                         shell::log(
                             INFO,
@@ -205,7 +217,10 @@ impl State {
                 shell::write(format!("licensed under {}", env!("CARGO_PKG_LICENSE")))?;
             }
 
-            Command::Quit => return Ok(()),
+            Command::Quit => {
+                shell::log(DEBUG, "goodbye")?;
+                return Ok(());
+            }
         }
 
         // visually separate command outputs
