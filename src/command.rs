@@ -2,11 +2,11 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use crate::shell;
-
 use termcolor::Color;
 
 use std::io;
+
+use crate::shell;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Command {

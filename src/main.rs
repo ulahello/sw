@@ -12,11 +12,11 @@ mod state;
 #[cfg(test)]
 mod tests;
 
-use crate::command::Command;
-use crate::state::State;
-
 use std::io;
 use std::process::ExitCode;
+
+use crate::command::Command;
+use crate::state::State;
 
 fn main() -> ExitCode {
     if let Err(err) = try_main() {

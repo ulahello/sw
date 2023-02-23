@@ -6,13 +6,13 @@ use crate::command::Command;
 use crate::parse::ReadDur;
 use crate::shell::{self, DEBUG, ERROR, INFO, WARNING};
 
-use libsw::Sw;
-use termcolor::Color;
-
 use core::fmt;
 use core::time::Duration;
 use std::io;
 use std::time::Instant;
+
+use libsw::Sw;
+use termcolor::Color;
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct State {

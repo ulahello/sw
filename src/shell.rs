@@ -2,12 +2,12 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use crate::parse::ReadDur;
-
 use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 
 use core::fmt;
 use std::io::{self, stderr, stdin, stdout, BufRead, BufWriter, Read, Write};
+
+use crate::parse::ReadDur;
 
 const READ_LIMIT: u64 = 64;
 
