@@ -2,75 +2,224 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
+use termcolor::{Buffer, BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 
 use core::fmt;
-use std::io::{self, stderr, stdin, stdout, BufRead, BufWriter, Read, Write};
+use core::panic::Location;
+use std::io::{self, stdin, BufRead, Read, Stdin, Write};
 
-use crate::parse::ReadDur;
+use crate::command::Command;
 
-const READ_LIMIT: u64 = 64;
-
-pub const WARNING: Color = Color::Yellow;
-pub const ERROR: Color = Color::Red;
 pub const INFO: Color = Color::Magenta;
-pub const DEBUG: Color = Color::Cyan;
+pub const INFO_LOW: Color = Color::Cyan;
+pub const WARN: Color = Color::Yellow;
+pub const ERROR: Color = Color::Red;
 
-pub fn write(s: impl fmt::Display) -> io::Result<()> {
-    let mut stdout = BufWriter::new(stdout());
-    writeln!(stdout, "{s}")?;
-    stdout.flush()?;
-    Ok(())
+#[derive(Clone, Debug, PartialEq, Eq)]
+enum IoKind {
+    Out(ColorSpec),
+    In,
 }
 
-pub fn read(prompt: impl fmt::Display) -> io::Result<String> {
-    let mut stdout = BufWriter::new(stdout());
-    write!(stdout, "{prompt}")?;
-    stdout.flush()?;
+pub struct Shell {
+    stdout: BufferWriter,
+    out_buf: Buffer,
+    stdin: Stdin,
+    read_limit: u64,
+    last_op: Option<IoKind>,
 
-    let stdin = stdin();
-    let mut input = String::new();
-    stdin.lock().take(READ_LIMIT).read_line(&mut input)?;
-    Ok(input.trim().into())
+    splash_text_written: bool,
+
+    ctor_loc: Location<'static>,
+    finished: bool,
 }
 
-pub fn log(color: impl Into<Option<Color>>, body: impl fmt::Display) -> io::Result<()> {
-    let bufwtr = BufferWriter::stderr(ColorChoice::Auto);
-    let mut buffer = bufwtr.buffer();
-    buffer.set_color(ColorSpec::new().set_fg(color.into()))?;
-    writeln!(&mut buffer, "{body}")?;
-    buffer.reset()?;
-    bufwtr.print(&buffer)?;
-    Ok(())
-}
-
-pub fn splash_text() -> io::Result<()> {
-    let mut stderr = BufWriter::new(stderr());
-    writeln!(
-        stderr,
-        "{} {}: {}",
-        env!("CARGO_PKG_NAME"),
-        env!("CARGO_PKG_VERSION"),
-        env!("CARGO_PKG_DESCRIPTION")
-    )?;
-    writeln!(stderr, r#"type "h" for help, "l" for license"#)?;
-    writeln!(stderr)?;
-    stderr.flush()?;
-    Ok(())
-}
-
-pub fn read_dur(prompt: impl fmt::Display) -> io::Result<Option<ReadDur>> {
-    let input = read(prompt)?;
-    if input.is_empty() {
-        return Ok(None);
+impl Shell {
+    #[track_caller]
+    pub fn new(choice: ColorChoice, read_limit: u64) -> Self {
+        let stdout = BufferWriter::stdout(choice);
+        Self {
+            out_buf: stdout.buffer(),
+            stdout,
+            stdin: stdin(),
+            read_limit,
+            last_op: None,
+            splash_text_written: false,
+            ctor_loc: *Location::caller(),
+            finished: false,
+        }
     }
 
-    let parsed = ReadDur::parse(&input);
-    Ok(match parsed {
-        Ok(dur) => Some(dur),
-        Err(err) => {
-            err.log()?;
-            None
+    pub fn splash_text(&mut self) -> io::Result<()> {
+        assert!(
+            !self.splash_text_written,
+            "splash text can only be written once"
+        );
+        self.splash_text_written = true;
+        self.writeln(
+            &ColorSpec::new(),
+            format_args!(
+                "{} {}: {}",
+                env!("CARGO_PKG_NAME"),
+                env!("CARGO_PKG_VERSION"),
+                env!("CARGO_PKG_DESCRIPTION")
+            ),
+        )?;
+        self.writeln(
+            &ColorSpec::new(),
+            format_args!(r#"type "h" for help, "l" for license"#),
+        )
+    }
+
+    #[track_caller]
+    pub fn create_cmd_buf(&mut self) -> CmdBuf<'_> {
+        CmdBuf::new(self)
+    }
+
+    pub fn writeln(&mut self, color: &ColorSpec, fmt: fmt::Arguments) -> io::Result<()> {
+        self.write(color, format_args!("{fmt}\n"))
+    }
+
+    pub fn write(&mut self, color: &ColorSpec, fmt: fmt::Arguments) -> io::Result<()> {
+        let this_op = IoKind::Out(color.clone());
+        self.flush(Some(this_op))?;
+        self.out_buf.set_color(color)?;
+        self.out_buf.write_fmt(fmt)?;
+        Ok(())
+    }
+
+    pub fn read(&mut self) -> io::Result<String> {
+        let this_op = IoKind::In;
+        self.flush(Some(this_op))?;
+        let mut input = String::new();
+        self.stdin
+            .lock()
+            .take(self.read_limit)
+            .read_line(&mut input)?;
+        Ok(input.trim().to_string())
+    }
+
+    pub fn finish(mut self) -> io::Result<()> {
+        self.finished = true;
+        self.flush(None)?;
+        Ok(())
+    }
+}
+
+impl Shell {
+    fn flush(&mut self, anticipate: Option<IoKind>) -> io::Result<()> {
+        // TODO: optimize flushes
+        if self.last_op != anticipate {
+            match self.last_op {
+                /* NOTE: flushing manually as workaround for
+                 * https://github.com/BurntSushi/termcolor/issues/69 */
+                Some(IoKind::Out(_)) => {
+                    self.out_buf.reset()?;
+                    self.stdout.print(&self.out_buf)?;
+                    io::stdout().flush()?;
+                    self.out_buf.clear();
+                }
+                Some(IoKind::In) => (),
+                None => (),
+            }
         }
-    })
+        self.last_op = anticipate;
+        Ok(())
+    }
+}
+
+impl Drop for Shell {
+    fn drop(&mut self) {
+        if !self.finished {
+            let loc = self.ctor_loc;
+            panic!(
+                "{}:{}: Shell created here, then dropped before call to Shell::finish",
+                loc.file(),
+                loc.line()
+            );
+        }
+    }
+}
+
+pub struct CmdBuf<'shell> {
+    shell: &'shell mut Shell,
+    pad_above: bool,
+}
+
+impl CmdBuf<'_> {
+    pub fn read_cmd(
+        &mut self,
+        name: &str,
+        is_running: bool,
+    ) -> io::Result<Result<Command, String>> {
+        let input = self.read(format_args!(
+            "{name} {} ",
+            if is_running { "*" } else { ";" }
+        ))?;
+        match input.parse() {
+            Ok(cmd) => Ok(Ok(cmd)),
+            Err(()) => Ok(Err(input)),
+        }
+    }
+
+    pub fn write_color(&mut self, color: &ColorSpec, fmt: fmt::Arguments) -> io::Result<()> {
+        self.pad_above_once()?;
+        self.shell.write(color, fmt)?;
+        Ok(())
+    }
+
+    pub fn writeln_color(&mut self, color: &ColorSpec, fmt: fmt::Arguments) -> io::Result<()> {
+        self.write_color(color, format_args!("{fmt}\n"))
+    }
+
+    pub fn write(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.write_color(&ColorSpec::new(), fmt)
+    }
+
+    pub fn writeln(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.writeln_color(&ColorSpec::new(), fmt)
+    }
+
+    pub fn info(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.writeln_color(ColorSpec::new().set_fg(Some(INFO)), fmt)
+    }
+
+    pub fn info_low(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.writeln_color(ColorSpec::new().set_fg(Some(INFO_LOW)), fmt)
+    }
+
+    pub fn warn(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.writeln_color(ColorSpec::new().set_fg(Some(WARN)), fmt)
+    }
+
+    pub fn error(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.writeln_color(ColorSpec::new().set_fg(Some(ERROR)), fmt)
+    }
+
+    pub fn read(&mut self, prompt: fmt::Arguments) -> io::Result<String> {
+        self.write(prompt)?;
+        self.shell.read()
+    }
+}
+
+impl<'shell> CmdBuf<'shell> {
+    fn new(shell: &'shell mut Shell) -> Self {
+        Self {
+            pad_above: shell.splash_text_written,
+            shell,
+        }
+    }
+
+    fn pad_above_once(&mut self) -> io::Result<()> {
+        if self.pad_above {
+            self.vertical_pad()?;
+            self.pad_above = false;
+        }
+        Ok(())
+    }
+
+    fn vertical_pad(&mut self) -> io::Result<()> {
+        self.shell.writeln(&ColorSpec::new(), format_args!(""))?;
+        Ok(())
+    }
 }

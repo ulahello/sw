@@ -2,16 +2,16 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use termcolor::{BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
+use termcolor::ColorSpec;
 use unicode_segmentation::{GraphemeIndices, UnicodeSegmentation};
 
 use core::iter::{Peekable, Rev};
 use core::num::{ParseFloatError, ParseIntError};
 use core::time::{Duration, TryFromFloatSecsError};
 use core::{fmt, ops};
-use std::io::{self, Write};
+use std::io;
 
-use crate::shell::INFO_LOW;
+use crate::shell::{CmdBuf, ERROR};
 
 const SEC_PER_MIN: u8 = 60;
 const MIN_PER_HOUR: u8 = 60;
@@ -120,48 +120,31 @@ impl<'s> ParseErr<'s> {
         }
     }
 
-    pub fn log(&self) -> io::Result<()> {
-        let bufwtr = BufferWriter::stderr(ColorChoice::Auto);
-        let mut buffer = bufwtr.buffer();
-        let mut spec = ColorSpec::new();
-        buffer.set_color(&spec)?;
+    pub fn display(&self, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
+        /* TODO: method of bringing attention to the bad text is by color, but
+         * user might not be using color terminal or that may not be effective
+         * way to highlight for them*/
 
         /* write source text with span red and bold */
         // text before span
-        write!(&mut buffer, "{}", self.span.get_before())?;
+        cmd.write(format_args!("{}", self.span.get_before()))?;
 
         // red span text
-        spec.set_fg(Some(Color::Red));
-        spec.set_bold(true);
-        buffer.set_color(&spec)?;
-
-        write!(&mut buffer, "{}", self.span.get())?;
-
-        spec.clear();
-        buffer.set_color(&spec)?;
+        cmd.write_color(
+            ColorSpec::new().set_fg(Some(ERROR)),
+            format_args!("{}", self.span.get()),
+        )?;
 
         // text after span
-        writeln!(&mut buffer, "{}", self.span.get_after())?;
+        cmd.writeln(format_args!("{}", self.span.get_after()))?;
 
         /* write error message */
-        spec.set_fg(Some(Color::Red));
-        buffer.set_color(&spec)?;
-        writeln!(&mut buffer, "{self}")?;
+        cmd.error(format_args!("{self}"))?;
 
         /* write help message */
         if self.has_help_message() {
-            spec.clear();
-            spec.set_fg(Some(INFO_LOW));
-            buffer.set_color(&spec)?;
-            write!(&mut buffer, "note: ")?;
-            self.help_message(&mut buffer)?;
-            writeln!(&mut buffer)?;
+            cmd.info_low(format_args!("note: {self:#}"))?;
         }
-
-        /* flush buffer */
-        spec.clear();
-        buffer.set_color(&spec)?;
-        bufwtr.print(&buffer)?;
 
         Ok(())
     }
@@ -185,73 +168,72 @@ impl ParseErr<'_> {
             | ErrKind::SwSubsecondsTooLong => false,
         }
     }
-
-    fn help_message(&self, f: &mut impl io::Write) -> io::Result<()> {
-        match &self.kind {
-            ErrKind::UnitUnitMissing | ErrKind::UnitUnitUnknown(_) => {
-                write!(f, "use 's' for seconds, 'm' for minutes, and 'h' for hours")?;
-            }
-
-            ErrKind::SwUnexpectedColon => {
-                write!(f, "there is no colon before {}", Group::Hours)?;
-            }
-            ErrKind::SwUnexpectedDot(group) => {
-                assert_ne!(*group, Group::SecondsSub);
-                if *group == Group::SecondsInt {
-                    write!(
-                        f,
-                        "decimal point was already given for {}",
-                        Group::SecondsSub
-                    )?;
-                } else {
-                    write!(
-                        f,
-                        "found in {group}, but only {} can have fractional values",
-                        Group::SecondsInt
-                    )?;
-                }
-            }
-            ErrKind::SwDurationOverflow(_) => {
-                write!(f, "this duration is too large to be represented")?;
-            }
-            ErrKind::SwGroupExcess(group) => {
-                write!(f, "{group} must be less than {}", group.max())?;
-            }
-            ErrKind::SwInt { group, err: _ } => write!(f, "{group} are parsed as an integer")?,
-
-            ErrKind::UnitFloat(_)
-            | ErrKind::UnitFloatMissing
-            | ErrKind::UnitDur(_)
-            | ErrKind::SwUnexpectedSign { .. }
-            | ErrKind::SwSubsecondsTooLong => unreachable!(),
-        }
-        Ok(())
-    }
 }
 
 impl fmt::Display for ParseErr<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match &self.kind {
-            ErrKind::UnitUnitMissing => write!(f, "missing unit"),
-            ErrKind::UnitUnitUnknown(unk) => write!(f, "unrecognised unit '{unk}'"),
-            ErrKind::UnitFloatMissing => write!(f, "unit given, but missing value"),
-            ErrKind::UnitFloat(err) => write!(f, "{err}"),
-            ErrKind::UnitDur(err) => write!(f, "{err}"),
+        if f.alternate() {
+            match &self.kind {
+                ErrKind::UnitUnitMissing | ErrKind::UnitUnitUnknown(_) => {
+                    write!(f, "use 's' for seconds, 'm' for minutes, and 'h' for hours")
+                }
 
-            ErrKind::SwUnexpectedColon => write!(f, "unexpected colon"),
-            ErrKind::SwUnexpectedDot(_) => write!(f, "unexpected decimal point"),
-            ErrKind::SwUnexpectedSign { is_neg: _ } => {
-                write!(f, "sign must be given at the beginning")
-            }
-            ErrKind::SwInt { group: _, err } => write!(f, "{err}"),
-            ErrKind::SwDurationOverflow(group) => {
-                write!(f, "duration oveflow while parsing {group}")
-            }
+                ErrKind::SwUnexpectedColon => {
+                    write!(f, "there is no colon before {}", Group::Hours)
+                }
+                ErrKind::SwUnexpectedDot(group) => {
+                    assert_ne!(*group, Group::SecondsSub);
+                    if *group == Group::SecondsInt {
+                        write!(
+                            f,
+                            "decimal point was already given for {}",
+                            Group::SecondsSub
+                        )
+                    } else {
+                        write!(
+                            f,
+                            "found in {group}, but only {} can have fractional values",
+                            Group::SecondsInt
+                        )
+                    }
+                }
+                ErrKind::SwDurationOverflow(_) => {
+                    write!(f, "this duration is too large to be represented")
+                }
+                ErrKind::SwGroupExcess(group) => {
+                    write!(f, "{group} must be less than {}", group.max())
+                }
+                ErrKind::SwInt { group, err: _ } => write!(f, "{group} are parsed as an integer"),
 
-            ErrKind::SwSubsecondsTooLong => {
-                write!(f, "too many characters in {}", Group::SecondsSub)
+                ErrKind::UnitFloat(_)
+                | ErrKind::UnitFloatMissing
+                | ErrKind::UnitDur(_)
+                | ErrKind::SwUnexpectedSign { .. }
+                | ErrKind::SwSubsecondsTooLong => unreachable!(),
             }
-            ErrKind::SwGroupExcess(group) => write!(f, "value is out of range for {group}"),
+        } else {
+            match &self.kind {
+                ErrKind::UnitUnitMissing => write!(f, "missing unit"),
+                ErrKind::UnitUnitUnknown(unk) => write!(f, "unrecognised unit '{unk}'"),
+                ErrKind::UnitFloatMissing => write!(f, "unit given, but missing value"),
+                ErrKind::UnitFloat(err) => write!(f, "{err}"),
+                ErrKind::UnitDur(err) => write!(f, "{err}"),
+
+                ErrKind::SwUnexpectedColon => write!(f, "unexpected colon"),
+                ErrKind::SwUnexpectedDot(_) => write!(f, "unexpected decimal point"),
+                ErrKind::SwUnexpectedSign { is_neg: _ } => {
+                    write!(f, "sign must be given at the beginning")
+                }
+                ErrKind::SwInt { group: _, err } => write!(f, "{err}"),
+                ErrKind::SwDurationOverflow(group) => {
+                    write!(f, "duration oveflow while parsing {group}")
+                }
+
+                ErrKind::SwSubsecondsTooLong => {
+                    write!(f, "too many characters in {}", Group::SecondsSub)
+                }
+                ErrKind::SwGroupExcess(group) => write!(f, "value is out of range for {group}"),
+            }
         }
     }
 }
@@ -263,19 +245,24 @@ pub struct ReadDur {
 }
 
 impl ReadDur {
-    pub fn parse(s: &str) -> Result<Self, ParseErr> {
-        match Self::parse_as_unit(s) {
-            Ok(unit_ok) => Ok(unit_ok),
-            Err(unit_err) => match Self::parse_as_sw(s) {
-                Ok(sw_ok) => Ok(sw_ok),
-                Err(sw_err) => {
-                    if s.as_bytes().contains(&b':') {
-                        Err(sw_err)
-                    } else {
-                        Err(unit_err)
+    pub fn parse(s: &str) -> Option<Result<Self, ParseErr>> {
+        if s.is_empty() {
+            None
+        } else {
+            let parsed = match Self::parse_as_unit(s) {
+                Ok(unit_ok) => Ok(unit_ok),
+                Err(unit_err) => match Self::parse_as_sw(s) {
+                    Ok(sw_ok) => Ok(sw_ok),
+                    Err(sw_err) => {
+                        if s.as_bytes().contains(&b':') {
+                            Err(sw_err)
+                        } else {
+                            Err(unit_err)
+                        }
                     }
-                }
-            },
+                },
+            };
+            Some(parsed)
         }
     }
 

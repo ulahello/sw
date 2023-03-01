@@ -12,11 +12,13 @@ mod state;
 #[cfg(test)]
 mod tests;
 
+use termcolor::ColorChoice;
+
 use std::io;
 use std::process::ExitCode;
 
-use crate::command::Command;
-use crate::state::State;
+use crate::shell::Shell;
+use crate::state::{Passback, State};
 
 fn main() -> ExitCode {
     if let Err(err) = try_main() {
@@ -28,17 +30,19 @@ fn main() -> ExitCode {
 }
 
 fn try_main() -> io::Result<()> {
-    shell::splash_text()?;
+    let mut shell = Shell::new(ColorChoice::Auto, 64);
+    shell.splash_text()?;
 
-    let mut state = State::new();
+    let mut state = State::new(&mut shell);
     loop {
-        if let Some(command) = Command::read(state.name(), state.sw().is_running())? {
-            state.update(command)?;
-            if command == Command::Quit {
-                break;
+        if let Some(passback) = state.update()? {
+            match passback {
+                Passback::Quit => break,
             }
         }
     }
+
+    shell.finish()?;
 
     Ok(())
 }
