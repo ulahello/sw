@@ -193,7 +193,10 @@ impl CmdBuf<'_> {
     }
 
     pub fn error(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
-        self.writeln_color(ColorSpec::new().set_fg(Some(ERROR)), fmt)
+        self.writeln_color(
+            ColorSpec::new().set_fg(Some(ERROR)),
+            format_args!("error: {fmt}"),
+        )
     }
 
     pub fn read(&mut self, prompt: fmt::Arguments) -> io::Result<String> {
