@@ -1,0 +1,187 @@
+# TODO: document colors
+# TODO: document how durations are displayed
+
+* ~sw~
+~sw~ is a terminal stopwatch that runs as a shell.
+
+** Usage
+*** Commands
+The interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
+
+The following table is a quick overview of the available commands.
+The "input" field shows which key combination maps to the command.
+
+| Command name | Input   | Description           |
+|--------------+---------+-----------------------|
+| Help         | h       | Show help             |
+| Display      | <Enter> | Display elapsed time  |
+| Toggle       | s       | Toggle stopwatch      |
+| Reset        | r       | Reset stopwatch       |
+| Change       | c       | Change elapsed time   |
+| Offset       | o       | Offset elapsed time   |
+| Name         | n       | Name stopwatch        |
+| Precision    | p       | Set display precision |
+| License      | l       | Print license info    |
+| Quit         | q       | Abandon all Data      |
+
+**** Help
+#+begin_quote
+Lists the available commands and their description.
+#+end_quote
+
+Each line of the output corresponds to a command, and contains the required key combination and a description of the command.
+
+**** Display
+#+begin_quote
+Displays the state of the stopwatch.
+#+end_quote
+
+The first line of output contains the elapsed time.
+The subsecond precision of this output is affected by the [[*Precision][precision]] command.
+
+The second line indicates whether the stopwatch is running or stopped.
+
+**** Toggle
+#+begin_quote
+Toggles whether the stopwatch is running or stopped.
+#+end_quote
+
+If the stopwatch is running, it is stopped.
+If the new elapsed time overflows, it prints a warning.
+
+If stopped, it starts the stopwatch.
+Then it prints the duration that has elapsed since the last time it was stopped.
+This may be useful if you forget to start the stopwatch, since you can start it and it'll tell you how long the stopwatch was idling.
+The precision of this output is affected by the [[*Precision][precision]] command.
+
+**** Reset
+#+begin_quote
+Resets the stopwatch.
+#+end_quote
+
+This command stops the stopwatch and sets its elapsed time to zero.
+
+**** Change
+#+begin_quote
+Stops and sets the elapsed time.
+#+end_quote
+
+This command prompts you for a new elapsed time.
+
+The duration will be parsed according to the [[*Duration input format][duration formats]].
+It must be positive.
+If the duration is invalid, it will be printed back with the errors colored red.
+
+**** Offset
+#+begin_quote
+Offsets the elapsed time by a positive or negative duration.
+#+end_quote
+
+This command prompts you for a positive or negative duration.
+If it parses according to the [[*Duration input format][duration formats]], the elapsed time will be offset by it without changing whether the stopwatch is running.
+Otherwise, the invalid duration will be printed with errors indicated in red.
+
+**** Name
+#+begin_quote
+Sets the name of the stopwatch.
+#+end_quote
+
+This command will prompt you to name the stopwatch.
+
+The name is purely for display: it's literal text that prefixes the [[*Prompt][prompt]].
+It may be useful for distinguishing the meaning of the stopwatch if you have multiple instances open.
+
+**** Precision
+#+begin_quote
+Sets the decimal precision used to display the subsecond component of durations.
+#+end_quote
+
+Several commands output formatted elapsed times and durations.
+This command is used to configure the decimal precision of this output.
+
+**** License
+#+begin_quote
+Prints license and copyright information for ~sw~.
+#+end_quote
+
+The first line of output contains the program's copyright notice.
+
+The second line contains the SPDX identifier of the license.
+
+**** Quit
+#+begin_quote
+Quits the program, abandoning all stopwatch state.
+#+end_quote
+
+Terminates the program with a successful exit code.
+
+~sw~ has no persistent state.
+
+*** Prompt
+~sw~ displays a prompt before commands are entered.
+
+The prompt contains the [[*Name][name]] of the stopwatch followed by a character indicating the stopwatch state.
+This indicator is ';' if the stopwatch is stopped and '*' if it's running.
+
+For example, if the stopwatch is named "work" and stopped, it will prompt with the following:
+#+begin_example
+work ; 
+#+end_example
+
+And if it's running:
+#+begin_example
+work * 
+#+end_example
+
+*** Duration input format
+The offset and change commands accept a duration as input.
+The following formats are supported.
+
+**** Stopwatch format
+# TODO: improve stopwatch format explanation
+
+#+begin_example
+float unit
+#+end_example
+
+~float~ is a floating point number, and ~unit~ is one of "s", "m", or "h", meaning seconds, minutes, and hours respectively.
+
+Whitespace is ignored, so ~1s~ is just as valid as ~1 s~.
+
+**** Unit format
+# TODO: improve unit format explanation
+
+#+begin_example
+sign hours : minutes : seconds . subseconds
+#+end_example
+
+The details shouldn't be surprising, it's a superset of how durations are displayed.
+
+~hours~, ~minutes~, ~seconds~ and ~subseconds~ are all integers.
+~minutes~ and ~seconds~ must be less than 60.
+
+~sign~ is optional, and one of ~+~ or ~-~.
+It indicates whether the duration is positive or negative, defaulting to positive.
+
+It's okay to omit separators and values.
+Rightmost values are the most important, so the meaning of the input will be inferred from right to left.
+
+Some examples of terse inputs:
+
+- ~:5~ and ~::5~ represent 5 seconds
+- ~:5:~ represents 5 minutes
+- ~:.6~ represents 0.6 seconds
+- ~1::1.1~ represents 1 hour and 1.1 seconds
+
+It's also okay to add whitespace between separators.
+
+** Contributions
+Tickets and improvements are welcome and appreciated!
+The [[https://github.com/ulahello/sw/issues][issue tracker]] is available on GitHub.
+
+Contributions will be licensed under the same license as ~sw~.
+
+** License
+~sw~ is licensed under the GNU General Public License v3.0 or later.
+
+See [[file:LICENSE][LICENSE]] for the full license text.
