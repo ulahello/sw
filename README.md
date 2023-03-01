@@ -77,6 +77,8 @@ anyways, `sw` has progressed since then, and is useful in a more general context
 
 tickets and improvements are welcome and appreciated!
 
+contributions are licensed under the same license as `sw`.
+
 ## license
 
 `GPL-3.0-or-later`, see [LICENSE](./LICENSE).
