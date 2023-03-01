@@ -54,48 +54,39 @@ impl<'shell> State<'shell> {
 
     pub fn update(&mut self) -> io::Result<Option<Passback>> {
         let mut passback = None;
-        let mut cmd = self.shell.create_cmd_buf();
-        match cmd.read_cmd(&self.name, self.sw.is_running())? {
+        let mut cb = self.shell.create_cmd_buf();
+        match cb.read_cmd(&self.name, self.sw.is_running())? {
             Ok(command) => match command {
                 Command::Help => {
-                    cmd.writeln(format_args!(
-                        "{}",
-                        concat!(
-                            "| command | description           |\n",
-                            "| ------- | --------------------- |\n",
-                            "| h       | show help             |\n",
-                            "| <enter> | display elapsed time  |\n",
-                            "| s       | toggle stopwatch      |\n",
-                            "| r       | reset stopwatch       |\n",
-                            "| c       | change elapsed time   |\n",
-                            "| o       | offset elapsed time   |\n",
-                            "| n       | name stopwatch        |\n",
-                            "| p       | set display precision |\n",
-                            "| l       | print license info    |\n",
-                            "| q       | Abandon all Data      |",
-                        )
-                    ))?;
+                    // TODO: be able to print help page for individual commands
+                    for help_cmd in Command::iter() {
+                        cb.writeln(format_args!(
+                            "{}: {}",
+                            help_cmd.short_name_display(),
+                            help_cmd.description()
+                        ))?;
+                    }
                 }
 
                 Command::Display => {
                     let now = Instant::now();
-                    cmd.writeln(format_args!(
+                    cb.writeln(format_args!(
                         "{}",
                         DurationFmt::new(self.sw.elapsed_at(now), self.prec)
                     ))?;
                     if self.sw.is_running() {
-                        cmd.writeln_color(
+                        cb.writeln_color(
                             ColorSpec::new().set_fg(Some(Color::Green)),
                             format_args!("running"),
                         )?;
                     } else {
-                        cmd.writeln_color(
+                        cb.writeln_color(
                             ColorSpec::new().set_fg(Some(Color::Yellow)),
                             format_args!("stopped"),
                         )?;
                     }
                     if self.sw.checked_elapsed_at(now).is_none() {
-                        cmd.error(format_args!("elapsed time overflowing"))?;
+                        cb.error(format_args!("elapsed time overflowing"))?;
                     }
                 }
 
@@ -113,17 +104,17 @@ impl<'shell> State<'shell> {
                     }
 
                     if self.sw.is_running() {
-                        cmd.info(format_args!("started stopwatch"))?;
-                        cmd.info_low(format_args!(
+                        cb.info(format_args!("started stopwatch"))?;
+                        cb.info_low(format_args!(
                             "{} since stopped",
                             DurationFmt::new(self.since_stop.elapsed_at(now), self.prec)
                         ))?;
                         self.since_stop.reset();
                         assert!(!sw_overflow);
                     } else {
-                        cmd.info(format_args!("stopped stopwatch"))?;
+                        cb.info(format_args!("stopped stopwatch"))?;
                         if sw_overflow {
-                            cmd.warn(format_args!(
+                            cb.warn(format_args!(
                                 "new elapsed time too large, clamped to maximum"
                             ))?;
                         }
@@ -135,88 +126,88 @@ impl<'shell> State<'shell> {
                         self.since_stop.start().unwrap();
                     }
                     self.sw.reset();
-                    cmd.info(format_args!("reset stopwatch"))?;
+                    cb.info(format_args!("reset stopwatch"))?;
                 }
 
                 Command::Change => {
-                    let input = cmd.read(format_args!("new elapsed? "))?;
+                    let input = cb.read(format_args!("new elapsed? "))?;
                     if let Some(try_read_dur) = ReadDur::parse(&input) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
                                 if is_neg {
-                                    cmd.error(format_args!("new elapsed time can't be negative"))?;
+                                    cb.error(format_args!("new elapsed time can't be negative"))?;
                                 } else {
                                     if self.sw.is_running() {
                                         self.since_stop.start().unwrap();
                                     }
                                     self.sw.set(dur);
-                                    cmd.info(format_args!("updated elapsed time"))?;
+                                    cb.info(format_args!("updated elapsed time"))?;
                                 }
                             }
 
-                            Err(err) => err.display(&mut cmd)?,
+                            Err(err) => err.display(&mut cb)?,
                         }
                     } else {
-                        cmd.info_low(format_args!("elapsed time unchanged"))?;
+                        cb.info_low(format_args!("elapsed time unchanged"))?;
                     }
                 }
 
                 Command::Offset => {
-                    let input = cmd.read(format_args!("offset by? "))?;
+                    let input = cb.read(format_args!("offset by? "))?;
                     if let Some(try_read_dur) = ReadDur::parse(&input) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) =>
                             {
                                 #[allow(clippy::collapsible_else_if)]
                                 if is_neg {
-                                    cmd.info(format_args!("subtracted from elapsed time"))?;
+                                    cb.info(format_args!("subtracted from elapsed time"))?;
                                     if let Some(new_sw) = self.sw.checked_sub(dur) {
                                         self.sw = new_sw;
                                     } else {
                                         self.sw.reset_in_place();
-                                        cmd.warn(format_args!("elapsed time clamped to zero"))?;
+                                        cb.warn(format_args!("elapsed time clamped to zero"))?;
                                     }
                                 } else {
                                     if let Some(new_sw) = self.sw.checked_add(dur) {
                                         self.sw = new_sw;
-                                        cmd.info(format_args!("added to elapsed time"))?;
+                                        cb.info(format_args!("added to elapsed time"))?;
                                     } else {
-                                        cmd.error(format_args!(
+                                        cb.error(format_args!(
                                             "cannot add offset, new elapsed time would overflow"
                                         ))?;
                                     }
                                 }
                             }
 
-                            Err(err) => err.display(&mut cmd)?,
+                            Err(err) => err.display(&mut cb)?,
                         }
                     } else {
-                        cmd.info_low(format_args!("no offset applied"))?;
+                        cb.info_low(format_args!("no offset applied"))?;
                     }
                 }
 
                 Command::Name => {
-                    let new = cmd.read(format_args!("new name? "))?;
+                    let new = cb.read(format_args!("new name? "))?;
                     if new == self.name {
-                        cmd.info_low(format_args!("name unchanged"))?;
+                        cb.info_low(format_args!("name unchanged"))?;
                     } else {
                         if new.is_empty() {
-                            cmd.info(format_args!("cleared name"))?;
+                            cb.info(format_args!("cleared name"))?;
                         } else {
-                            cmd.info(format_args!("set name"))?;
+                            cb.info(format_args!("set name"))?;
                         }
                         self.name = new;
                     }
                 }
 
                 Command::Precision => {
-                    let try_prec = cmd.read(format_args!("new precision? "))?;
+                    let try_prec = cb.read(format_args!("new precision? "))?;
                     if try_prec.is_empty() {
                         if self.prec == Self::DEFAULT_PRECISION {
-                            cmd.info_low(format_args!("precision unchanged"))?;
+                            cb.info_low(format_args!("precision unchanged"))?;
                         } else {
                             self.prec = Self::DEFAULT_PRECISION;
-                            cmd.info(format_args!(
+                            cb.info(format_args!(
                                 "reset precision to {}",
                                 Self::DEFAULT_PRECISION
                             ))?;
@@ -225,34 +216,34 @@ impl<'shell> State<'shell> {
                         match try_prec.parse() {
                             Ok(prec) => {
                                 if let Err(clamped) = Self::set_prec(&mut self.prec, prec) {
-                                    cmd.warn(format_args!("precision clamped to {clamped}"))?;
+                                    cb.warn(format_args!("precision clamped to {clamped}"))?;
                                 } else {
-                                    cmd.info(format_args!("updated precision"))?;
+                                    cb.info(format_args!("updated precision"))?;
                                 }
                             }
-                            Err(err) => cmd.error(format_args!("{err}"))?,
+                            Err(err) => cb.error(format_args!("{err}"))?,
                         }
                     }
                 }
 
                 Command::License => {
-                    cmd.writeln(format_args!(
+                    cb.writeln(format_args!(
                         "copyright (C) 2022-2023 {}",
                         env!("CARGO_PKG_AUTHORS")
                     ))?;
-                    cmd.writeln(format_args!("licensed under {}", env!("CARGO_PKG_LICENSE")))?;
+                    cb.writeln(format_args!("licensed under {}", env!("CARGO_PKG_LICENSE")))?;
                 }
 
                 Command::Quit => {
                     /* quit message comes from foot terminal
                      * (https://codeberg.org/dnkl/foot) */
-                    cmd.info_low(format_args!("goodbye"))?;
+                    cb.info_low(format_args!("goodbye"))?;
                     assert!(passback.is_none());
                     passback = Some(Passback::Quit);
                 }
             },
 
-            Err(unk) => cmd.error(format_args!(
+            Err(unk) => cb.error(format_args!(
                 r#"unknown command '{unk}' (try "h" for help)"#
             ))?,
         }

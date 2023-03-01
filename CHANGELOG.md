@@ -4,6 +4,8 @@
 ### added
 * added status messages for all commands
   * commands should never output nothing
+* change help command format
+  * no longer a markdown table, it's very plain now
 
 ## [0.10.0] - 2023-02-19
 ### added

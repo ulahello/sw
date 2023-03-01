@@ -2,7 +2,6 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use core::fmt;
 use core::str::FromStr;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -22,7 +21,7 @@ pub enum Command {
 use Command::*;
 
 impl Command {
-    pub fn as_str(&self) -> &'static str {
+    pub const fn short_name_literal(&self) -> &'static str {
         match self {
             Help => "h",
             Display => "",
@@ -36,11 +35,48 @@ impl Command {
             Quit => "q",
         }
     }
-}
 
-impl fmt::Display for Command {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(self.as_str())
+    pub const fn short_name_display(&self) -> &'static str {
+        match self {
+            Display => "(enter)",
+            _ => self.short_name_literal(),
+        }
+    }
+
+    pub const fn long_name(&self) -> &'static str {
+        match self {
+            Help => "help",
+            Display => "display",
+            Toggle => "toggle",
+            Reset => "reset",
+            Change => "change",
+            Offset => "offset",
+            Name => "name",
+            Precision => "precision",
+            License => "license",
+            Quit => "quit",
+        }
+    }
+
+    pub const fn description(&self) -> &'static str {
+        match self {
+            Help => "show help",
+            Display => "display elapsed time",
+            Toggle => "toggle stopwatch",
+            Reset => "reset stopwatch",
+            Change => "change elapsed time",
+            Offset => "offset elapsed time",
+            Name => "name stopwatch",
+            Precision => "set display precision",
+            License => "print license info",
+            Quit => "Abandon all Data",
+        }
+    }
+
+    pub const fn iter() -> &'static [Self] {
+        &[
+            Help, Display, Toggle, Reset, Change, Offset, Name, Precision, License, Quit,
+        ]
     }
 }
 
