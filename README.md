@@ -2,14 +2,13 @@
 
 `sw` is a simple terminal stopwatch which runs as a shell.
 
-you interact with it by typing commands and responding to prompts.
-
 ## usage
 
-after running `sw`, type `h` (for "help") to list the commands.
-this is all you really need to know.
+you interact with `sw` by entering a command and responding to any following prompts.
 
-the core commands are `<enter>` to display the elapsed time, `s` to start or stop timing, and `r` to reset the stopwatch state.
+the main commands to be aware of are `<enter>` to display the elapsed time, `s` to start or stop timing, and `r` to reset the stopwatch state.
+
+you can list the commands and their description with the help command, `h`.
 
 `sw` also allows you to modify the elapsed time.
 you can change it with `c`, or offset it by a positive or negative duration with `o`.
@@ -50,6 +49,7 @@ it's okay to omit separators and values.
 rightmost values are the most important, so the meaning of the input will be inferred from right to left.
 
 some examples of terse inputs:
+
 - `:5` and `::5` represent 5 seconds
 - `:5:` represents 5 minutes
 - `:.6` represents 0.6 seconds
@@ -71,7 +71,7 @@ start = time()
 t += time() - start
 ```
 
-anyways, `sw` has progressed since then, and is useful in a more general context.
+anyhow, `sw` has progressed since then and should be helpful outside of this narrow use case.
 
 ## contributions
 
