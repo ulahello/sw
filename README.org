@@ -54,6 +54,10 @@ Resets the stopwatch.
 This command stops the stopwatch and sets its elapsed time to zero.
 
 **** Change
+:PROPERTIES:
+:CUSTOM_ID: change
+:END:
+
 Stops and sets the elapsed time.
 
 This command prompts you for a new elapsed time.
@@ -63,6 +67,10 @@ It must be positive.
 If the duration is invalid, it will be printed back with the errors colored red.
 
 **** Offset
+:PROPERTIES:
+:CUSTOM_ID: offset
+:END:
+
 Offsets the elapsed time by a positive or negative duration.
 
 This command prompts you for a positive or negative duration.
@@ -130,7 +138,7 @@ work *
 :CUSTOM_ID: dur-input-format
 :END:
 
-The offset and change commands accept a duration as input.
+The [[#offset][offset]] and [[#change][change]] commands accept a duration as input.
 The following formats are supported.
 
 **** Stopwatch format
