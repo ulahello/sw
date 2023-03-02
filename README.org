@@ -25,16 +25,12 @@ The "input" field shows which key combination maps to the command.
 | Quit         | q       | Abandon all Data      |
 
 **** Help
-#+begin_quote
 Lists the available commands and their description.
-#+end_quote
 
 Each line of the output corresponds to a command, and contains the required key combination and a description of the command.
 
 **** Display
-#+begin_quote
 Displays the state of the stopwatch.
-#+end_quote
 
 The first line of output contains the elapsed time.
 The subsecond precision of this output is affected by the [[#precision][precision]] command.
@@ -42,9 +38,7 @@ The subsecond precision of this output is affected by the [[#precision][precisio
 The second line indicates whether the stopwatch is running or stopped.
 
 **** Toggle
-#+begin_quote
 Toggles whether the stopwatch is running or stopped.
-#+end_quote
 
 If the stopwatch is running, it is stopped.
 If the new elapsed time overflows, it prints a warning.
@@ -55,16 +49,12 @@ This may be useful if you forget to start the stopwatch, since you can start it 
 The precision of this output is affected by the [[#precision][precision]] command.
 
 **** Reset
-#+begin_quote
 Resets the stopwatch.
-#+end_quote
 
 This command stops the stopwatch and sets its elapsed time to zero.
 
 **** Change
-#+begin_quote
 Stops and sets the elapsed time.
-#+end_quote
 
 This command prompts you for a new elapsed time.
 
@@ -73,9 +63,7 @@ It must be positive.
 If the duration is invalid, it will be printed back with the errors colored red.
 
 **** Offset
-#+begin_quote
 Offsets the elapsed time by a positive or negative duration.
-#+end_quote
 
 This command prompts you for a positive or negative duration.
 If it parses according to the [[#dur-input-format][duration formats]], the elapsed time will be offset by it without changing whether the stopwatch is running.
@@ -86,9 +74,7 @@ Otherwise, the invalid duration will be printed with errors indicated in red.
 :CUSTOM_ID: name
 :END:
 
-#+begin_quote
 Sets the name of the stopwatch.
-#+end_quote
 
 This command will prompt you to name the stopwatch.
 
@@ -100,26 +86,20 @@ It may be useful for distinguishing the meaning of the stopwatch if you have mul
 :CUSTOM_ID: precision
 :END:
 
-#+begin_quote
 Sets the decimal precision used to display the subsecond component of durations.
-#+end_quote
 
 Several commands output formatted elapsed times and durations.
 This command is used to configure the decimal precision of this output.
 
 **** License
-#+begin_quote
 Prints license and copyright information for ~sw~.
-#+end_quote
 
 The first line of output contains the program's copyright notice.
 
 The second line contains the SPDX identifier of the license.
 
 **** Quit
-#+begin_quote
 Quits the program, abandoning all stopwatch state.
-#+end_quote
 
 Terminates the program with a successful exit code.
 
