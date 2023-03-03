@@ -3,46 +3,139 @@
 // licensed under GPL-3.0-or-later
 
 use termcolor::ColorSpec;
-use unicode_segmentation::{GraphemeIndices, UnicodeSegmentation};
 
-use core::iter::{Peekable, Rev};
-use core::num::{ParseFloatError, ParseIntError};
-use core::time::{Duration, TryFromFloatSecsError};
-use core::{fmt, ops};
+use core::fmt;
+use core::time::Duration;
 use std::io;
 
 use crate::shell::{CmdBuf, ERROR};
+
+mod sw;
+mod unit;
+
+use sw::SwErrKind;
+use unit::UnitErrKind;
 
 const SEC_PER_MIN: u8 = 60;
 const MIN_PER_HOUR: u8 = 60;
 const SEC_PER_HOUR: u16 = 3600;
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub(crate) enum Unit {
-    Second,
-    Minute,
-    Hour,
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub struct ReadDur {
+    pub dur: Duration,
+    pub is_neg: bool,
 }
 
-impl Unit {
-    #[inline]
-    pub fn from_grapheme(grapheme: &str) -> Result<Self, &str> {
-        match grapheme {
-            "s" => Ok(Self::Second),
-            "m" => Ok(Self::Minute),
-            "h" => Ok(Self::Hour),
-            unk => Err(unk),
+impl ReadDur {
+    pub fn parse(s: &str) -> Option<Result<Self, ParseErr>> {
+        if s.is_empty() {
+            None
+        } else {
+            let parsed = match Self::parse_as_unit(s) {
+                Ok(unit_ok) => Ok(unit_ok),
+                Err(unit_err) => match Self::parse_as_sw(s) {
+                    Ok(sw_ok) => Ok(sw_ok),
+                    Err(sw_err) => {
+                        if s.as_bytes().contains(&b':') {
+                            Err(sw_err)
+                        } else {
+                            Err(unit_err)
+                        }
+                    }
+                },
+            };
+            Some(parsed)
         }
     }
 }
 
-impl fmt::Display for Unit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(match self {
-            Self::Second => "second",
-            Self::Minute => "minute",
-            Self::Hour => "hour",
-        })
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum ErrKind<'s> {
+    Unit(UnitErrKind<'s>),
+    Sw(SwErrKind),
+}
+
+impl<'s> From<SwErrKind> for ErrKind<'s> {
+    fn from(sw: SwErrKind) -> Self {
+        Self::Sw(sw)
+    }
+}
+impl<'s> From<UnitErrKind<'s>> for ErrKind<'s> {
+    fn from(unit: UnitErrKind<'s>) -> Self {
+        Self::Unit(unit)
+    }
+}
+
+#[allow(clippy::module_name_repetitions)]
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct ParseErr<'s> {
+    src: &'s str,
+    span: ByteSpan<'s>,
+    kind: ErrKind<'s>,
+}
+
+impl<'s> ParseErr<'s> {
+    #[inline]
+    pub(crate) fn new(span: ByteSpan<'s>, kind: impl Into<ErrKind<'s>>) -> Self {
+        Self {
+            src: span.src,
+            span,
+            kind: kind.into(),
+        }
+    }
+
+    pub fn display(&self, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
+        /* TODO: method of bringing attention to the bad text is by color, but
+         * user might not be using color terminal or that may not be effective
+         * way to highlight for them*/
+
+        /* write source text with span red and bold */
+        // text before span
+        cmd.write(format_args!("{}", self.span.get_before()))?;
+
+        // red span text
+        cmd.write_color(
+            ColorSpec::new().set_fg(Some(ERROR)),
+            format_args!("{}", self.span.get()),
+        )?;
+
+        // text after span
+        cmd.writeln(format_args!("{}", self.span.get_after()))?;
+
+        /* write error message */
+        cmd.error(format_args!("{self}"))?;
+
+        /* write help message */
+        if self.has_help_message() {
+            cmd.info_idle(format_args!("note: {self:#}"))?;
+        }
+
+        Ok(())
+    }
+}
+
+impl ParseErr<'_> {
+    fn has_help_message(&self) -> bool {
+        match &self.kind {
+            ErrKind::Unit(unit) => unit.has_help_message(),
+            ErrKind::Sw(sw) => sw.has_help_message(),
+        }
+    }
+}
+
+impl fmt::Display for ParseErr<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        if f.alternate() {
+            match &self.kind {
+                ErrKind::Unit(unit) => write!(f, "{unit:#}"),
+                ErrKind::Sw(sw) => write!(f, "{sw:#}"),
+            }
+        } else {
+            match &self.kind {
+                ErrKind::Unit(unit) => write!(f, "{unit}"),
+                ErrKind::Sw(sw) => write!(f, "{sw}"),
+            }
+        }
     }
 }
 
@@ -83,536 +176,31 @@ impl<'s> ByteSpan<'s> {
     }
 }
 
-#[allow(clippy::module_name_repetitions)]
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub struct ParseErr<'s> {
-    src: &'s str,
-    span: ByteSpan<'s>,
-    kind: ErrKind<'s>,
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) enum Unit {
+    Second,
+    Minute,
+    Hour,
 }
 
-#[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum ErrKind<'s> {
-    /* unit format */
-    UnitUnitMissing,
-    UnitUnitUnknown(&'s str),
-    UnitFloatMissing(Unit),
-    UnitFloat { err: ParseFloatError, unit: Unit },
-    UnitDur(TryFromFloatSecsError),
-
-    /* sw format */
-    SwUnexpectedColon,
-    SwUnexpectedDot(Group),
-    SwUnexpectedSign { is_neg: bool },
-    SwInt { group: Group, err: ParseIntError },
-    SwDurationOverflow(Group),
-    SwSubsecondsTooLong,
-    SwGroupExcess(Group),
-}
-
-impl<'s> ParseErr<'s> {
+impl Unit {
     #[inline]
-    pub(crate) const fn new(span: ByteSpan<'s>, kind: ErrKind<'s>) -> Self {
-        Self {
-            src: span.src,
-            span,
-            kind,
-        }
-    }
-
-    pub fn display(&self, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
-        /* TODO: method of bringing attention to the bad text is by color, but
-         * user might not be using color terminal or that may not be effective
-         * way to highlight for them*/
-
-        /* write source text with span red and bold */
-        // text before span
-        cmd.write(format_args!("{}", self.span.get_before()))?;
-
-        // red span text
-        cmd.write_color(
-            ColorSpec::new().set_fg(Some(ERROR)),
-            format_args!("{}", self.span.get()),
-        )?;
-
-        // text after span
-        cmd.writeln(format_args!("{}", self.span.get_after()))?;
-
-        /* write error message */
-        cmd.error(format_args!("{self}"))?;
-
-        /* write help message */
-        if self.has_help_message() {
-            cmd.info_idle(format_args!("note: {self:#}"))?;
-        }
-
-        Ok(())
-    }
-}
-
-impl ParseErr<'_> {
-    fn has_help_message(&self) -> bool {
-        match &self.kind {
-            ErrKind::UnitUnitMissing
-            | ErrKind::UnitFloat { .. }
-            | ErrKind::UnitFloatMissing(_)
-            | ErrKind::UnitUnitUnknown(_)
-            | ErrKind::SwUnexpectedColon
-            | ErrKind::SwUnexpectedDot(_)
-            | ErrKind::SwDurationOverflow(_)
-            | ErrKind::SwInt { .. }
-            | ErrKind::SwGroupExcess(_) => true,
-
-            ErrKind::UnitDur(_)
-            | ErrKind::SwUnexpectedSign { .. }
-            | ErrKind::SwSubsecondsTooLong => false,
+    pub fn from_grapheme(grapheme: &str) -> Result<Self, &str> {
+        match grapheme {
+            "s" => Ok(Self::Second),
+            "m" => Ok(Self::Minute),
+            "h" => Ok(Self::Hour),
+            unk => Err(unk),
         }
     }
 }
 
-impl fmt::Display for ParseErr<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        if f.alternate() {
-            match &self.kind {
-                ErrKind::UnitUnitMissing | ErrKind::UnitUnitUnknown(_) => {
-                    write!(f, "use 's' for seconds, 'm' for minutes, and 'h' for hours")
-                }
-                ErrKind::UnitFloat { err: _, unit } | ErrKind::UnitFloatMissing(unit) => {
-                    write!(f, "expected the number of {unit}s")
-                }
-
-                ErrKind::SwUnexpectedColon => {
-                    write!(f, "there is no colon before {}", Group::Hours)
-                }
-                ErrKind::SwUnexpectedDot(group) => {
-                    assert_ne!(*group, Group::SecondsSub);
-                    if *group == Group::SecondsInt {
-                        write!(
-                            f,
-                            "decimal point was already given for {}",
-                            Group::SecondsSub
-                        )
-                    } else {
-                        write!(
-                            f,
-                            "found in {group}, but only {} can have fractional values",
-                            Group::SecondsInt
-                        )
-                    }
-                }
-                ErrKind::SwDurationOverflow(_) => {
-                    write!(f, "this duration is too large to be represented")
-                }
-                ErrKind::SwGroupExcess(group) => {
-                    write!(f, "{group} must be less than {}", group.max())
-                }
-                ErrKind::SwInt { group, err: _ } => write!(f, "{group} are parsed as an integer"),
-
-                ErrKind::UnitDur(_)
-                | ErrKind::SwUnexpectedSign { .. }
-                | ErrKind::SwSubsecondsTooLong => unreachable!(),
-            }
-        } else {
-            match &self.kind {
-                ErrKind::UnitUnitMissing => write!(f, "missing unit"),
-                ErrKind::UnitUnitUnknown(unk) => write!(f, "unrecognised unit '{unk}'"),
-                ErrKind::UnitFloatMissing(_) => write!(f, "unit given, but missing value"),
-                ErrKind::UnitFloat { err, unit: _ } => write!(f, "{err}"),
-                ErrKind::UnitDur(err) => write!(f, "{err}"),
-
-                ErrKind::SwUnexpectedColon => write!(f, "unexpected colon"),
-                ErrKind::SwUnexpectedDot(_) => write!(f, "unexpected decimal point"),
-                ErrKind::SwUnexpectedSign { is_neg: _ } => {
-                    write!(f, "sign must be given at the beginning")
-                }
-                ErrKind::SwInt { group: _, err } => write!(f, "{err}"),
-                ErrKind::SwDurationOverflow(group) => {
-                    write!(f, "duration oveflow while parsing {group}")
-                }
-
-                ErrKind::SwSubsecondsTooLong => {
-                    write!(f, "too many characters in {}", Group::SecondsSub)
-                }
-                ErrKind::SwGroupExcess(group) => write!(f, "value is out of range for {group}"),
-            }
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub struct ReadDur {
-    pub dur: Duration,
-    pub is_neg: bool,
-}
-
-impl ReadDur {
-    pub fn parse(s: &str) -> Option<Result<Self, ParseErr>> {
-        if s.is_empty() {
-            None
-        } else {
-            let parsed = match Self::parse_as_unit(s) {
-                Ok(unit_ok) => Ok(unit_ok),
-                Err(unit_err) => match Self::parse_as_sw(s) {
-                    Ok(sw_ok) => Ok(sw_ok),
-                    Err(sw_err) => {
-                        if s.as_bytes().contains(&b':') {
-                            Err(sw_err)
-                        } else {
-                            Err(unit_err)
-                        }
-                    }
-                },
-            };
-            Some(parsed)
-        }
-    }
-
-    pub fn parse_as_unit(s: &str) -> Result<Self, ParseErr> {
-        // whitespace? + float + whitespace? + unit
-
-        let (try_unit_idx, try_unit) = UnicodeSegmentation::grapheme_indices(s, true)
-            .peekable()
-            .last()
-            .ok_or(ParseErr::new(
-                ByteSpan::new(0, s.len(), s),
-                ErrKind::UnitUnitMissing,
-            ))?;
-
-        let unit = Unit::from_grapheme(try_unit).ok().ok_or(ParseErr::new(
-            ByteSpan::new(try_unit_idx, try_unit.len(), s),
-            ErrKind::UnitUnitUnknown(try_unit),
-        ))?;
-
-        let len = try_unit_idx;
-        let float_str = &s[..len].trim();
-        if float_str.is_empty() {
-            return Err(ParseErr::new(
-                ByteSpan::new(0, len, s),
-                ErrKind::UnitFloatMissing(unit),
-            ));
-        }
-
-        // TODO: don't use floats
-        match float_str.parse::<f64>() {
-            Ok(mut float) => {
-                match unit {
-                    Unit::Second => (),
-                    Unit::Minute => float *= f64::from(SEC_PER_MIN),
-                    Unit::Hour => float *= f64::from(SEC_PER_HOUR),
-                }
-                let secs = float.abs();
-
-                match Duration::try_from_secs_f64(secs) {
-                    Ok(dur) => {
-                        let is_neg = float.is_sign_negative();
-                        Ok(ReadDur { dur, is_neg })
-                    }
-                    Err(dur_err) => Err(ParseErr::new(
-                        ByteSpan::new(0, len, s),
-                        ErrKind::UnitDur(dur_err),
-                    )),
-                }
-            }
-
-            Err(float_err) => Err(ParseErr::new(
-                ByteSpan::new(0, len, s),
-                ErrKind::UnitFloat {
-                    err: float_err,
-                    unit,
-                },
-            )),
-        }
-    }
-
-    pub fn parse_as_sw(s: &str) -> Result<Self, ParseErr> {
-        /* split string into groups of hours, minutes, etc */
-        let (groups, is_neg): (Groups, bool) = {
-            // NOTE: the lexer scans IN REVERSE
-            let mut lexer = SwLexer::new(s).peekable();
-            let mut cur = Group::SecondsSub;
-            let mut groups = Groups::new(s);
-            let mut is_neg = None;
-            while let Some(token) = lexer.next() {
-                match (cur, token.typ) {
-                    (Group::SecondsSub, SwTokenKind::Colon) => {
-                        // turns out the cur has been SecondsInt this whole
-                        // time!
-                        let tmp = groups[cur];
-                        groups[cur] = ByteSpan::new(0, 0, s);
-                        cur = Group::SecondsInt;
-                        groups[cur] = tmp;
-
-                        // now that we're SecondsInt and encountering a colon,
-                        // transition.
-                        cur = Group::Minutes;
-                    }
-                    (Group::SecondsSub, SwTokenKind::Dot) => cur = Group::SecondsInt,
-                    (Group::SecondsSub, SwTokenKind::Data) => {
-                        // NOTE: the question im asking is: "are there are no
-                        // colons after this current token?" the way im asking
-                        // it is "is this the last token or is the next token a
-                        // sign, regardless of whether its the last because
-                        // signs are only correctly parsed as the last"
-                        let next_typ = lexer.peek().map(|token| token.typ);
-                        if next_typ.is_none()
-                            || next_typ == Some(SwTokenKind::Pos)
-                            || next_typ == Some(SwTokenKind::Neg)
-                        {
-                            cur = Group::SecondsInt;
-                        }
-                        groups[cur] = token.span;
-                    }
-
-                    (Group::SecondsInt, SwTokenKind::Colon) => cur = Group::Minutes,
-
-                    (Group::Minutes, SwTokenKind::Colon) => cur = Group::Hours,
-
-                    (Group::Hours, SwTokenKind::Colon) => {
-                        return Err(ParseErr::new(token.span, ErrKind::SwUnexpectedColon));
-                    }
-
-                    (_, SwTokenKind::Data) => groups[cur] = token.span,
-                    (_, SwTokenKind::Dot) => {
-                        return Err(ParseErr::new(token.span, ErrKind::SwUnexpectedDot(cur)));
-                    }
-
-                    (_, SwTokenKind::Pos) => {
-                        if lexer.peek().is_none() {
-                            is_neg = Some(false);
-                        } else {
-                            return Err(ParseErr::new(
-                                token.span,
-                                ErrKind::SwUnexpectedSign { is_neg: false },
-                            ));
-                        }
-                    }
-                    (_, SwTokenKind::Neg) => {
-                        if lexer.peek().is_none() {
-                            is_neg = Some(true);
-                        } else {
-                            return Err(ParseErr::new(
-                                token.span,
-                                ErrKind::SwUnexpectedSign { is_neg: true },
-                            ));
-                        }
-                    }
-                }
-            }
-            (groups, is_neg.unwrap_or(false))
-        };
-
-        /* parse group substrings into an actual duration */
-        let mut dur = Duration::ZERO;
-
-        // hours, minutes, seconds (whole)
-        for (group, sec_per_unit) in [
-            (Group::Hours, u64::from(SEC_PER_HOUR)),
-            (Group::Minutes, u64::from(SEC_PER_MIN)),
-            (Group::SecondsInt, 1),
-        ] {
-            let span = groups[group];
-            let to_parse = span.get().trim();
-            /* NOTE: we're trimming after we get the span, meaning the to_parse
-             * doesn't reflect the span. */
-            if !to_parse.is_empty() {
-                match to_parse.parse::<u64>() {
-                    Ok(units) => {
-                        if units >= group.max() {
-                            return Err(ParseErr::new(span, ErrKind::SwGroupExcess(group)));
-                        }
-                        let secs = units.checked_mul(sec_per_unit).ok_or_else(|| {
-                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
-                        })?;
-                        dur = dur.checked_add(Duration::from_secs(secs)).ok_or_else(|| {
-                            ParseErr::new(span, ErrKind::SwDurationOverflow(group))
-                        })?;
-                    }
-
-                    Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt { group, err })),
-                }
-            }
-        }
-
-        // subseconds
-        {
-            let group = Group::SecondsSub;
-            let span = groups[group];
-            let to_parse = span.get();
-            if !to_parse.trim().is_empty() {
-                let mut nanos: u32 = 0;
-                let mut place: u32 = group.max().try_into().unwrap();
-                let mut graphs = UnicodeSegmentation::graphemes(to_parse, true).peekable();
-
-                // skip whitespace but maintain accurate span
-                let mut err_span = span;
-                while let Some(grapheme) = graphs.peek() {
-                    if grapheme.chars().all(char::is_whitespace) {
-                        err_span.shift_start_right(grapheme.len());
-                        graphs.next();
-                    } else {
-                        break;
-                    }
-                }
-
-                for chr in graphs {
-                    if place == 1 {
-                        return Err(ParseErr::new(err_span, ErrKind::SwSubsecondsTooLong));
-                    }
-                    assert!(place % 10 == 0, "{place} must be divisible by 10");
-                    place /= 10;
-
-                    err_span.shift_start_right(chr.len());
-
-                    match chr.parse::<u8>() {
-                        Ok(digit) => {
-                            assert!(digit < 10);
-                            nanos += u32::from(digit) * place;
-                        }
-                        Err(err) => return Err(ParseErr::new(span, ErrKind::SwInt { group, err })),
-                    }
-                }
-                dur = dur
-                    .checked_add(Duration::from_nanos(nanos.into()))
-                    .ok_or_else(|| ParseErr::new(span, ErrKind::SwDurationOverflow(group)))?;
-            }
-        }
-
-        Ok(Self { dur, is_neg })
-    }
-}
-
-struct SwLexer<'s> {
-    content: Peekable<Rev<GraphemeIndices<'s>>>,
-    s: &'s str,
-}
-
-impl<'s> SwLexer<'s> {
-    pub(crate) fn new(s: &'s str) -> Self {
-        Self {
-            content: UnicodeSegmentation::grapheme_indices(s, true)
-                .rev()
-                .peekable(),
-            s,
-        }
-    }
-}
-
-impl<'s> Iterator for SwLexer<'s> {
-    type Item = SwToken<'s>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        let next = loop {
-            let next = self.content.next()?;
-            if !next.1.chars().all(char::is_whitespace) {
-                // only yield non-whitespace grapheme. Data still may contain
-                // leading whitespace, but this prevents a Data token being
-                // yielded that only contains whitespace
-                break next;
-            }
-        };
-        let mut span = ByteSpan::new(next.0, next.1.len(), self.s);
-        match next.1 {
-            ":" => Some(SwToken {
-                typ: SwTokenKind::Colon,
-                span,
-            }),
-            "." => Some(SwToken {
-                typ: SwTokenKind::Dot,
-                span,
-            }),
-            "+" => Some(SwToken {
-                typ: SwTokenKind::Pos,
-                span,
-            }),
-            "-" => Some(SwToken {
-                typ: SwTokenKind::Neg,
-                span,
-            }),
-            _ => {
-                while let Some(d_next) = self.content.peek() {
-                    match d_next.1 {
-                        // TODO: handling single grapheme tokens in two places
-                        ":" | "." | "+" | "-" => break,
-                        _ => {
-                            span.shift_start_left(d_next.1.len());
-                            self.content.next();
-                            continue;
-                        }
-                    }
-                }
-                Some(SwToken {
-                    typ: SwTokenKind::Data,
-                    span,
-                })
-            }
-        }
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum SwTokenKind {
-    Colon,
-    Dot,
-    Pos,
-    Neg,
-    Data,
-}
-
-#[derive(Debug)]
-struct SwToken<'s> {
-    typ: SwTokenKind,
-    span: ByteSpan<'s>,
-}
-
-#[derive(Debug)]
-struct Groups<'s>([ByteSpan<'s>; 4]);
-
-impl<'s> Groups<'s> {
-    pub(crate) fn new(s: &'s str) -> Self {
-        Self([ByteSpan::new(0, 0, s); 4])
-    }
-}
-
-impl<'s> ops::Index<Group> for Groups<'s> {
-    type Output = ByteSpan<'s>;
-
-    fn index(&self, idx: Group) -> &Self::Output {
-        &self.0[idx as usize]
-    }
-}
-
-impl<'s> ops::IndexMut<Group> for Groups<'s> {
-    fn index_mut(&mut self, idx: Group) -> &mut Self::Output {
-        &mut self.0[idx as usize]
-    }
-}
-
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum Group {
-    Hours,
-    Minutes,
-    SecondsInt,
-    SecondsSub,
-}
-
-impl Group {
-    pub(crate) fn max(self) -> u64 {
-        match self {
-            Self::Hours => u64::MAX / u64::from(SEC_PER_HOUR) + 1,
-            Self::Minutes => MIN_PER_HOUR.into(),
-            Self::SecondsInt => SEC_PER_MIN.into(),
-            Self::SecondsSub => Duration::from_secs(1).as_nanos().try_into().unwrap(),
-        }
-    }
-}
-
-impl fmt::Display for Group {
+impl fmt::Display for Unit {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str(match self {
-            Group::Hours => "hours",
-            Group::Minutes => "minutes",
-            Group::SecondsInt => "seconds",
-            Group::SecondsSub => "subseconds",
+            Self::Second => "second",
+            Self::Minute => "minute",
+            Self::Hour => "hour",
         })
     }
 }
