@@ -14,6 +14,7 @@ pub enum Command {
     Offset,
     Name,
     Precision,
+    Visuals,
     License,
     Quit,
 }
@@ -31,6 +32,7 @@ impl Command {
             Offset => "o",
             Name => "n",
             Precision => "p",
+            Visuals => "v",
             License => "l",
             Quit => "q",
         }
@@ -53,6 +55,7 @@ impl Command {
             Offset => "offset",
             Name => "name",
             Precision => "precision",
+            Visuals => "visuals",
             License => "license",
             Quit => "quit",
         }
@@ -68,6 +71,7 @@ impl Command {
             Offset => "offset elapsed time",
             Name => "name stopwatch",
             Precision => "set display precision",
+            Visuals => "toggle visual cues",
             License => "print license info",
             Quit => "Abandon all Data",
         }
@@ -75,7 +79,7 @@ impl Command {
 
     pub const fn iter() -> &'static [Self] {
         &[
-            Help, Display, Toggle, Reset, Change, Offset, Name, Precision, License, Quit,
+            Help, Display, Toggle, Reset, Change, Offset, Name, Precision, Visuals, License, Quit,
         ]
     }
 }
@@ -93,6 +97,7 @@ impl FromStr for Command {
             "o" => Ok(Offset),
             "n" => Ok(Name),
             "p" => Ok(Precision),
+            "v" => Ok(Visuals),
             "l" => Ok(License),
             "q" => Ok(Quit),
             _ => Err(()),

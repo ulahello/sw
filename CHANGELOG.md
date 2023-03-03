@@ -4,6 +4,7 @@
 ### added
 * rewrote README
 * added `--no-visual-cues` flag to remove text-based graphics and visual cues
+* added `v` command to toggle visual cues
 * added status messages for all commands
   * commands should never output nothing
 * added help message for parsing unit format when value is missing or invalid

@@ -166,6 +166,10 @@ impl CmdBuf<'_> {
         self.shell.visual_cues
     }
 
+    pub fn set_visual_cues(&mut self, new: bool) {
+        self.shell.visual_cues = new;
+    }
+
     pub fn read_cmd(
         &mut self,
         name: &str,

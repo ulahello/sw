@@ -228,6 +228,18 @@ impl<'shell> State<'shell> {
                     }
                 }
 
+                Command::Visuals => {
+                    cb.set_visual_cues(!cb.visual_cues());
+                    cb.info_change(format_args!(
+                        "visual cues {}",
+                        if cb.visual_cues() {
+                            "enabled"
+                        } else {
+                            "disabled"
+                        }
+                    ))?;
+                }
+
                 Command::License => {
                     cb.writeln(format_args!(
                         "copyright (C) 2022-2023 {}",

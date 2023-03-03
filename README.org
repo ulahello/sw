@@ -4,6 +4,9 @@
 ~sw~ is a terminal stopwatch that runs as a shell.
 
 ** Usage
+*** Arguments
+# TODO: document cli args
+
 *** Commands
 The interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
 
@@ -20,6 +23,7 @@ The "input" field shows which key combination maps to the command.
 | Offset       | o       | Offset elapsed time   |
 | Name         | n       | Name stopwatch        |
 | Precision    | p       | Set display precision |
+| Visuals      | v       | Toggle visual cues    |
 | License      | l       | Print license info    |
 | Quit         | q       | Abandon all Data      |
 
@@ -103,6 +107,11 @@ Sets the decimal precision used to display the subsecond component of durations.
 
 Several commands output formatted elapsed times and durations.
 This command is used to configure the decimal precision of this output.
+
+**** Visuals
+Toggles whether text-based graphics and visual cues are enabled (they are by default).
+
+This parameter can be controlled with the ~--no-visual-cues~ flag.
 
 **** License
 Prints license and copyright information for ~sw~.
