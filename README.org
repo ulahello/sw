@@ -5,7 +5,17 @@
 
 ** Usage
 *** Arguments
-# TODO: document cli args
+**** ~--help~
+Display usage information.
+
+**** ~--no-visual-cues~
+:PROPERTIES:
+:CUSTOM_ID: --no-visual-cues
+:END:
+
+Disable text-based graphics and visual cues.
+
+To toggle this value at runtime, use the [[#visuals][visuals]] command.
 
 *** Commands
 The interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
@@ -109,9 +119,13 @@ Several commands output formatted elapsed times and durations.
 This command is used to configure the decimal precision of this output.
 
 **** Visuals
+:PROPERTIES:
+:CUSTOM_ID: visuals
+:END:
+
 Toggles whether text-based graphics and visual cues are enabled (they are by default).
 
-This parameter can be controlled with the ~--no-visual-cues~ flag.
+This parameter can be controlled with the [[#--no-visual-cues][~--no-visual-cues~]] flag.
 
 **** License
 Prints license and copyright information for ~sw~.
