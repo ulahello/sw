@@ -118,6 +118,8 @@ Sets the decimal precision used to display the subsecond component of durations.
 Several commands output formatted elapsed times and durations.
 This command is used to configure the decimal precision of this output.
 
+The default precision is 2, meaning two subsecond digits will be displayed.
+
 **** Visuals
 :PROPERTIES:
 :CUSTOM_ID: visuals
