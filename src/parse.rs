@@ -3,6 +3,7 @@
 // licensed under GPL-3.0-or-later
 
 use termcolor::ColorSpec;
+use unicode_width::UnicodeWidthStr;
 
 use core::fmt;
 use core::time::Duration;
@@ -85,22 +86,38 @@ impl<'s> ParseErr<'s> {
     }
 
     pub fn display(&self, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
-        /* TODO: method of bringing attention to the bad text is by color, but
-         * user might not be using color terminal or that may not be effective
-         * way to highlight for them*/
+        fn display_error_red_highlighted(err: &ParseErr, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
+            // text before span
+            cmd.write(format_args!("{}", err.span.get_before()))?;
 
-        /* write source text with span red and bold */
-        // text before span
-        cmd.write(format_args!("{}", self.span.get_before()))?;
+            // red span text
+            cmd.write_color(
+                ColorSpec::new().set_fg(Some(ERROR)),
+                format_args!("{}", err.span.get()),
+            )?;
 
-        // red span text
-        cmd.write_color(
-            ColorSpec::new().set_fg(Some(ERROR)),
-            format_args!("{}", self.span.get()),
-        )?;
+            // text after span
+            cmd.writeln(format_args!("{}", err.span.get_after()))?;
 
-        // text after span
-        cmd.writeln(format_args!("{}", self.span.get_after()))?;
+            Ok(())
+        }
+
+        fn display_error_caret_underlined(err: &ParseErr, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
+            display_error_red_highlighted(err, cmd)?;
+
+            // write caret underline
+            let spaces: usize = UnicodeWidthStr::width(err.span.get_before());
+            let carets: usize = UnicodeWidthStr::width(err.span.get());
+            cmd.writeln_color(
+                ColorSpec::new().set_fg(Some(ERROR)),
+                format_args!("{}{}", " ".repeat(spaces), "^".repeat(carets)),
+            )?;
+
+            Ok(())
+        }
+
+        /* write source text errors highlighted */
+        display_error_caret_underlined(self, cmd)?;
 
         /* write error message */
         cmd.error(format_args!("{self}"))?;
