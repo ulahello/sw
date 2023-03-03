@@ -118,8 +118,7 @@ impl Shell {
                     io::stdout().flush()?;
                     self.out_buf.clear();
                 }
-                Some(IoKind::In) => (),
-                None => (),
+                Some(IoKind::In) | None => (),
             }
         }
         self.last_op = anticipate;
