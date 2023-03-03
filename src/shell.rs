@@ -108,7 +108,6 @@ impl Shell {
 
 impl Shell {
     fn flush(&mut self, anticipate: Option<IoKind>) -> io::Result<()> {
-        // TODO: optimize flushes
         if self.last_op != anticipate {
             match self.last_op {
                 /* NOTE: flushing manually as workaround for
