@@ -1,5 +1,3 @@
-# TODO: document how durations are displayed
-
 * ~sw~
 ~sw~ is a terminal stopwatch that runs as a shell.
 
@@ -216,6 +214,15 @@ Some examples of terse inputs:
 
 It's also okay to add whitespace between separators.
 
+*** Duration output format
+:PROPERTIES:
+:CUSTOM_ID: dur-output-format
+:END:
+
+Durations are formatted as ~hours:minutes:seconds.subseconds~.
+
+Zeroes are minimally padded when visual cues are disabled.
+
 *** Colors
 :PROPERTIES:
 :CUSTOM_ID: colors
@@ -241,8 +248,10 @@ The indication for whether the stopwatch is running or stopped in the [[#display
 
 Visual cues and text-based graphics are enabled by default, but can be disabled using the [[#visuals][visuals]] command and the [[#--no-visual-cues][~--no-visual-cues~]] flag.
 
-~sw~ prints a different prompt depending on this parameter.
-For more details, see the [[#prompt][prompt]] section.
+The following aspects of the interface are affected by this parameter:
+- [[#prompt][Prompt]]
+- Duration parsing error messages
+- [[#dur-output-format][Duration output format]]
 
 ** Contributions
 Tickets and improvements are welcome and appreciated!
