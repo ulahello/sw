@@ -70,8 +70,6 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Display => {
-                    /* TODO: "running" and "stopped" colors are inconsistent
-                     * with to-be-documented meaning. */
                     let now = Instant::now();
                     cb.writeln(format_args!(
                         "{}",
