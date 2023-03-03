@@ -143,7 +143,7 @@ impl<'s> ParseErr<'s> {
 
         /* write help message */
         if self.has_help_message() {
-            cmd.info_low(format_args!("note: {self:#}"))?;
+            cmd.info_idle(format_args!("note: {self:#}"))?;
         }
 
         Ok(())

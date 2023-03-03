@@ -106,15 +106,15 @@ impl<'shell> State<'shell> {
                     }
 
                     if self.sw.is_running() {
-                        cb.info(format_args!("started stopwatch"))?;
-                        cb.info_low(format_args!(
+                        cb.info_change(format_args!("started stopwatch"))?;
+                        cb.info_idle(format_args!(
                             "{} since stopped",
                             DurationFmt::new(self.since_stop.elapsed_at(now), self.prec)
                         ))?;
                         self.since_stop.reset();
                         assert!(!sw_overflow);
                     } else {
-                        cb.info(format_args!("stopped stopwatch"))?;
+                        cb.info_change(format_args!("stopped stopwatch"))?;
                         if sw_overflow {
                             cb.warn(format_args!(
                                 "new elapsed time too large, clamped to maximum"
@@ -128,7 +128,7 @@ impl<'shell> State<'shell> {
                         self.since_stop.start().unwrap();
                     }
                     self.sw.reset();
-                    cb.info(format_args!("reset stopwatch"))?;
+                    cb.info_change(format_args!("reset stopwatch"))?;
                 }
 
                 Command::Change => {
@@ -143,14 +143,14 @@ impl<'shell> State<'shell> {
                                         self.since_stop.start().unwrap();
                                     }
                                     self.sw.set(dur);
-                                    cb.info(format_args!("updated elapsed time"))?;
+                                    cb.info_change(format_args!("updated elapsed time"))?;
                                 }
                             }
 
                             Err(err) => err.display(&mut cb)?,
                         }
                     } else {
-                        cb.info_low(format_args!("elapsed time unchanged"))?;
+                        cb.info_idle(format_args!("elapsed time unchanged"))?;
                     }
                 }
 
@@ -162,7 +162,7 @@ impl<'shell> State<'shell> {
                             {
                                 #[allow(clippy::collapsible_else_if)]
                                 if is_neg {
-                                    cb.info(format_args!("subtracted from elapsed time"))?;
+                                    cb.info_change(format_args!("subtracted from elapsed time"))?;
                                     if let Some(new_sw) = self.sw.checked_sub(dur) {
                                         self.sw = new_sw;
                                     } else {
@@ -172,7 +172,7 @@ impl<'shell> State<'shell> {
                                 } else {
                                     if let Some(new_sw) = self.sw.checked_add(dur) {
                                         self.sw = new_sw;
-                                        cb.info(format_args!("added to elapsed time"))?;
+                                        cb.info_change(format_args!("added to elapsed time"))?;
                                     } else {
                                         cb.error(format_args!(
                                             "cannot add offset, new elapsed time would overflow"
@@ -184,19 +184,19 @@ impl<'shell> State<'shell> {
                             Err(err) => err.display(&mut cb)?,
                         }
                     } else {
-                        cb.info_low(format_args!("no offset applied"))?;
+                        cb.info_idle(format_args!("no offset applied"))?;
                     }
                 }
 
                 Command::Name => {
                     let new = cb.read(format_args!("new name? "))?;
                     if new == self.name {
-                        cb.info_low(format_args!("name unchanged"))?;
+                        cb.info_idle(format_args!("name unchanged"))?;
                     } else {
                         if new.is_empty() {
-                            cb.info(format_args!("cleared name"))?;
+                            cb.info_change(format_args!("cleared name"))?;
                         } else {
-                            cb.info(format_args!("set name"))?;
+                            cb.info_change(format_args!("set name"))?;
                         }
                         self.name = new;
                     }
@@ -206,10 +206,10 @@ impl<'shell> State<'shell> {
                     let try_prec = cb.read(format_args!("new precision? "))?;
                     if try_prec.is_empty() {
                         if self.prec == Self::DEFAULT_PRECISION {
-                            cb.info_low(format_args!("precision unchanged"))?;
+                            cb.info_idle(format_args!("precision unchanged"))?;
                         } else {
                             self.prec = Self::DEFAULT_PRECISION;
-                            cb.info(format_args!(
+                            cb.info_change(format_args!(
                                 "reset precision to {}",
                                 Self::DEFAULT_PRECISION
                             ))?;
@@ -220,7 +220,7 @@ impl<'shell> State<'shell> {
                                 if let Err(clamped) = Self::set_prec(&mut self.prec, prec) {
                                     cb.warn(format_args!("precision clamped to {clamped}"))?;
                                 } else {
-                                    cb.info(format_args!("updated precision"))?;
+                                    cb.info_change(format_args!("updated precision"))?;
                                 }
                             }
                             Err(err) => cb.error(format_args!("{err}"))?,
@@ -239,7 +239,7 @@ impl<'shell> State<'shell> {
                 Command::Quit => {
                     /* quit message comes from foot terminal
                      * (https://codeberg.org/dnkl/foot) */
-                    cb.info_low(format_args!("goodbye"))?;
+                    cb.info_change(format_args!("goodbye"))?;
                     assert!(passback.is_none());
                     passback = Some(Passback::Quit);
                 }

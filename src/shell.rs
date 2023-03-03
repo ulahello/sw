@@ -10,8 +10,8 @@ use std::io::{self, stdin, BufRead, Read, Stdin, Write};
 
 use crate::command::Command;
 
-pub const INFO: Color = Color::Magenta;
-pub const INFO_LOW: Color = Color::Cyan;
+pub const INFO_CHANGE: Color = Color::Magenta;
+pub const INFO_IDLE: Color = Color::Cyan;
 pub const WARN: Color = Color::Yellow;
 pub const ERROR: Color = Color::Red;
 
@@ -179,12 +179,12 @@ impl CmdBuf<'_> {
         self.writeln_color(&ColorSpec::new(), fmt)
     }
 
-    pub fn info(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
-        self.writeln_color(ColorSpec::new().set_fg(Some(INFO)), fmt)
+    pub fn info_change(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.writeln_color(ColorSpec::new().set_fg(Some(INFO_CHANGE)), fmt)
     }
 
-    pub fn info_low(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
-        self.writeln_color(ColorSpec::new().set_fg(Some(INFO_LOW)), fmt)
+    pub fn info_idle(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+        self.writeln_color(ColorSpec::new().set_fg(Some(INFO_IDLE)), fmt)
     }
 
     pub fn warn(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
