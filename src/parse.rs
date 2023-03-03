@@ -18,7 +18,7 @@ const MIN_PER_HOUR: u8 = 60;
 const SEC_PER_HOUR: u16 = 3600;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
-enum Unit {
+pub(crate) enum Unit {
     Second,
     Minute,
     Hour,
@@ -96,8 +96,8 @@ pub(crate) enum ErrKind<'s> {
     /* unit format */
     UnitUnitMissing,
     UnitUnitUnknown(&'s str),
-    UnitFloatMissing,
-    UnitFloat(ParseFloatError),
+    UnitFloatMissing(Unit),
+    UnitFloat { err: ParseFloatError, unit: Unit },
     UnitDur(TryFromFloatSecsError),
 
     /* sw format */
@@ -154,6 +154,8 @@ impl ParseErr<'_> {
     fn has_help_message(&self) -> bool {
         match &self.kind {
             ErrKind::UnitUnitMissing
+            | ErrKind::UnitFloat { .. }
+            | ErrKind::UnitFloatMissing(_)
             | ErrKind::UnitUnitUnknown(_)
             | ErrKind::SwUnexpectedColon
             | ErrKind::SwUnexpectedDot(_)
@@ -161,9 +163,7 @@ impl ParseErr<'_> {
             | ErrKind::SwInt { .. }
             | ErrKind::SwGroupExcess(_) => true,
 
-            ErrKind::UnitFloat(_)
-            | ErrKind::UnitFloatMissing
-            | ErrKind::UnitDur(_)
+            ErrKind::UnitDur(_)
             | ErrKind::SwUnexpectedSign { .. }
             | ErrKind::SwSubsecondsTooLong => false,
         }
@@ -176,6 +176,9 @@ impl fmt::Display for ParseErr<'_> {
             match &self.kind {
                 ErrKind::UnitUnitMissing | ErrKind::UnitUnitUnknown(_) => {
                     write!(f, "use 's' for seconds, 'm' for minutes, and 'h' for hours")
+                }
+                ErrKind::UnitFloat { err: _, unit } | ErrKind::UnitFloatMissing(unit) => {
+                    write!(f, "expected the number of {unit}s")
                 }
 
                 ErrKind::SwUnexpectedColon => {
@@ -205,9 +208,7 @@ impl fmt::Display for ParseErr<'_> {
                 }
                 ErrKind::SwInt { group, err: _ } => write!(f, "{group} are parsed as an integer"),
 
-                ErrKind::UnitFloat(_)
-                | ErrKind::UnitFloatMissing
-                | ErrKind::UnitDur(_)
+                ErrKind::UnitDur(_)
                 | ErrKind::SwUnexpectedSign { .. }
                 | ErrKind::SwSubsecondsTooLong => unreachable!(),
             }
@@ -215,8 +216,8 @@ impl fmt::Display for ParseErr<'_> {
             match &self.kind {
                 ErrKind::UnitUnitMissing => write!(f, "missing unit"),
                 ErrKind::UnitUnitUnknown(unk) => write!(f, "unrecognised unit '{unk}'"),
-                ErrKind::UnitFloatMissing => write!(f, "unit given, but missing value"),
-                ErrKind::UnitFloat(err) => write!(f, "{err}"),
+                ErrKind::UnitFloatMissing(_) => write!(f, "unit given, but missing value"),
+                ErrKind::UnitFloat { err, unit: _ } => write!(f, "{err}"),
                 ErrKind::UnitDur(err) => write!(f, "{err}"),
 
                 ErrKind::SwUnexpectedColon => write!(f, "unexpected colon"),
@@ -287,7 +288,7 @@ impl ReadDur {
         if float_str.is_empty() {
             return Err(ParseErr::new(
                 ByteSpan::new(0, len, s),
-                ErrKind::UnitFloatMissing,
+                ErrKind::UnitFloatMissing(unit),
             ));
         }
 
@@ -315,7 +316,10 @@ impl ReadDur {
 
             Err(float_err) => Err(ParseErr::new(
                 ByteSpan::new(0, len, s),
-                ErrKind::UnitFloat(float_err),
+                ErrKind::UnitFloat {
+                    err: float_err,
+                    unit,
+                },
             )),
         }
     }
