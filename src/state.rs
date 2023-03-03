@@ -73,7 +73,7 @@ impl<'shell> State<'shell> {
                     let now = Instant::now();
                     cb.writeln(format_args!(
                         "{}",
-                        DurationFmt::new(self.sw.elapsed_at(now), self.prec)
+                        DurationFmt::new(self.sw.elapsed_at(now), self.prec, cb.visual_cues())
                     ))?;
                     if self.sw.is_running() {
                         cb.writeln_color(
@@ -108,7 +108,11 @@ impl<'shell> State<'shell> {
                         cb.info_change(format_args!("started stopwatch"))?;
                         cb.info_idle(format_args!(
                             "{} since stopped",
-                            DurationFmt::new(self.since_stop.elapsed_at(now), self.prec)
+                            DurationFmt::new(
+                                self.since_stop.elapsed_at(now),
+                                self.prec,
+                                cb.visual_cues()
+                            )
                         ))?;
                         self.since_stop.reset();
                         assert!(!sw_overflow);
@@ -269,33 +273,42 @@ impl<'shell> State<'shell> {
 struct DurationFmt {
     dur: Duration,
     prec: u8, // <= 9
+    visual_cues: bool,
 }
 
 impl DurationFmt {
     #[allow(clippy::assertions_on_constants)]
     #[must_use]
-    pub const fn new(dur: Duration, prec: u8) -> Self {
+    pub const fn new(dur: Duration, prec: u8, visual_cues: bool) -> Self {
         assert!(prec <= 9);
         assert!(State::MAX_PRECISION == 9);
-        Self { dur, prec }
+        Self {
+            dur,
+            prec,
+            visual_cues,
+        }
     }
 }
 
 impl fmt::Display for DurationFmt {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> where {
         let total_secs = self.dur.as_secs();
         let total_mins = total_secs / 60;
         let secs = total_secs % 60;
         let mins = total_mins % 60;
         let hours = total_mins / 60;
-        write!(f, "{hours:02}:{mins:02}:{secs:02}")?;
+        let pad_zero = if self.visual_cues { 2 } else { 1 };
+        write!(f, "{hours:0pad_zero$}:{mins:0pad_zero$}:{secs:0pad_zero$}")?;
         if self.prec != 0 {
             let nanos = self.dur.subsec_nanos();
+            let mut width: usize = self.prec.into();
+            if !self.visual_cues && nanos < Duration::from_millis(10).subsec_nanos() {
+                width = width.saturating_sub(1);
+            }
             write!(
                 f,
                 ".{:0>width$}",
                 nanos / 10_u32.pow(9 - u32::from(self.prec)),
-                width = self.prec.into()
             )?;
         }
         Ok(())
