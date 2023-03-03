@@ -177,8 +177,6 @@ The [[#offset][offset]] and [[#change][change]] commands accept a duration as in
 The following formats are supported.
 
 **** Stopwatch format
-# TODO: improve stopwatch format explanation
-
 #+begin_example
 float unit
 #+end_example
@@ -188,8 +186,6 @@ float unit
 Whitespace is ignored, so ~1s~ is just as valid as ~1 s~.
 
 **** Unit format
-# TODO: improve unit format explanation
-
 #+begin_example
 sign hours : minutes : seconds . subseconds
 #+end_example
