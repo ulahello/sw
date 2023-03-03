@@ -59,6 +59,7 @@ impl Shell {
             "splash text can only be written once"
         );
         self.splash_text_written = true;
+
         self.writeln(
             &ColorSpec::new(),
             format_args!(
@@ -70,8 +71,21 @@ impl Shell {
         )?;
         self.writeln(
             &ColorSpec::new(),
-            format_args!(r#"type "h" for help, "l" for license"#),
-        )
+            format_args!(r#"enter "h" for help, "l" for license."#),
+        )?;
+        self.writeln(
+            &ColorSpec::new(),
+            format_args!(
+                "visual cues {}.",
+                if self.visual_cues {
+                    "enabled (unless --no-visual-cues)"
+                } else {
+                    "disabled"
+                }
+            ),
+        )?;
+
+        Ok(())
     }
 
     #[track_caller]
