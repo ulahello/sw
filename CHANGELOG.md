@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.11.0] - 2023-03-03
 ### added
 * rewrote README
 * added `--no-visual-cues` flag to remove text-based graphics and visual cues
