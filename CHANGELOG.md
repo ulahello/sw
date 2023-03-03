@@ -4,9 +4,11 @@
 ### added
 * added status messages for all commands
   * commands should never output nothing
+* added help message for parsing unit format when value is missing or invalid
+
+### changed
 * change help command format
   * no longer a markdown table, it's very plain now
-* added help message for parsing unit format when value is missing or invalid
 
 ## [0.10.0] - 2023-02-19
 ### added
