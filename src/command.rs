@@ -88,19 +88,11 @@ impl FromStr for Command {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, <Self as FromStr>::Err> {
-        match s {
-            "h" => Ok(Help),
-            "" => Ok(Display),
-            "s" => Ok(Toggle),
-            "r" => Ok(Reset),
-            "c" => Ok(Change),
-            "o" => Ok(Offset),
-            "n" => Ok(Name),
-            "p" => Ok(Precision),
-            "v" => Ok(Visuals),
-            "l" => Ok(License),
-            "q" => Ok(Quit),
-            _ => Err(()),
+        for cmd in Self::iter() {
+            if s == cmd.short_name_literal() {
+                return Ok(*cmd);
+            }
         }
+        Err(())
     }
 }
