@@ -142,11 +142,7 @@ The first line of output contains the program's copyright notice.
 The second line contains the SPDX identifier of the license.
 
 **** Quit
-Quits the program, abandoning all stopwatch state.
-
-Terminates the program with a successful exit code.
-
-~sw~ has no persistent state.
+Terminates the program with a successful exit code, abandoning all stopwatch state.
 
 *** Prompt
 :PROPERTIES:
