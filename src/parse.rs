@@ -116,8 +116,22 @@ impl<'s> ParseErr<'s> {
             Ok(())
         }
 
+        fn display_error_no_visual(err: &ParseErr, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
+            // write what the error text is
+            cmd.writeln_color(
+                ColorSpec::new().set_fg(Some(ERROR)),
+                format_args!("found error: {}", err.span.get()),
+            )?;
+
+            Ok(())
+        }
+
         /* write source text errors highlighted */
-        display_error_caret_underlined(self, cmd)?;
+        if cmd.visual_cues() {
+            display_error_caret_underlined(self, cmd)?;
+        } else {
+            display_error_no_visual(self, cmd)?;
+        }
 
         /* write error message */
         cmd.error(format_args!("{self}"))?;

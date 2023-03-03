@@ -28,6 +28,8 @@ pub struct Shell {
     read_limit: u64,
     last_op: Option<IoKind>,
 
+    visual_cues: bool,
+
     splash_text_written: bool,
 
     ctor_loc: Location<'static>,
@@ -36,7 +38,7 @@ pub struct Shell {
 
 impl Shell {
     #[track_caller]
-    pub fn new(choice: ColorChoice, read_limit: u64) -> Self {
+    pub fn new(choice: ColorChoice, read_limit: u64, visual_cues: bool) -> Self {
         let stdout = BufferWriter::stdout(choice);
         Self {
             out_buf: stdout.buffer(),
@@ -44,6 +46,7 @@ impl Shell {
             stdin: stdin(),
             read_limit,
             last_op: None,
+            visual_cues,
             splash_text_written: false,
             ctor_loc: *Location::caller(),
             finished: false,
@@ -145,15 +148,23 @@ pub struct CmdBuf<'shell> {
 }
 
 impl CmdBuf<'_> {
+    pub const fn visual_cues(&self) -> bool {
+        self.shell.visual_cues
+    }
+
     pub fn read_cmd(
         &mut self,
         name: &str,
         is_running: bool,
     ) -> io::Result<Result<Command, String>> {
-        let input = self.read(format_args!(
-            "{name} {} ",
-            if is_running { "*" } else { ";" }
-        ))?;
+        let input = if self.shell.visual_cues {
+            self.read(format_args!(
+                "{name} {} ",
+                if is_running { "*" } else { ";" }
+            ))?
+        } else {
+            self.read(format_args!("{name}. "))?
+        };
         match input.parse() {
             Ok(cmd) => Ok(Ok(cmd)),
             Err(()) => Ok(Err(input)),

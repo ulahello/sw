@@ -12,6 +12,7 @@ mod state;
 #[cfg(test)]
 mod tests;
 
+use argh::FromArgs;
 use termcolor::ColorChoice;
 
 use std::io;
@@ -20,8 +21,16 @@ use std::process::ExitCode;
 use crate::shell::Shell;
 use crate::state::{Passback, State};
 
+/// Terminal stopwatch
+#[derive(FromArgs)]
+struct Args {
+    /// disable text-based graphics and visual cues
+    #[argh(short = 'x', switch)]
+    no_visual_cues: bool,
+}
+
 fn main() -> ExitCode {
-    if let Err(err) = try_main() {
+    if let Err(err) = try_main(argh::from_env()) {
         eprintln!("fatal: {err}");
         ExitCode::FAILURE
     } else {
@@ -29,8 +38,8 @@ fn main() -> ExitCode {
     }
 }
 
-fn try_main() -> io::Result<()> {
-    let mut shell = Shell::new(ColorChoice::Auto, 64);
+fn try_main(args: Args) -> io::Result<()> {
+    let mut shell = Shell::new(ColorChoice::Auto, 64, !args.no_visual_cues);
     shell.splash_text()?;
 
     let mut state = State::new(&mut shell);
