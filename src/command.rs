@@ -40,7 +40,7 @@ impl Command {
 
     pub const fn short_name_display(&self) -> &'static str {
         match self {
-            Display => "(enter)",
+            Display => "<Enter>",
             _ => self.short_name_literal(),
         }
     }
@@ -88,8 +88,9 @@ impl FromStr for Command {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, <Self as FromStr>::Err> {
+        let s = s.trim().to_lowercase();
         for cmd in Self::iter() {
-            if s == cmd.short_name_literal() {
+            if s == cmd.short_name_literal() || s == cmd.long_name() {
                 return Ok(*cmd);
             }
         }

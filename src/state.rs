@@ -61,7 +61,8 @@ impl<'shell> State<'shell> {
                     // TODO: be able to print help page for individual commands
                     for help_cmd in Command::iter() {
                         cb.writeln(format_args!(
-                            "{}: {}",
+                            "{} or {}. {}.",
+                            help_cmd.long_name(),
                             help_cmd.short_name_display(),
                             help_cmd.description()
                         ))?;

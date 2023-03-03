@@ -22,6 +22,7 @@ The interface allows you to manipulate a stopwatch by issuing commands and respo
 
 The following table is a quick overview of the available commands.
 The "input" field shows which key combination maps to the command.
+The command's name is also a valid input.
 
 | Command name | Input   | Description           |
 |--------------+---------+-----------------------|
