@@ -17,6 +17,8 @@ Disable text-based graphics and visual cues.
 
 To toggle this value at runtime, use the [[#visuals][visuals]] command.
 
+For more details, see the [[#visual-cues][section on visual cues]].
+
 *** Commands
 The interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
 
@@ -130,6 +132,8 @@ Toggles whether text-based graphics and visual cues are enabled (they are by def
 
 This parameter can be controlled with the [[#--no-visual-cues][~--no-visual-cues~]] flag.
 
+For more details, see the [[#visual-cues][section on visual cues]].
+
 **** License
 Prints license and copyright information for ~sw~.
 
@@ -151,10 +155,11 @@ Terminates the program with a successful exit code.
 
 ~sw~ displays a prompt before commands are entered.
 
-The prompt contains the [[#name][name]] of the stopwatch followed by a character indicating the stopwatch state.
+The prompt contains the [[#name][name]] of the stopwatch.
+If visual cues are enabled, the name is followed by a character indicating the stopwatch state.
 This indicator is ';' if the stopwatch is stopped and '*' if it's running.
 
-For example, if the stopwatch is named "work" and stopped, it will prompt with the following:
+For example, if the stopwatch is named "work" and stopped, it will prompt with the following with visual cues enabled:
 #+begin_example
 work ; 
 #+end_example
@@ -162,6 +167,11 @@ work ;
 And if it's running:
 #+begin_example
 work * 
+#+end_example
+
+With the same stopwatch but visual cues disabled, it will prompt with this:
+#+begin_example
+work. 
 #+end_example
 
 *** Duration input format
@@ -210,7 +220,7 @@ Some examples of terse inputs:
 
 It's also okay to add whitespace between separators.
 
-** Colors
+*** Colors
 :PROPERTIES:
 :CUSTOM_ID: colors
 :END:
@@ -227,6 +237,16 @@ The following table documents the meaning of each color as it appears.
 | Red     | Error                                  |
 
 The indication for whether the stopwatch is running or stopped in the [[#display][display]] command is an exception to this, with "running" colored green and "stopped" colored yellow.
+
+*** Visual cues
+:PROPERTIES:
+:CUSTOM_ID: visual-cues
+:END:
+
+Visual cues and text-based graphics are enabled by default, but can be disabled using the [[#visuals][visuals]] command and the [[#--no-visual-cues][~--no-visual-cues~]] flag.
+
+~sw~ prints a different prompt depending on this parameter.
+For more details, see the [[#prompt][prompt]] section.
 
 ** Contributions
 Tickets and improvements are welcome and appreciated!
