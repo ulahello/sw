@@ -98,9 +98,11 @@ impl Shell {
     }
 
     pub fn write(&mut self, color: &ColorSpec, fmt: fmt::Arguments) -> io::Result<()> {
+        let mut color = color.clone();
+        color.set_reset(false);
         let this_op = IoKind::Out(color.clone());
         self.flush(Some(this_op))?;
-        self.out_buf.set_color(color)?;
+        self.out_buf.set_color(&color)?;
         self.out_buf.write_fmt(fmt)?;
         Ok(())
     }
@@ -129,8 +131,11 @@ impl Shell {
             match self.last_op {
                 /* NOTE: flushing manually as workaround for
                  * https://github.com/BurntSushi/termcolor/issues/69 */
-                Some(IoKind::Out(_)) => {
-                    self.out_buf.reset()?;
+                Some(IoKind::Out(ref color)) => {
+                    if !color.is_none() {
+                        // don't reset color unless we have to
+                        self.out_buf.reset()?;
+                    }
                     self.stdout.print(&self.out_buf)?;
                     io::stdout().flush()?;
                     self.out_buf.clear();

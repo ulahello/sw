@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+### changed
+* optimized output to emit less color resets
 
 ## [0.11.0] - 2023-03-03
 ### added
