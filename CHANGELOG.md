@@ -2,6 +2,7 @@
 
 ## [unreleased]
 ### changed
+* improved readability of no visual cues duration format
 * optimized output to emit less color resets
 
 ## [0.11.0] - 2023-03-03

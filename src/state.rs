@@ -292,23 +292,53 @@ impl DurationFmt {
 
 impl fmt::Display for DurationFmt {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> where {
+        fn plural(len: impl Into<u64>) -> &'static str {
+            let len: u64 = len.into();
+            if len == 1 {
+                ""
+            } else {
+                "s"
+            }
+        }
+
+        fn subsecs(f: &mut impl fmt::Write, fmt: &DurationFmt) -> fmt::Result {
+            if fmt.prec != 0 {
+                let nanos = fmt.dur.subsec_nanos();
+                let mut width: usize = fmt.prec.into();
+                if !fmt.visual_cues && nanos < Duration::from_millis(10).subsec_nanos() {
+                    width = width.saturating_sub(1);
+                }
+                write!(
+                    f,
+                    ".{:0>width$}",
+                    nanos / 10_u32.pow(9 - u32::from(fmt.prec)),
+                )?;
+            }
+            Ok(())
+        }
+
         let total_secs = self.dur.as_secs();
         let total_mins = total_secs / 60;
         let secs = total_secs % 60;
         let mins = total_mins % 60;
         let hours = total_mins / 60;
-        let pad_zero = if self.visual_cues { 2 } else { 1 };
-        write!(f, "{hours:0pad_zero$}:{mins:0pad_zero$}:{secs:0pad_zero$}")?;
-        if self.prec != 0 {
-            let nanos = self.dur.subsec_nanos();
-            let mut width: usize = self.prec.into();
-            if !self.visual_cues && nanos < Duration::from_millis(10).subsec_nanos() {
-                width = width.saturating_sub(1);
+        if self.visual_cues {
+            let pad_zero = 2;
+            write!(f, "{hours:0pad_zero$}:{mins:0pad_zero$}:{secs:0pad_zero$}")?;
+            subsecs(f, self)?;
+        } else {
+            if hours != 0 {
+                write!(f, "{hours} hour{}, ", plural(hours))?;
             }
+            if mins != 0 {
+                write!(f, "{mins} minute{}, ", plural(mins))?;
+            }
+            write!(f, "{secs}")?;
+            subsecs(f, self)?;
             write!(
                 f,
-                ".{:0>width$}",
-                nanos / 10_u32.pow(9 - u32::from(self.prec)),
+                " second{}",
+                if self.prec == 0 { plural(secs) } else { "s" }
             )?;
         }
         Ok(())

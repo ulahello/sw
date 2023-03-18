@@ -215,9 +215,10 @@ It's also okay to add whitespace between separators.
 :CUSTOM_ID: dur-output-format
 :END:
 
-Durations are formatted as ~hours:minutes:seconds.subseconds~.
-
-Zeroes are minimally padded when visual cues are disabled.
+With visual cues enabled, durations are formatted as ~hours:minutes:seconds.subseconds~.
+Otherwise they're formatted as they would be spoken.
+For example, ~00:05:32.98~ would be formatted as ~5 minutes, 32.98 seconds~.
+If the [[#precision][precision]] is zero, this will simply be ~5 minutes, 32 seconds~.
 
 *** Colors
 :PROPERTIES:
