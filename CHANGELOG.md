@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.12.0] - 2023-03-20
 ### added
 * added license information of direct dependencies to license command output
 
