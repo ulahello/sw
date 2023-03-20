@@ -3,6 +3,7 @@
 ## [unreleased]
 ### fixed
 * fixed panic on fatal errors
+* fixed inconsistent duration formatting
 
 ## [0.12.0] - 2023-03-20
 ### added

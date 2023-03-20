@@ -341,10 +341,7 @@ impl fmt::Display for DurationFmt {
         fn subsecs(f: &mut impl fmt::Write, fmt: &DurationFmt) -> fmt::Result {
             if fmt.prec != 0 {
                 let nanos = fmt.dur.subsec_nanos();
-                let mut width: usize = fmt.prec.into();
-                if !fmt.visual_cues && nanos < Duration::from_millis(10).subsec_nanos() {
-                    width = width.saturating_sub(1);
-                }
+                let width: usize = fmt.prec.into();
                 write!(
                     f,
                     ".{:0>width$}",
