@@ -1,6 +1,9 @@
 # changelog
 
 ## [unreleased]
+### added
+* added license information of direct dependencies to license command output
+
 ### changed
 * improved readability of no visual cues duration format
 * optimized output to emit less color resets

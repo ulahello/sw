@@ -133,11 +133,7 @@ This parameter can be controlled with the [[#--no-visual-cues][~--no-visual-cues
 For more details, see the [[#visual-cues][section on visual cues]].
 
 **** License
-Prints license and copyright information for ~sw~.
-
-The first line of output contains the program's copyright notice.
-
-The second line contains the SPDX identifier of the license.
+Prints license and copyright information for ~sw~ and its direct dependencies.
 
 **** Quit
 Terminates the program with a successful exit code, abandoning all stopwatch state.

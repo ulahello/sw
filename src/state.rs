@@ -249,6 +249,43 @@ impl<'shell> State<'shell> {
                         env!("CARGO_PKG_AUTHORS")
                     ))?;
                     cb.writeln(format_args!("licensed under {}", env!("CARGO_PKG_LICENSE")))?;
+                    cb.writeln(format_args!(""))?;
+                    cb.writeln(format_args!(
+                        "{} uses the following libraries:",
+                        env!("CARGO_PKG_NAME")
+                    ))?;
+                    // NOTE: volatile, copypasted data
+                    for (name, license, owners) in [
+                        (
+                            "argh",
+                            "BSD-3-Clause",
+                            "Taylor Cramer <cramertj@google.com>, Benjamin Brittain <bwb@google.com>, Erick Tryzelaar <etryzelaar@google.com>",
+                        ),
+                        (
+                            "libsw",
+                            "MIT OR Apache-2.0",
+                            "Ula Shipman <ula.hello@mailbox.org>",
+                        ),
+                        (
+                            "termcolor",
+                            "Unlicense OR MIT",
+                            "Andrew Gallant <jamslam@gmail.com>",
+                        ),
+                        (
+                            "unicode-segmentation",
+                            "MIT/Apache-2.0",
+                            "kwantam <kwantam@gmail.com>, Manish Goregaokar <manishsmail@gmail.com>",
+                        ),
+                        (
+                            "unicode-width",
+                            "MIT/Apache-2.0",
+                            "kwantam <kwantam@gmail.com>, Manish Goregaokar <manishsmail@gmail.com>",
+                        ),
+                    ] {
+                        cb.writeln(format_args!(
+                            "'{name}' by {owners}, licensed under '{license}'"
+                        ))?;
+                    }
                 }
 
                 Command::Quit => {
