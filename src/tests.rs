@@ -12,6 +12,7 @@ mod parse {
 
         use crate::parse::*;
         use core::time::Duration;
+        use sw::*;
 
         fn test<'a>(
             runs: impl Iterator<Item = (&'a [&'static str], Result<ReadDur, ParseErr<'static>>)>,
@@ -78,6 +79,47 @@ mod parse {
                 ),
             ];
             test(runs.into_iter());
+        }
+
+        #[test]
+        fn whitespace_trimmed() {
+            const S: &str = " 1:2    45  6 : 4 ";
+            let mut lexer: Vec<_> = SwLexer::new(S).into_iter().collect();
+            assert_eq!(
+                lexer.pop(),
+                Some(SwToken {
+                    typ: SwTokenKind::Data,
+                    span: ByteSpan::new(1, 1, S),
+                })
+            );
+            assert_eq!(
+                lexer.pop(),
+                Some(SwToken {
+                    typ: SwTokenKind::Colon,
+                    span: ByteSpan::new(2, 1, S),
+                })
+            );
+            assert_eq!(
+                lexer.pop(),
+                Some(SwToken {
+                    typ: SwTokenKind::Data,
+                    span: ByteSpan::new(3, 10, S),
+                })
+            );
+            assert_eq!(
+                lexer.pop(),
+                Some(SwToken {
+                    typ: SwTokenKind::Colon,
+                    span: ByteSpan::new(14, 1, S),
+                })
+            );
+            assert_eq!(
+                lexer.pop(),
+                Some(SwToken {
+                    typ: SwTokenKind::Data,
+                    span: ByteSpan::new(16, 1, S),
+                })
+            );
         }
     }
 }

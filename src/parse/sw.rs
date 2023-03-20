@@ -210,19 +210,8 @@ impl ReadDur {
             if !to_parse.trim().is_empty() {
                 let mut nanos: u32 = 0;
                 let mut place: u32 = group.max().try_into().unwrap();
-                let mut graphs = UnicodeSegmentation::graphemes(to_parse, true).peekable();
-
-                // skip whitespace but maintain accurate span
+                let graphs = UnicodeSegmentation::graphemes(to_parse, true).peekable();
                 let mut err_span = span;
-                while let Some(grapheme) = graphs.peek() {
-                    if grapheme.chars().all(char::is_whitespace) {
-                        err_span.shift_start_right(grapheme.len());
-                        graphs.next();
-                    } else {
-                        break;
-                    }
-                }
-
                 for chr in graphs {
                     if place == 1 {
                         return Err(ParseErr::new(err_span, SwErrKind::SubsecondsTooLong));
@@ -250,7 +239,7 @@ impl ReadDur {
     }
 }
 
-struct SwLexer<'s> {
+pub(crate) struct SwLexer<'s> {
     content: Peekable<Rev<GraphemeIndices<'s>>>,
     s: &'s str,
 }
@@ -269,9 +258,8 @@ impl<'s> SwLexer<'s> {
         loop {
             let next = content.next()?;
             if !next.1.chars().all(char::is_whitespace) {
-                // only yield non-whitespace grapheme. Data still may contain
-                // leading whitespace, but this prevents a Data token being
-                // yielded that only contains whitespace
+                // only yield non-whitespace grapheme. this prevents prevents
+                // Data from having trailing whitespace.
                 break Some(next);
             }
         }
@@ -303,11 +291,19 @@ impl<'s> Iterator for SwLexer<'s> {
         if let Some(typ) = Self::single_token(next.1) {
             Some(SwToken { typ, span })
         } else {
+            let mut bytes_ignored = 0;
             while let Some(d_next) = Self::peek(&mut self.content) {
                 if Self::single_token(d_next.1).is_some() {
                     break;
                 } else {
-                    span.shift_start_left(d_next.1.len());
+                    // ignore leading whitespace
+                    if d_next.1.chars().all(char::is_whitespace) {
+                        bytes_ignored += d_next.1.len();
+                    } else {
+                        // oops, not leading whitespace. add all the bytes we ignored to the span.
+                        span.shift_start_left(d_next.1.len() + bytes_ignored);
+                        bytes_ignored = 0;
+                    }
                     self.content.next();
                     continue;
                 }
@@ -321,7 +317,7 @@ impl<'s> Iterator for SwLexer<'s> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-enum SwTokenKind {
+pub(crate) enum SwTokenKind {
     Colon,
     Dot,
     Pos,
@@ -329,10 +325,10 @@ enum SwTokenKind {
     Data,
 }
 
-#[derive(Debug)]
-struct SwToken<'s> {
-    typ: SwTokenKind,
-    span: ByteSpan<'s>,
+#[derive(Debug, PartialEq, Eq)]
+pub(crate) struct SwToken<'s> {
+    pub(crate) typ: SwTokenKind,
+    pub(crate) span: ByteSpan<'s>,
 }
 
 #[derive(Debug)]

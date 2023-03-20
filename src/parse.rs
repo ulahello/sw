@@ -11,8 +11,8 @@ use std::io;
 
 use crate::shell::{CmdBuf, ERROR};
 
-mod sw;
-mod unit;
+pub(crate) mod sw;
+pub(crate) mod unit;
 
 use sw::SwErrKind;
 use unit::UnitErrKind;
