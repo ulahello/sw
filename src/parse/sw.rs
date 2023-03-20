@@ -264,56 +264,58 @@ impl<'s> SwLexer<'s> {
             s,
         }
     }
+
+    fn advance(content: &mut Peekable<Rev<GraphemeIndices<'s>>>) -> Option<(usize, &'s str)> {
+        loop {
+            let next = content.next()?;
+            if !next.1.chars().all(char::is_whitespace) {
+                // only yield non-whitespace grapheme. Data still may contain
+                // leading whitespace, but this prevents a Data token being
+                // yielded that only contains whitespace
+                break Some(next);
+            }
+        }
+    }
+
+    fn peek<'a>(
+        content: &'a mut Peekable<Rev<GraphemeIndices<'s>>>,
+    ) -> Option<&'a (usize, &'s str)> {
+        content.peek()
+    }
+
+    fn single_token(next: &str) -> Option<SwTokenKind> {
+        match next {
+            ":" => Some(SwTokenKind::Colon),
+            "." => Some(SwTokenKind::Dot),
+            "+" => Some(SwTokenKind::Pos),
+            "-" => Some(SwTokenKind::Neg),
+            _ => None,
+        }
+    }
 }
 
 impl<'s> Iterator for SwLexer<'s> {
     type Item = SwToken<'s>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let next = loop {
-            let next = self.content.next()?;
-            if !next.1.chars().all(char::is_whitespace) {
-                // only yield non-whitespace grapheme. Data still may contain
-                // leading whitespace, but this prevents a Data token being
-                // yielded that only contains whitespace
-                break next;
-            }
-        };
+        let next = Self::advance(&mut self.content)?;
         let mut span = ByteSpan::new(next.0, next.1.len(), self.s);
-        match next.1 {
-            ":" => Some(SwToken {
-                typ: SwTokenKind::Colon,
-                span,
-            }),
-            "." => Some(SwToken {
-                typ: SwTokenKind::Dot,
-                span,
-            }),
-            "+" => Some(SwToken {
-                typ: SwTokenKind::Pos,
-                span,
-            }),
-            "-" => Some(SwToken {
-                typ: SwTokenKind::Neg,
-                span,
-            }),
-            _ => {
-                while let Some(d_next) = self.content.peek() {
-                    match d_next.1 {
-                        // TODO: handling single grapheme tokens in two places
-                        ":" | "." | "+" | "-" => break,
-                        _ => {
-                            span.shift_start_left(d_next.1.len());
-                            self.content.next();
-                            continue;
-                        }
-                    }
+        if let Some(typ) = Self::single_token(next.1) {
+            Some(SwToken { typ, span })
+        } else {
+            while let Some(d_next) = Self::peek(&mut self.content) {
+                if Self::single_token(d_next.1).is_some() {
+                    break;
+                } else {
+                    span.shift_start_left(d_next.1.len());
+                    self.content.next();
+                    continue;
                 }
-                Some(SwToken {
-                    typ: SwTokenKind::Data,
-                    span,
-                })
             }
+            Some(SwToken {
+                typ: SwTokenKind::Data,
+                span,
+            })
         }
     }
 }
