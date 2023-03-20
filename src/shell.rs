@@ -5,7 +5,6 @@
 use termcolor::{Buffer, BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
 
 use core::fmt;
-use core::panic::Location;
 use std::io::{self, stdin, BufRead, Read, Stdin, Write};
 
 use crate::command::Command;
@@ -32,7 +31,6 @@ pub struct Shell {
 
     splash_text_written: bool,
 
-    ctor_loc: Location<'static>,
     finished: bool,
 }
 
@@ -48,7 +46,6 @@ impl Shell {
             last_op: None,
             visual_cues,
             splash_text_written: false,
-            ctor_loc: *Location::caller(),
             finished: false,
         }
     }

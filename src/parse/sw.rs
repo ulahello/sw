@@ -305,7 +305,6 @@ impl<'s> Iterator for SwLexer<'s> {
                         bytes_ignored = 0;
                     }
                     self.content.next();
-                    continue;
                 }
             }
             Some(SwToken {
