@@ -15,7 +15,7 @@ mod tests;
 use argh::FromArgs;
 use termcolor::ColorChoice;
 
-use std::io;
+use std::io::{self, stderr, Write};
 use std::process::ExitCode;
 
 use crate::shell::Shell;
@@ -31,7 +31,7 @@ struct Args {
 
 fn main() -> ExitCode {
     if let Err(err) = try_main(argh::from_env()) {
-        eprintln!("fatal: {err}");
+        _ = writeln!(stderr(), "fatal: {err}");
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
