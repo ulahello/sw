@@ -118,9 +118,11 @@ impl Shell {
         Ok(input.trim().to_string())
     }
 
-    pub fn finish(mut self) -> io::Result<()> {
-        self.finished = true;
-        self.flush(None)?;
+    pub fn finish(&mut self) -> io::Result<()> {
+        if !self.finished {
+            self.finished = true;
+            self.flush(None)?;
+        }
         Ok(())
     }
 }
@@ -150,14 +152,7 @@ impl Shell {
 
 impl Drop for Shell {
     fn drop(&mut self) {
-        if !self.finished {
-            let loc = self.ctor_loc;
-            panic!(
-                "{}:{}: Shell created here, then dropped before call to Shell::finish",
-                loc.file(),
-                loc.line()
-            );
-        }
+        _ = self.finish();
     }
 }
 

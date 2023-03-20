@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+### fixed
+* fixed panic on fatal errors
 
 ## [0.12.0] - 2023-03-20
 ### added
