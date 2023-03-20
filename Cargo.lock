@@ -32,9 +32,9 @@ checksum = "64cb94155d965e3d37ffbbe7cc5b82c3dd79dd33bd48e536f73d2cfb8d85506f"
 
 [[package]]
 name = "libsw"
-version = "3.1.0"
+version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9021b9cc0f078fba93f59d6e6f1fce89682171107a21fc421eb130efd2048189"
+checksum = "af6b1f4a48912e7144b6d9cab71944ac3ceafce134af69e36e22948d4d825818"
 
 [[package]]
 name = "proc-macro2"

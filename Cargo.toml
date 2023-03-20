@@ -12,7 +12,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 argh = "0.1.10"
-libsw = "3.1.0"
+libsw = "3.2.0"
 termcolor = "1.2.0"
 unicode-segmentation = "1.10.1"
 unicode-width = "0.1.10"
