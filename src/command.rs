@@ -19,10 +19,11 @@ pub enum Command {
     Quit,
 }
 
+#[allow(clippy::enum_glob_use)]
 use Command::*;
 
 impl Command {
-    pub const fn short_name_literal(&self) -> &'static str {
+    pub const fn short_name_literal(self) -> &'static str {
         match self {
             Help => "h",
             Display => "",
@@ -38,14 +39,14 @@ impl Command {
         }
     }
 
-    pub const fn short_name_display(&self) -> &'static str {
+    pub const fn short_name_display(self) -> &'static str {
         match self {
             Display => "<Enter>",
             _ => self.short_name_literal(),
         }
     }
 
-    pub const fn long_name(&self) -> &'static str {
+    pub const fn long_name(self) -> &'static str {
         match self {
             Help => "help",
             Display => "display",
@@ -61,7 +62,7 @@ impl Command {
         }
     }
 
-    pub const fn description(&self) -> &'static str {
+    pub const fn description(self) -> &'static str {
         match self {
             Help => "show help",
             Display => "display elapsed time",

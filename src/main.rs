@@ -30,7 +30,8 @@ struct Args {
 }
 
 fn main() -> ExitCode {
-    if let Err(err) = try_main(argh::from_env()) {
+    let args: Args = argh::from_env();
+    if let Err(err) = try_main(&args) {
         _ = writeln!(stderr(), "fatal: {err}");
         ExitCode::FAILURE
     } else {
@@ -38,7 +39,7 @@ fn main() -> ExitCode {
     }
 }
 
-fn try_main(args: Args) -> io::Result<()> {
+fn try_main(args: &Args) -> io::Result<()> {
     let mut shell = Shell::new(ColorChoice::Auto, 64, !args.no_visual_cues);
     shell.splash_text()?;
 

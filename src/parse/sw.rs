@@ -295,17 +295,16 @@ impl<'s> Iterator for SwLexer<'s> {
             while let Some(d_next) = Self::peek(&mut self.content) {
                 if Self::single_token(d_next.1).is_some() {
                     break;
-                } else {
-                    // ignore leading whitespace
-                    if d_next.1.chars().all(char::is_whitespace) {
-                        bytes_ignored += d_next.1.len();
-                    } else {
-                        // oops, not leading whitespace. add all the bytes we ignored to the span.
-                        span.shift_start_left(d_next.1.len() + bytes_ignored);
-                        bytes_ignored = 0;
-                    }
-                    self.content.next();
                 }
+                // ignore leading whitespace
+                if d_next.1.chars().all(char::is_whitespace) {
+                    bytes_ignored += d_next.1.len();
+                } else {
+                    // oops, not leading whitespace. add all the bytes we ignored to the span.
+                    span.shift_start_left(d_next.1.len() + bytes_ignored);
+                    bytes_ignored = 0;
+                }
+                self.content.next();
             }
             Some(SwToken {
                 typ: SwTokenKind::Data,
