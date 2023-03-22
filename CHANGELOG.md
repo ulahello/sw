@@ -1,6 +1,9 @@
 # changelog
 
 ## [unreleased]
+### changed
+* redirect precision parsing overflow errors to clamping warnings
+
 ### fixed
 * fixed panic on fatal errors
 * fixed inconsistent duration formatting

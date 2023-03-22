@@ -6,6 +6,7 @@ use libsw::Sw;
 use termcolor::{Color, ColorSpec};
 
 use core::fmt;
+use core::num::IntErrorKind;
 use core::time::Duration;
 use std::io;
 use std::time::Instant;
@@ -218,7 +219,22 @@ impl<'shell> State<'shell> {
                             ))?;
                         }
                     } else {
-                        match try_prec.parse() {
+                        /* if the number is too big, just clamp it. this
+                         * improves the quality of error messages by hiding the
+                         * implementation detail that we're parsing for a u8
+                         * rather than another sized integer. */
+                        let parsed = match try_prec.parse::<u8>() {
+                            Ok(prec) => Ok(prec),
+                            Err(err) => {
+                                if *err.kind() == IntErrorKind::PosOverflow {
+                                    Ok(u8::MAX)
+                                } else {
+                                    Err(err)
+                                }
+                            }
+                        };
+
+                        match parsed {
                             Ok(prec) => {
                                 if let Err(clamped) = Self::set_prec(&mut self.prec, prec) {
                                     cb.warn(format_args!("precision clamped to {clamped}"))?;
