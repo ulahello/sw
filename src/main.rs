@@ -25,7 +25,7 @@ use crate::state::{Passback, State};
 #[derive(FromArgs)]
 struct Args {
     /// disable text-based graphics and visual cues
-    #[argh(short = 'x', switch)]
+    #[argh(short = 'v', switch)]
     no_visual_cues: bool,
 
     /// disable the use of colors in output

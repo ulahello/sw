@@ -8,6 +8,7 @@
 * make reset message more clearly indicate that it also stops the stopwatch
 * added to cli description
 * redirect precision parsing overflow errors to clamping warnings
+* **BREAKING:** changed `--no-visual-cues` short name from `-x` to `-v`
 
 ### fixed
 * fixed panic on fatal errors
