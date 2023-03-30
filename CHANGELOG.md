@@ -2,6 +2,7 @@
 
 ## [unreleased]
 ### changed
+* make reset message more clearly indicate that it also stops the stopwatch
 * redirect precision parsing overflow errors to clamping warnings
 
 ### fixed

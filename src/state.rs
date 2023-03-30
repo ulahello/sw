@@ -131,8 +131,14 @@ impl<'shell> State<'shell> {
                     if self.sw.is_running() {
                         self.since_stop.start().unwrap();
                     }
+                    let sw_was_running = self.sw.is_running();
                     self.sw.reset();
-                    cb.info_change(format_args!("reset stopwatch"))?;
+                    let msg = if sw_was_running {
+                        format_args!("stopped and reset stopwatch")
+                    } else {
+                        format_args!("reset stopwatch")
+                    };
+                    cb.info_change(msg)?;
                 }
 
                 Command::Change => {
