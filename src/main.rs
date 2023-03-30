@@ -21,7 +21,7 @@ use std::process::ExitCode;
 use crate::shell::Shell;
 use crate::state::{Passback, State};
 
-/// Terminal stopwatch
+/// Terminal stopwatch that runs as a shell.
 #[derive(FromArgs)]
 struct Args {
     /// disable text-based graphics and visual cues
