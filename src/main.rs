@@ -27,6 +27,10 @@ struct Args {
     /// disable text-based graphics and visual cues
     #[argh(short = 'x', switch)]
     no_visual_cues: bool,
+
+    /// disable the use of colors in output
+    #[argh(short = 'c', switch)]
+    no_colors: bool,
 }
 
 fn main() -> ExitCode {
@@ -40,7 +44,12 @@ fn main() -> ExitCode {
 }
 
 fn try_main(args: &Args) -> io::Result<()> {
-    let mut shell = Shell::new(ColorChoice::Auto, 64, !args.no_visual_cues);
+    let cc = if args.no_colors {
+        ColorChoice::Never
+    } else {
+        ColorChoice::Auto
+    };
+    let mut shell = Shell::new(cc, 64, !args.no_visual_cues);
     shell.splash_text()?;
 
     let mut state = State::new(&mut shell);

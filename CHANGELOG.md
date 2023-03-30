@@ -1,6 +1,9 @@
 # changelog
 
 ## [unreleased]
+### added
+* added `--no-colors` (`-c`) flag to disable color output to the terminal
+
 ### changed
 * make reset message more clearly indicate that it also stops the stopwatch
 * added to cli description
@@ -21,7 +24,7 @@
 ## [0.11.0] - 2023-03-03
 ### added
 * rewrote README
-* added `--no-visual-cues` flag to remove text-based graphics and visual cues
+* added `--no-visual-cues` (`-x`) flag to remove text-based graphics and visual cues
 * added `v` command to toggle visual cues
 * added status messages for all commands
   * commands should never output nothing

@@ -17,6 +17,15 @@ To toggle this value at runtime, use the [[#visuals][visuals]] command.
 
 For more details, see the [[#visual-cues][section on visual cues]].
 
+**** ~--no-colors~
+:PROPERTIES:
+:CUSTOM_ID: --no-colors
+:END:
+
+Disable the use of colors in output.
+
+For more details, see the [[#colors][section on colors]].
+
 *** Commands
 The interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
 
@@ -221,7 +230,7 @@ If the [[#precision][precision]] is zero, this will simply be ~5 minutes, 32 sec
 :CUSTOM_ID: colors
 :END:
 
-~sw~ will use colors if they are supported by the terminal.
+~sw~ will use colors if they are supported by the terminal, or as directed by the [[#--no-colors][~--no-colors~ flag]].
 
 The following table documents the meaning of each color as it appears.
 
