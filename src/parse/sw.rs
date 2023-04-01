@@ -361,12 +361,12 @@ pub(crate) enum Group {
 }
 
 impl Group {
-    pub(crate) fn max(self) -> u64 {
+    pub(crate) const fn max(self) -> u64 {
         match self {
-            Self::Hours => u64::MAX / u64::from(SEC_PER_HOUR) + 1,
-            Self::Minutes => MIN_PER_HOUR.into(),
-            Self::SecondsInt => SEC_PER_MIN.into(),
-            Self::SecondsSub => Duration::from_secs(1).as_nanos().try_into().unwrap(),
+            Self::Hours => u64::MAX / SEC_PER_HOUR as u64 + 1,
+            Self::Minutes => MIN_PER_HOUR as _,
+            Self::SecondsInt => SEC_PER_MIN as _,
+            Self::SecondsSub => Duration::from_secs(1).as_nanos() as _,
         }
     }
 }
