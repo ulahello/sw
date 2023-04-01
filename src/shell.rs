@@ -35,7 +35,6 @@ pub struct Shell {
 }
 
 impl Shell {
-    #[track_caller]
     pub fn new(choice: ColorChoice, read_limit: u64, visual_cues: bool) -> Self {
         let stdout = BufferWriter::stdout(choice);
         Self {
@@ -85,7 +84,6 @@ impl Shell {
         Ok(())
     }
 
-    #[track_caller]
     pub fn create_cmd_buf(&mut self) -> CmdBuf<'_> {
         CmdBuf::new(self)
     }
