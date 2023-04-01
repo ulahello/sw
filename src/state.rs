@@ -97,7 +97,7 @@ impl<'shell> State<'shell> {
                     let sw_overflow = self.sw.checked_toggle_at(now).is_none();
                     if sw_overflow {
                         self.sw
-                            .stop()
+                            .stop_at(now)
                             .expect("Sw::checked_toggle_at can only return None if Sw::is_running");
                     }
                     if self.since_stop.checked_toggle_at(now).is_none() {

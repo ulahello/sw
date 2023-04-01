@@ -14,6 +14,8 @@
 ### fixed
 * fixed panic on fatal errors
 * fixed inconsistent duration formatting
+* fixed unreachable time of check bug
+  * when toggling a running and overflowing stopwatch with a non-monotonic Instant, the new elapsed time could be slightly inaccurate compared to the time that overflow was checked. this is unreachable because we use `std::instant::Instant`, which is monotonic.
 
 ## [0.12.0] - 2023-03-20
 ### added
