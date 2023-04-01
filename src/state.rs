@@ -96,7 +96,9 @@ impl<'shell> State<'shell> {
                     let now = Instant::now();
                     let sw_overflow = self.sw.checked_toggle_at(now).is_none();
                     if sw_overflow {
-                        self.sw.stop().unwrap();
+                        self.sw
+                            .stop()
+                            .expect("Sw::checked_toggle_at can only return None if Sw::is_running");
                     }
                     if self.since_stop.checked_toggle_at(now).is_none() {
                         /* if this fails, since_stop was (and is) running. so we
@@ -129,7 +131,9 @@ impl<'shell> State<'shell> {
 
                 Command::Reset => {
                     if self.sw.is_running() {
-                        self.since_stop.start().unwrap();
+                        self.since_stop.start().expect(
+                            "since_stop and sw are never simultaneously running or stopped",
+                        );
                     }
                     let sw_was_running = self.sw.is_running();
                     self.sw.reset();
@@ -150,7 +154,9 @@ impl<'shell> State<'shell> {
                                     cb.error(format_args!("new elapsed time can't be negative"))?;
                                 } else {
                                     if self.sw.is_running() {
-                                        self.since_stop.start().unwrap();
+                                        self.since_stop.start().expect(
+                                            "since_stop and sw are never simultaneously running or stopped",
+                                        );
                                     }
                                     self.sw.set(dur);
                                     cb.info_change(format_args!("updated elapsed time"))?;
