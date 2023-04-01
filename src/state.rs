@@ -318,7 +318,10 @@ impl<'shell> State<'shell> {
                     /* quit message comes from foot terminal
                      * (https://codeberg.org/dnkl/foot) */
                     cb.info_change(format_args!("goodbye"))?;
-                    assert!(passback.is_none());
+                    assert!(
+                        passback.is_none(),
+                        "State::update is not called after Passback::Quit"
+                    );
                     passback = Some(Passback::Quit);
                 }
             },
