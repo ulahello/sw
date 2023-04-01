@@ -6,6 +6,7 @@
 
 ### changed
 * make reset message more clearly indicate that it also stops the stopwatch
+* changed fatal error prefix from "fatal: " to "fatal error: "
 * added to cli description
 * redirect precision parsing overflow errors to clamping warnings
 * **BREAKING:** changed `--no-visual-cues` short name from `-x` to `-v`

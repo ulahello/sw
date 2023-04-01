@@ -36,7 +36,7 @@ struct Args {
 fn main() -> ExitCode {
     let args: Args = argh::from_env();
     if let Err(err) = try_main(&args) {
-        _ = writeln!(stderr(), "fatal: {err}");
+        _ = writeln!(stderr(), "fatal error: {err}");
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
