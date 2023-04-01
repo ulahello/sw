@@ -109,14 +109,12 @@ impl<'shell> State<'shell> {
 
                     if self.sw.is_running() {
                         cb.info_change(format_args!("started stopwatch"))?;
-                        cb.info_idle(format_args!(
-                            "{} since stopped",
-                            DurationFmt::new(
-                                self.since_stop.elapsed_at(now),
-                                self.prec,
-                                cb.visual_cues()
-                            )
-                        ))?;
+                        if let Some(since_stop_elapsed) = self.since_stop.checked_elapsed_at(now) {
+                            cb.info_idle(format_args!(
+                                "{} since stopped",
+                                DurationFmt::new(since_stop_elapsed, self.prec, cb.visual_cues())
+                            ))?;
+                        }
                         self.since_stop.reset();
                         assert!(!sw_overflow);
                     } else {
