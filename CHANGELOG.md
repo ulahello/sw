@@ -7,6 +7,7 @@
 
 ### fixed
 * fixed unexpected negative offset behavior while elapsed time is overflowing
+* fixed incorrect MSRV (now compiles as expected)
 
 ## [0.13.0] - 2023-04-03
 ### added
