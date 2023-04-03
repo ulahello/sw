@@ -10,6 +10,7 @@
 * changed fatal error prefix from "fatal: " to "fatal error: "
 * added to cli description
 * redirect precision parsing overflow errors to clamping warnings
+* optimized output to perform less syscalls
 * **BREAKING:** changed unit format from float to a integer or decimal number
 * **BREAKING:** changed `--no-visual-cues` short name from `-x` to `-v`
 * MSRV lowered to `1.61.0`

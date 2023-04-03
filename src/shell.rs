@@ -124,21 +124,37 @@ impl Shell {
 
 impl Shell {
     fn flush(&mut self, anticipate: Option<IoKind>) -> io::Result<()> {
-        if self.last_op != anticipate {
-            match self.last_op {
-                /* NOTE: flushing manually as workaround for
-                 * https://github.com/BurntSushi/termcolor/issues/69 */
-                Some(IoKind::Out(ref color)) => {
-                    if !color.is_none() {
-                        // don't reset color unless we have to
-                        self.out_buf.reset()?;
-                    }
-                    self.stdout.print(&self.out_buf)?;
-                    io::stdout().flush()?;
-                    self.out_buf.clear();
-                }
-                Some(IoKind::In) | None => (),
+        fn inner(shell: &mut Shell, reset: bool) -> io::Result<()> {
+            if reset {
+                shell.out_buf.reset()?;
             }
+            shell.stdout.print(&shell.out_buf)?;
+            /* NOTE: flushing manually as workaround for
+             * https://github.com/BurntSushi/termcolor/issues/69 */
+            io::stdout().flush()?;
+            shell.out_buf.clear();
+            Ok(())
+        }
+
+        match (&self.last_op, &anticipate) {
+            (Some(IoKind::Out(last_color)), Some(IoKind::Out(expect_color))) => {
+                if !last_color.is_none() {
+                    if expect_color.is_none() {
+                        self.out_buf.reset()?;
+                    } else {
+                        // anticipated color will overwrite previous color
+                    }
+                } else {
+                    // previous color is none so it won't overwrite the
+                    // anticipated color
+                }
+            }
+            (Some(IoKind::Out(color)), Some(IoKind::In)) => {
+                // don't reset color unless we have to
+                inner(self, !color.is_none())?;
+            }
+            (_, None) => inner(self, true)?,
+            (Some(IoKind::In), _) | (None, _) => (),
         }
         self.last_op = anticipate;
         Ok(())
