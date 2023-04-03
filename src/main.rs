@@ -38,9 +38,16 @@ struct Args {
 }
 
 fn main() -> ExitCode {
+    fn print_error(err: &io::Error) -> io::Result<()> {
+        let mut stderr = BufWriter::new(stderr());
+        writeln!(stderr, "fatal error: {err}")?;
+        stderr.flush()?;
+        Ok(())
+    }
+
     let args: Args = argh::from_env();
     if let Err(err) = try_main(&args) {
-        _ = writeln!(stderr(), "fatal error: {err}");
+        _ = print_error(&err);
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
