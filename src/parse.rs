@@ -213,6 +213,31 @@ impl<'s> ByteSpan<'s> {
     pub fn get_after(&self) -> &'s str {
         &self.src[self.start + self.len..]
     }
+
+    pub fn trim_whitespace(&mut self) {
+        // forward
+        {
+            let graphs = UnicodeSegmentation::graphemes(self.get(), true);
+            for chr in graphs {
+                if chr.chars().all(char::is_whitespace) {
+                    self.shift_start_right(chr.len());
+                } else {
+                    break;
+                }
+            }
+        }
+        // backward
+        {
+            let graphs = UnicodeSegmentation::graphemes(self.get(), true).rev();
+            for chr in graphs {
+                if chr.chars().all(char::is_whitespace) {
+                    self.len -= chr.len();
+                } else {
+                    break;
+                }
+            }
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]

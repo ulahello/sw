@@ -65,7 +65,8 @@ impl fmt::Display for UnitErrKind<'_> {
 
 impl ReadDur {
     pub fn parse_as_unit(s: &str) -> Result<Self, ParseErr> {
-        // whitespace? + number + whitespace? + unit
+        // whitespace? + number + whitespace? + unit + whitespace?
+        let s = s.trim_end();
 
         let (try_unit_idx, try_unit) = UnicodeSegmentation::grapheme_indices(s, true)
             .peekable()
@@ -83,12 +84,11 @@ impl ReadDur {
         })?;
 
         let dur_len = try_unit_idx;
-        let dur_span = ByteSpan::new(0, dur_len, s);
+        let mut dur_span = ByteSpan::new(0, dur_len, s);
+        dur_span.trim_whitespace();
         if dur_span.get().is_empty() {
             Err(ParseErr::new(dur_span, UnitErrKind::DurMissing(unit)))
         } else {
-            // TODO: trim whitespace
-
             let mut num_span = dur_span;
             let mut graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
 
@@ -127,6 +127,7 @@ impl ReadDur {
             }
 
             // parse int
+            int_span.trim_whitespace();
             let mut ints = 0;
             if !int_span.get().is_empty() {
                 ints = int_span
@@ -137,7 +138,9 @@ impl ReadDur {
 
             // parse subs
             let mut subs = 0;
-            if let Some(sub_span) = sub_span {
+            if let Some(mut sub_span) = sub_span {
+                sub_span.trim_whitespace();
+
                 // TODO: this is not minimally restrictive
                 let places = NonZeroU8::new(9).unwrap();
                 debug_assert_eq!(u32::MAX.to_string().len() - 1, places.get() as _);
