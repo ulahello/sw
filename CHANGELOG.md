@@ -6,11 +6,11 @@
 * added `--version` (`-V`) flag to display version
 
 ### changed
-* internally changed unit format parsing to not use floats
 * make reset message more clearly indicate that it also stops the stopwatch
 * changed fatal error prefix from "fatal: " to "fatal error: "
 * added to cli description
 * redirect precision parsing overflow errors to clamping warnings
+* **BREAKING:** changed unit format from float to a integer or decimal number
 * **BREAKING:** changed `--no-visual-cues` short name from `-x` to `-v`
 * MSRV lowered to `1.61.0`
 

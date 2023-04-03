@@ -183,10 +183,10 @@ The following formats are supported.
 
 **** Stopwatch format
 #+begin_example
-float unit
+number unit
 #+end_example
 
-~float~ is a floating point number, and ~unit~ is one of "s", "m", or "h", meaning seconds, minutes, and hours respectively.
+~number~ is a whole or decimal number, and ~unit~ is one of "s", "m", or "h", meaning seconds, minutes, and hours respectively.
 
 Whitespace is ignored, so ~1s~ is just as valid as ~1 s~.
 

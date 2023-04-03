@@ -65,7 +65,7 @@ impl fmt::Display for UnitErrKind<'_> {
 
 impl ReadDur {
     pub fn parse_as_unit(s: &str) -> Result<Self, ParseErr> {
-        // whitespace? + decimal number + whitespace? + unit
+        // whitespace? + number + whitespace? + unit
 
         let (try_unit_idx, try_unit) = UnicodeSegmentation::grapheme_indices(s, true)
             .peekable()
