@@ -138,6 +138,7 @@ impl Shell {
 
         match (&self.last_op, &anticipate) {
             (Some(IoKind::Out(last_color)), Some(IoKind::Out(expect_color))) => {
+                #[allow(clippy::if_not_else)]
                 if !last_color.is_none() {
                     if expect_color.is_none() {
                         self.out_buf.reset()?;

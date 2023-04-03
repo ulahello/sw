@@ -366,6 +366,7 @@ impl Group {
             Self::Hours => u64::MAX / SEC_PER_HOUR as u64 + 1,
             Self::Minutes => MIN_PER_HOUR as _,
             Self::SecondsInt => SEC_PER_MIN as _,
+            #[allow(clippy::cast_possible_truncation)]
             Self::SecondsSub => Duration::from_secs(1).as_nanos() as _,
         }
     }

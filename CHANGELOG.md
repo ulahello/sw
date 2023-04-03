@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.13.0] - 2023-04-03
 ### added
 * added `--no-colors` (`-c`) flag to disable color output to the terminal
 * added `--version` (`-V`) flag to display version

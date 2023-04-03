@@ -143,7 +143,7 @@ impl ReadDur {
 
                 // TODO: this is not minimally restrictive
                 let places = NonZeroU8::new(9).unwrap();
-                assert_eq!(u32::MAX.ilog10(), places.get() as _);
+                assert_eq!(u32::MAX.ilog10(), places.get().into());
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {
                     ParseFracErr::ExcessDigits { idx } => {
                         let mut span = sub_span;
@@ -167,8 +167,8 @@ impl ReadDur {
             dur = dur
                 .checked_mul(match unit {
                     Unit::Second => 1,
-                    Unit::Minute => SEC_PER_MIN as _,
-                    Unit::Hour => SEC_PER_HOUR as _,
+                    Unit::Minute => u32::from(SEC_PER_MIN),
+                    Unit::Hour => u32::from(SEC_PER_HOUR),
                 })
                 .ok_or(ParseErr::new(num_span, UnitErrKind::DurOverflow(unit)))?;
 
