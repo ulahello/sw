@@ -87,6 +87,8 @@ impl ReadDur {
         if dur_span.get().is_empty() {
             Err(ParseErr::new(dur_span, UnitErrKind::DurMissing(unit)))
         } else {
+            // TODO: trim whitespace
+
             let mut num_span = dur_span;
             let mut graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
 
