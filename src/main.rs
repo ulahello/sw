@@ -15,9 +15,10 @@ const MAX_NANOS_CHARS: u8 = 9;
 mod tests;
 
 use argh::FromArgs;
+use is_terminal::IsTerminal;
 use termcolor::ColorChoice;
 
-use std::io::{self, stderr, BufWriter, Write};
+use std::io::{self, stderr, stdin, stdout, BufWriter, Write};
 use std::process::ExitCode;
 
 use crate::shell::Shell;
@@ -33,6 +34,10 @@ struct Args {
     /// disable the use of colors in output
     #[argh(short = 'c', switch)]
     no_colors: bool,
+
+    /// disable checking that standard output and input are both terminals
+    #[argh(switch)]
+    no_tty_check: bool,
 
     /// display version
     #[argh(short = 'V', switch)]
@@ -57,6 +62,20 @@ fn main() -> ExitCode {
 }
 
 fn try_main(args: &Args) -> io::Result<()> {
+    if !args.no_tty_check {
+        if !stdout().is_terminal() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "stdout is not a terminal (pass --no-tty-check to ignore)",
+            ));
+        } else if !stdin().is_terminal() {
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
+                "stdin is not a terminal (pass --no-tty-check to ignore)",
+            ));
+        }
+    }
+
     if args.version {
         let mut stderr = BufWriter::new(stderr());
         writeln!(

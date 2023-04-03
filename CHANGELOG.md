@@ -1,6 +1,10 @@
 # changelog
 
 ## [unreleased]
+### added
+* added tty check
+* added `--no-tty-check` flag to disable tty check
+
 ### fixed
 * fixed unexpected negative offset behavior while elapsed time is overflowing
 
