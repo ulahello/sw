@@ -174,16 +174,18 @@ impl<'shell> State<'shell> {
                     let input = cb.read(format_args!("offset by? "))?;
                     if let Some(try_read_dur) = ReadDur::parse(&input) {
                         match try_read_dur {
-                            Ok(ReadDur { dur, is_neg }) =>
-                            {
+                            Ok(ReadDur { dur, is_neg }) => {
                                 #[allow(clippy::collapsible_else_if)]
                                 if is_neg {
+                                    // TODO: would use checked_sub_at and checked_elapsed_at but checked_sub_at doesn't exist
                                     cb.info_change(format_args!("subtracted from elapsed time"))?;
                                     if let Some(new_sw) = self.sw.checked_sub(dur) {
                                         self.sw = new_sw;
-                                    } else {
+                                    } else if self.sw.checked_elapsed().is_some() {
                                         self.sw.reset_in_place();
                                         cb.warn(format_args!("elapsed time clamped to zero"))?;
+                                    } else {
+                                        self.sw = self.sw.saturating_sub(dur);
                                     }
                                 } else {
                                     if let Some(new_sw) = self.sw.checked_add(dur) {

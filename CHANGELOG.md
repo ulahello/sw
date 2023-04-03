@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+### fixed
+* fixed unexpected negative offset behavior while elapsed time is overflowing
 
 ## [0.13.0] - 2023-04-03
 ### added
