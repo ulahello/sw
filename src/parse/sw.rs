@@ -5,11 +5,11 @@
 use unicode_segmentation::{GraphemeIndices, UnicodeSegmentation};
 
 use core::iter::{Peekable, Rev};
-use core::num::ParseIntError;
+use core::num::{NonZeroU8, ParseIntError};
 use core::time::Duration;
 use core::{fmt, ops};
 
-use super::{ByteSpan, ParseErr, ReadDur, MIN_PER_HOUR, SEC_PER_HOUR, SEC_PER_MIN};
+use super::{ByteSpan, ParseErr, ParseFracErr, ReadDur, MIN_PER_HOUR, SEC_PER_HOUR, SEC_PER_MIN};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum SwErrKind {
@@ -80,7 +80,7 @@ impl fmt::Display for SwErrKind {
                 }
                 Self::Int { group: _, err } => write!(f, "{err}"),
                 Self::DurationOverflow(group) => {
-                    write!(f, "duration oveflow while parsing {group}")
+                    write!(f, "duration overflow while parsing {group}")
                 }
 
                 Self::SubsecondsTooLong => {
@@ -208,26 +208,26 @@ impl ReadDur {
             let span = groups[group];
             let to_parse = span.get();
             if !to_parse.trim().is_empty() {
-                let mut nanos: u32 = 0;
-                let mut place: u32 = group.max().try_into().unwrap();
-                let graphs = UnicodeSegmentation::graphemes(to_parse, true).peekable();
-                let mut err_span = span;
-                for chr in graphs {
-                    if place == 1 {
-                        return Err(ParseErr::new(err_span, SwErrKind::SubsecondsTooLong));
-                    }
-                    assert!(place % 10 == 0, "{place} must be divisible by 10");
-                    place /= 10;
-
-                    err_span.shift_start_right(chr.len());
-
-                    match chr.parse::<u8>() {
-                        Ok(digit) => {
-                            assert!(digit < 10);
-                            nanos += u32::from(digit) * place;
-                        }
-                        Err(err) => return Err(ParseErr::new(span, SwErrKind::Int { group, err })),
-                    }
+                let nanos =
+                    super::parse_frac(to_parse, NonZeroU8::new(crate::MAX_NANOS_CHARS).unwrap())
+                        .map_err(|frac_err| match frac_err {
+                            ParseFracErr::ExcessDigits { idx } => {
+                                let mut span = span;
+                                span.shift_start_right(idx);
+                                ParseErr::new(span, SwErrKind::SubsecondsTooLong)
+                            }
+                            ParseFracErr::ParseDigit { idx, len, err } => {
+                                let mut span = span;
+                                span.shift_start_right(idx);
+                                span.len = len;
+                                ParseErr::new(span, SwErrKind::Int { group, err })
+                            }
+                            ParseFracErr::NumeratorOverflow { .. } => {
+                                unreachable!("max nanosecond has 9 characters, max u32 has 10")
+                            }
+                        })?;
+                if u64::from(nanos) >= group.max() {
+                    unreachable!("max nanosecond has 9 characters. add 1 to max and it has 10 characters. that case is checked previously.");
                 }
                 dur = dur
                     .checked_add(Duration::from_nanos(nanos.into()))

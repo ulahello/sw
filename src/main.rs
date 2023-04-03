@@ -9,6 +9,8 @@ mod parse;
 mod shell;
 mod state;
 
+const MAX_NANOS_CHARS: u8 = 9;
+
 #[cfg(test)]
 mod tests;
 

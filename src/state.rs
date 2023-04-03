@@ -30,7 +30,7 @@ pub struct State<'shell> {
 
 impl<'shell> State<'shell> {
     const DEFAULT_PRECISION: u8 = 2;
-    const MAX_PRECISION: u8 = 9;
+    const MAX_PRECISION: u8 = crate::MAX_NANOS_CHARS;
 
     pub fn new(shell: &'shell mut Shell) -> Self {
         Self {
@@ -338,7 +338,7 @@ impl<'shell> State<'shell> {
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct DurationFmt {
     dur: Duration,
-    prec: u8, // <= 9
+    prec: u8, // <= crate::MAX_NANOS_CHARS
     visual_cues: bool,
 }
 
@@ -346,8 +346,7 @@ impl DurationFmt {
     #[allow(clippy::assertions_on_constants)]
     #[must_use]
     pub const fn new(dur: Duration, prec: u8, visual_cues: bool) -> Self {
-        assert!(prec <= 9);
-        assert!(State::MAX_PRECISION == 9);
+        assert!(prec <= crate::MAX_NANOS_CHARS);
         Self {
             dur,
             prec,
@@ -374,7 +373,7 @@ impl fmt::Display for DurationFmt {
                 write!(
                     f,
                     ".{:0>width$}",
-                    nanos / 10_u32.pow(9 - u32::from(fmt.prec)),
+                    nanos / 10_u32.pow(u32::from(crate::MAX_NANOS_CHARS) - u32::from(fmt.prec)),
                 )?;
             }
             Ok(())

@@ -6,11 +6,13 @@
 * added `--version` (`-V`) flag to display version
 
 ### changed
+* internally changed unit format parsing to not use floats
 * make reset message more clearly indicate that it also stops the stopwatch
 * changed fatal error prefix from "fatal: " to "fatal error: "
 * added to cli description
 * redirect precision parsing overflow errors to clamping warnings
 * **BREAKING:** changed `--no-visual-cues` short name from `-x` to `-v`
+* MSRV lowered to `1.61.0`
 
 ### fixed
 * fixed panic on fatal errors
@@ -53,7 +55,7 @@
 * check for overflow when applying offset instead of saturating
 * check for overflow when toggling the stopwatch
 * check for overflow when displaying elapsed time
-* msrv bumped to `1.66.1`
+* MSRV bumped to `1.66.1`
 
 ## [0.9.2] - 2022-09-05
 ### fixed

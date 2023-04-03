@@ -3,11 +3,13 @@
 // licensed under GPL-3.0-or-later
 
 use termcolor::ColorSpec;
+use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 
 use core::fmt;
+use core::num::NonZeroU8;
 use core::time::Duration;
-use std::io;
+use std::{io, num::ParseIntError};
 
 use crate::shell::{CmdBuf, ERROR};
 
@@ -184,6 +186,12 @@ impl<'s> ByteSpan<'s> {
         Self { start, len, src: s }
     }
 
+    #[must_use]
+    #[inline]
+    pub const fn new_all(s: &'s str) -> Self {
+        Self::new(0, s.len(), s)
+    }
+
     pub fn shift_start_left(&mut self, bytes: usize) {
         self.start -= bytes;
         self.len += bytes;
@@ -234,4 +242,43 @@ impl fmt::Display for Unit {
             Self::Hour => "hour",
         })
     }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub(crate) enum ParseFracErr {
+    ExcessDigits {
+        idx: usize,
+    },
+    ParseDigit {
+        idx: usize,
+        len: usize,
+        err: ParseIntError,
+    },
+    NumeratorOverflow {
+        idx: usize,
+    },
+}
+
+pub(crate) fn parse_frac(s: &str, places: NonZeroU8) -> Result<u32, ParseFracErr> {
+    let mut num: u32 = 0;
+    let mut place: u32 = places.get().into();
+    let graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
+    for (idx, chr) in graphs {
+        if place == 0 {
+            return Err(ParseFracErr::ExcessDigits { idx });
+        }
+
+        let digit = chr.parse::<u8>().map_err(|err| ParseFracErr::ParseDigit {
+            idx,
+            len: chr.len(),
+            err,
+        })?;
+        assert!(digit < 10);
+        num = num
+            .checked_add(u32::from(digit) * 10_u32.pow(place - 1))
+            .ok_or(ParseFracErr::NumeratorOverflow { idx })?;
+
+        place -= 1;
+    }
+    Ok(num)
 }
