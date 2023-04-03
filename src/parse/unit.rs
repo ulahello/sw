@@ -136,6 +136,7 @@ impl ReadDur {
             // parse subs
             let mut subs = 0;
             if let Some(sub_span) = sub_span {
+                // TODO: this is not minimally restrictive
                 let places = NonZeroU8::new(9).unwrap();
                 debug_assert_eq!(u32::MAX.to_string().len() - 1, places.get() as _);
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {
