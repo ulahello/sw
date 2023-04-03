@@ -32,6 +32,9 @@ Disable the TTY check.
 Typically, ~sw~ will check if standard output and input are terminals, and exit abnormally if either aren't.
 This flag disables the check.
 
+**** ~--version~
+Display the version of ~sw~.
+
 *** Commands
 The interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
 
