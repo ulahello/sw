@@ -25,6 +25,7 @@ use crate::shell::Shell;
 use crate::state::{Passback, State};
 
 /// Terminal stopwatch that runs as a shell.
+#[allow(clippy::struct_excessive_bools)]
 #[derive(FromArgs)]
 struct Args {
     /// disable text-based graphics and visual cues
