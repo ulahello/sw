@@ -37,6 +37,23 @@ mod parse {
 
     mod unit {
         // TODO: test unit format
+
+        use crate::parse::*;
+        use core::time::Duration;
+
+        #[test]
+        fn whitespace() {
+            let expect = Ok(ReadDur {
+                dur: Duration::from_secs(1),
+                is_neg: false,
+            });
+            assert_eq!(ReadDur::parse_as_unit(" 1s"), expect);
+            assert_eq!(ReadDur::parse_as_unit("1s "), expect);
+            assert_eq!(ReadDur::parse_as_unit("1 s"), expect);
+            assert_eq!(ReadDur::parse_as_unit("1. s"), expect);
+            assert_eq!(ReadDur::parse_as_unit("1 . s"), expect);
+            assert_eq!(ReadDur::parse_as_unit("1 .s"), expect);
+        }
     }
 
     mod sw {
