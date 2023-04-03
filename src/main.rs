@@ -15,7 +15,7 @@ mod tests;
 use argh::FromArgs;
 use termcolor::ColorChoice;
 
-use std::io::{self, stderr, Write};
+use std::io::{self, stderr, BufWriter, Write};
 use std::process::ExitCode;
 
 use crate::shell::Shell;
@@ -31,6 +31,10 @@ struct Args {
     /// disable the use of colors in output
     #[argh(short = 'c', switch)]
     no_colors: bool,
+
+    /// display version
+    #[argh(short = 'V', switch)]
+    version: bool,
 }
 
 fn main() -> ExitCode {
@@ -44,6 +48,18 @@ fn main() -> ExitCode {
 }
 
 fn try_main(args: &Args) -> io::Result<()> {
+    if args.version {
+        let mut stderr = BufWriter::new(stderr());
+        writeln!(
+            stderr,
+            "{name} {version}",
+            name = env!("CARGO_PKG_NAME"),
+            version = env!("CARGO_PKG_VERSION")
+        )?;
+        stderr.flush()?;
+        return Ok(());
+    }
+
     let cc = if args.no_colors {
         ColorChoice::Never
     } else {

@@ -3,6 +3,7 @@
 ## [unreleased]
 ### added
 * added `--no-colors` (`-c`) flag to disable color output to the terminal
+* added `--version` (`-V`) flag to display version
 
 ### changed
 * make reset message more clearly indicate that it also stops the stopwatch
