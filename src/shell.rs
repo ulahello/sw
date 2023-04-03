@@ -154,7 +154,7 @@ impl Shell {
                 inner(self, !color.is_none())?;
             }
             (_, None) => inner(self, true)?,
-            (Some(IoKind::In), _) | (None, _) => (),
+            (Some(IoKind::In) | None, _) => (),
         }
         self.last_op = anticipate;
         Ok(())
