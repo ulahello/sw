@@ -4,6 +4,7 @@
 
 use libsw::Sw;
 use termcolor::{Color, ColorSpec};
+use unicode_width::UnicodeWidthStr;
 
 use core::fmt;
 use core::num::IntErrorKind;
@@ -30,7 +31,8 @@ pub struct State<'shell> {
 
 impl<'shell> State<'shell> {
     const DEFAULT_PRECISION: u8 = 2;
-    const MAX_PRECISION: u8 = crate::MAX_NANOS_CHARS;
+    const MAX_PRECISION: u8 = 9;
+    const COMMAND_SUGGEST_SIMILAR_THRESHOLD: f64 = 0.4;
 
     pub fn new(shell: &'shell mut Shell) -> Self {
         Self {
@@ -293,6 +295,11 @@ impl<'shell> State<'shell> {
                             "Ula Shipman <ula.hello@mailbox.org>",
                         ),
                         (
+                            "strsim",
+                            "MIT",
+                            "Danny Guo <danny@dannyguo.com>",
+                        ),
+                        (
                             "termcolor",
                             "Unlicense OR MIT",
                             "Andrew Gallant <jamslam@gmail.com>",
@@ -326,9 +333,38 @@ impl<'shell> State<'shell> {
                 }
             },
 
-            Err(unk) => cb.error(format_args!(
-                r#"unknown command '{unk}' (try "h" for help)"#
-            ))?,
+            Err(unk) => {
+                cb.error(format_args!(
+                    r#"unknown command '{unk}' (try "h" for help)"#
+                ))?;
+
+                // try to find similarly named command and present it to the user
+                if UnicodeWidthStr::width(unk.as_str()) > 1 {
+                    let (similarity, similar_cmd) = Command::iter()
+                        .iter()
+                        .map(|cmd| {
+                            (
+                                strsim::normalized_damerau_levenshtein(&unk, cmd.long_name()),
+                                cmd,
+                            )
+                        })
+                        .reduce(|(mut most_similar, mut closest_cmd), (similarity, cmd)| {
+                            if similarity > most_similar {
+                                most_similar = similarity;
+                                closest_cmd = cmd;
+                            }
+                            (most_similar, closest_cmd)
+                        })
+                        .expect("there is at least 1 command");
+
+                    if similarity >= Self::COMMAND_SUGGEST_SIMILAR_THRESHOLD {
+                        cb.info_idle(format_args!(
+                            "note: the '{}' command has a similar name",
+                            similar_cmd.long_name()
+                        ))?;
+                    }
+                }
+            }
         }
 
         Ok(passback)

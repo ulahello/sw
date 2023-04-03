@@ -4,6 +4,7 @@
 ### added
 * added `--no-colors` (`-c`) flag to disable color output to the terminal
 * added `--version` (`-V`) flag to display version
+* added suggestions for similar command names after unknown command error
 
 ### changed
 * make reset message more clearly indicate that it also stops the stopwatch
