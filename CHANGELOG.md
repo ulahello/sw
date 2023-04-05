@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.13.1] - 2023-04-05
 ### added
 * added tty check
 * added `--no-tty-check` flag to disable tty check
