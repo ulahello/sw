@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+### fixed
+* fixed `sw -V` requiring tty
 
 ## [0.13.1] - 2023-04-05
 ### added

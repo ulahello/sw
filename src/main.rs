@@ -63,6 +63,18 @@ fn main() -> ExitCode {
 }
 
 fn try_main(args: &Args) -> io::Result<()> {
+    if args.version {
+        let mut stderr = BufWriter::new(stderr());
+        writeln!(
+            stderr,
+            "{name} {version}",
+            name = env!("CARGO_PKG_NAME"),
+            version = env!("CARGO_PKG_VERSION")
+        )?;
+        stderr.flush()?;
+        return Ok(());
+    }
+
     if !args.no_tty_check {
         if !stdout().is_terminal() {
             return Err(io::Error::new(
@@ -75,18 +87,6 @@ fn try_main(args: &Args) -> io::Result<()> {
                 "stdin is not a terminal (pass --no-tty-check to ignore)",
             ));
         }
-    }
-
-    if args.version {
-        let mut stderr = BufWriter::new(stderr());
-        writeln!(
-            stderr,
-            "{name} {version}",
-            name = env!("CARGO_PKG_NAME"),
-            version = env!("CARGO_PKG_VERSION")
-        )?;
-        stderr.flush()?;
-        return Ok(());
     }
 
     let cc = if args.no_colors {
