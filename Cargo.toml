@@ -12,7 +12,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 argh = "0.1.10"
-is-terminal = "0.4.6"
+is-terminal = "0.4.7"
 libsw = "3.2.3"
 strsim = "0.10.0"
 termcolor = "1.2.0"
