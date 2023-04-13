@@ -3,6 +3,7 @@
 ## [unreleased]
 ### fixed
 * fixed `sw -V` requiring tty
+* fixed `sw -V` writing to `stderr` instead of `stdout`
 
 ## [0.13.1] - 2023-04-05
 ### added

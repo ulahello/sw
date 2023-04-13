@@ -64,14 +64,14 @@ fn main() -> ExitCode {
 
 fn try_main(args: &Args) -> io::Result<()> {
     if args.version {
-        let mut stderr = BufWriter::new(stderr());
+        let mut stdout = BufWriter::new(stdout());
         writeln!(
-            stderr,
+            stdout,
             "{name} {version}",
             name = env!("CARGO_PKG_NAME"),
             version = env!("CARGO_PKG_VERSION")
         )?;
-        stderr.flush()?;
+        stdout.flush()?;
         return Ok(());
     }
 
