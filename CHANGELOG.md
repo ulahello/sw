@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.13.2] - 2023-06-03
 ### fixed
 * fixed `sw -V` requiring tty
 * fixed `sw -V` writing to `stderr` instead of `stdout`
