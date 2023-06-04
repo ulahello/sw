@@ -175,17 +175,17 @@ impl<'shell> State<'shell> {
                     if let Some(try_read_dur) = ReadDur::parse(&input) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
+                                let now = Instant::now();
                                 #[allow(clippy::collapsible_else_if)]
                                 if is_neg {
-                                    // TODO: would use checked_sub_at and checked_elapsed_at but checked_sub_at doesn't exist
                                     cb.info_change(format_args!("subtracted from elapsed time"))?;
-                                    if let Some(new_sw) = self.sw.checked_sub(dur) {
+                                    if let Some(new_sw) = self.sw.checked_sub_at(dur, now) {
                                         self.sw = new_sw;
-                                    } else if self.sw.checked_elapsed().is_some() {
+                                    } else if self.sw.checked_elapsed_at(now).is_some() {
                                         self.sw.reset_in_place();
                                         cb.warn(format_args!("elapsed time clamped to zero"))?;
                                     } else {
-                                        self.sw = self.sw.saturating_sub(dur);
+                                        self.sw = self.sw.saturating_sub_at(dur, now);
                                     }
                                 } else {
                                     if let Some(new_sw) = self.sw.checked_add(dur) {
