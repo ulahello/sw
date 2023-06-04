@@ -10,6 +10,7 @@ mod shell;
 mod state;
 
 const MAX_NANOS_CHARS: u8 = 9;
+const SHELL_READ_LIMIT: u64 = 256;
 
 #[cfg(test)]
 mod tests;
@@ -94,7 +95,7 @@ fn try_main(args: &Args) -> io::Result<()> {
     } else {
         ColorChoice::Auto
     };
-    let mut shell = Shell::new(cc, 64, !args.no_visual_cues);
+    let mut shell = Shell::new(cc, SHELL_READ_LIMIT, !args.no_visual_cues);
     shell.splash_text()?;
 
     let mut state = State::new(&mut shell);
