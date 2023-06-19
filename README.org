@@ -146,7 +146,7 @@ The default precision is 2, meaning two subsecond digits will be displayed.
 
 Toggles whether text-based graphics and visual cues are enabled (they are by default).
 
-This parameter can be controlled with the [[#--no-visual-cues][~--no-visual-cues~]] flag.
+This parameter can be controlled with the [[#--no-visual-cues][--no-visual-cues]] flag.
 
 For more details, see the [[#visual-cues][section on visual cues]].
 
@@ -239,7 +239,7 @@ If the [[#precision][precision]] is zero, this will simply be ~5 minutes, 32 sec
 :CUSTOM_ID: colors
 :END:
 
-~sw~ will use colors if they are supported by the terminal, or as directed by the [[#--no-colors][~--no-colors~ flag]].
+~sw~ will use colors if they are supported by the terminal, or as directed by the [[#--no-colors][--no-colors flag]].
 
 The following table documents the meaning of each color as it appears.
 
@@ -257,7 +257,7 @@ The indication for whether the stopwatch is running or stopped in the [[#display
 :CUSTOM_ID: visual-cues
 :END:
 
-Visual cues and text-based graphics are enabled by default, but can be disabled using the [[#visuals][visuals]] command and the [[#--no-visual-cues][~--no-visual-cues~]] flag.
+Visual cues and text-based graphics are enabled by default, but can be disabled using the [[#visuals][visuals]] command and the [[#--no-visual-cues][--no-visual-cues]] flag.
 
 The following aspects of the interface are affected by this parameter:
 - [[#prompt][Prompt]]
