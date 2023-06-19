@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+### added
+* added parse error for unexpected negative duration
 
 ## [0.13.2] - 2023-06-03
 ### fixed

@@ -8,7 +8,7 @@ use core::fmt;
 use core::num::{NonZeroU8, ParseIntError};
 use core::time::Duration;
 
-use super::{ByteSpan, ParseErr, ParseFracErr, ReadDur, Unit, SEC_PER_HOUR, SEC_PER_MIN};
+use super::{ByteSpan, ErrKind, ParseErr, ParseFracErr, ReadDur, Unit, SEC_PER_HOUR, SEC_PER_MIN};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum UnitErrKind<'s> {
@@ -64,7 +64,7 @@ impl fmt::Display for UnitErrKind<'_> {
 }
 
 impl ReadDur {
-    pub fn parse_as_unit(s: &str) -> Result<Self, ParseErr> {
+    pub fn parse_as_unit(s: &str, allow_neg: bool) -> Result<Self, ParseErr> {
         // whitespace? + number + whitespace? + unit + whitespace?
         let s = s.trim_end();
 
@@ -94,6 +94,7 @@ impl ReadDur {
 
             // parse sign
             let mut is_neg = false;
+            let mut neg_span = None;
             if let Some((_, sign)) = graphs.peek() {
                 let mut valid = false;
                 if *sign == "+" {
@@ -102,10 +103,15 @@ impl ReadDur {
                 } else if *sign == "-" {
                     valid = true;
                     is_neg = true;
+                    neg_span = Some(ByteSpan::new(dur_span.start, sign.len(), dur_span.src));
                 }
                 if valid {
                     num_span.shift_start_right(sign.len());
                 }
+            }
+
+            if !allow_neg && is_neg {
+                return Err(ParseErr::new(neg_span.unwrap(), ErrKind::Negative));
             }
 
             // find "." to distinguish whole from fractional part

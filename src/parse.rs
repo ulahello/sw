@@ -30,13 +30,13 @@ pub struct ReadDur {
 }
 
 impl ReadDur {
-    pub fn parse(s: &str) -> Option<Result<Self, ParseErr>> {
+    pub fn parse(s: &str, allow_neg: bool) -> Option<Result<Self, ParseErr>> {
         if s.is_empty() {
             None
         } else {
-            let parsed = match Self::parse_as_unit(s) {
+            let parsed = match Self::parse_as_unit(s, allow_neg) {
                 Ok(unit_ok) => Ok(unit_ok),
-                Err(unit_err) => match Self::parse_as_sw(s) {
+                Err(unit_err) => match Self::parse_as_sw(s, allow_neg) {
                     Ok(sw_ok) => Ok(sw_ok),
                     Err(sw_err) => {
                         if s.as_bytes().contains(&b':') {
@@ -56,6 +56,7 @@ impl ReadDur {
 pub(crate) enum ErrKind<'s> {
     Unit(UnitErrKind<'s>),
     Sw(SwErrKind),
+    Negative,
 }
 
 impl<'s> From<SwErrKind> for ErrKind<'s> {
@@ -152,6 +153,7 @@ impl ParseErr<'_> {
         match &self.kind {
             ErrKind::Unit(unit) => unit.has_help_message(),
             ErrKind::Sw(sw) => sw.has_help_message(),
+            ErrKind::Negative => true,
         }
     }
 }
@@ -162,11 +164,13 @@ impl fmt::Display for ParseErr<'_> {
             match &self.kind {
                 ErrKind::Unit(unit) => write!(f, "{unit:#}"),
                 ErrKind::Sw(sw) => write!(f, "{sw:#}"),
+                ErrKind::Negative => write!(f, "only offsets to duration can be negative"),
             }
         } else {
             match &self.kind {
                 ErrKind::Unit(unit) => write!(f, "{unit}"),
                 ErrKind::Sw(sw) => write!(f, "{sw}"),
+                ErrKind::Negative => write!(f, "expected positive duration"),
             }
         }
     }

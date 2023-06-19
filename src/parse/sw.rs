@@ -9,7 +9,9 @@ use core::num::{NonZeroU8, ParseIntError};
 use core::time::Duration;
 use core::{fmt, ops};
 
-use super::{ByteSpan, ParseErr, ParseFracErr, ReadDur, MIN_PER_HOUR, SEC_PER_HOUR, SEC_PER_MIN};
+use super::{
+    ByteSpan, ErrKind, ParseErr, ParseFracErr, ReadDur, MIN_PER_HOUR, SEC_PER_HOUR, SEC_PER_MIN,
+};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum SwErrKind {
@@ -93,8 +95,9 @@ impl fmt::Display for SwErrKind {
 }
 
 impl ReadDur {
-    pub fn parse_as_sw(s: &str) -> Result<Self, ParseErr> {
+    pub fn parse_as_sw(s: &str, allow_neg: bool) -> Result<Self, ParseErr> {
         /* split string into groups of hours, minutes, etc */
+        let mut neg_span = None;
         let (groups, is_neg): (Groups, bool) = {
             // NOTE: the lexer scans IN REVERSE
             let mut lexer = SwLexer::new(s).peekable();
@@ -158,6 +161,7 @@ impl ReadDur {
                     (_, SwTokenKind::Neg) => {
                         if lexer.peek().is_none() {
                             is_neg = Some(true);
+                            neg_span = Some(token.span);
                         } else {
                             return Err(ParseErr::new(
                                 token.span,
@@ -169,6 +173,10 @@ impl ReadDur {
             }
             (groups, is_neg.unwrap_or(false))
         };
+
+        if !allow_neg && is_neg {
+            return Err(ParseErr::new(neg_span.unwrap(), ErrKind::Negative));
+        }
 
         /* parse group substrings into an actual duration */
         let mut dur = Duration::ZERO;

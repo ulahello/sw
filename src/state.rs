@@ -147,20 +147,17 @@ impl<'shell> State<'shell> {
 
                 Command::Change => {
                     let input = cb.read(format_args!("new elapsed? "))?;
-                    if let Some(try_read_dur) = ReadDur::parse(&input) {
+                    if let Some(try_read_dur) = ReadDur::parse(&input, false) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
-                                if is_neg {
-                                    cb.error(format_args!("new elapsed time can't be negative"))?;
-                                } else {
-                                    if self.sw.is_running() {
-                                        self.since_stop.start().expect(
+                                assert!(!is_neg);
+                                if self.sw.is_running() {
+                                    self.since_stop.start().expect(
                                             "since_stop and sw are never simultaneously running or stopped",
                                         );
-                                    }
-                                    self.sw.set(dur);
-                                    cb.info_change(format_args!("updated elapsed time"))?;
                                 }
+                                self.sw.set(dur);
+                                cb.info_change(format_args!("updated elapsed time"))?;
                             }
 
                             Err(err) => err.display(&mut cb)?,
@@ -172,7 +169,7 @@ impl<'shell> State<'shell> {
 
                 Command::Offset => {
                     let input = cb.read(format_args!("offset by? "))?;
-                    if let Some(try_read_dur) = ReadDur::parse(&input) {
+                    if let Some(try_read_dur) = ReadDur::parse(&input, true) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
                                 let now = Instant::now();
