@@ -4,6 +4,9 @@
 ### added
 * added parse error for unexpected negative duration
 
+### fixed
+* fixed hyperlink formatting in README
+
 ## [0.13.2] - 2023-06-03
 ### fixed
 * fixed `sw -V` requiring tty
