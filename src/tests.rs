@@ -47,12 +47,12 @@ mod parse {
                 dur: Duration::from_secs(1),
                 is_neg: false,
             });
-            assert_eq!(ReadDur::parse_as_unit(" 1s"), expect);
-            assert_eq!(ReadDur::parse_as_unit("1s "), expect);
-            assert_eq!(ReadDur::parse_as_unit("1 s"), expect);
-            assert_eq!(ReadDur::parse_as_unit("1. s"), expect);
-            assert_eq!(ReadDur::parse_as_unit("1 . s"), expect);
-            assert_eq!(ReadDur::parse_as_unit("1 .s"), expect);
+            assert_eq!(ReadDur::parse_as_unit(" 1s", true), expect);
+            assert_eq!(ReadDur::parse_as_unit("1s ", true), expect);
+            assert_eq!(ReadDur::parse_as_unit("1 s", true), expect);
+            assert_eq!(ReadDur::parse_as_unit("1. s", true), expect);
+            assert_eq!(ReadDur::parse_as_unit("1 . s", true), expect);
+            assert_eq!(ReadDur::parse_as_unit("1 .s", true), expect);
         }
     }
 
@@ -68,7 +68,7 @@ mod parse {
         ) {
             for (inputs, expect) in runs {
                 for input in inputs {
-                    assert_eq!(ReadDur::parse_as_sw(input), expect);
+                    assert_eq!(ReadDur::parse_as_sw(input, true), expect);
                 }
             }
         }
