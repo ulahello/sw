@@ -2,7 +2,7 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use libsw::Sw;
+use libsw::{Instant, Sw};
 use termcolor::{Color, ColorSpec};
 use unicode_width::UnicodeWidthStr;
 
@@ -10,7 +10,6 @@ use core::fmt;
 use core::num::IntErrorKind;
 use core::time::Duration;
 use std::io;
-use std::time::Instant;
 
 use crate::command::Command;
 use crate::parse::ReadDur;
