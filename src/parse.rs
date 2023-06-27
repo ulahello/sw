@@ -7,9 +7,9 @@ use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 
 use core::fmt;
-use core::num::NonZeroU8;
+use core::num::{IntErrorKind, NonZeroU8, ParseIntError};
 use core::time::Duration;
-use std::{io, num::ParseIntError};
+use std::io;
 
 use crate::shell::{CmdBuf, ERROR};
 
@@ -81,10 +81,31 @@ pub struct ParseErr<'s> {
 impl<'s> ParseErr<'s> {
     #[inline]
     pub(crate) fn new(span: ByteSpan<'s>, kind: impl Into<ErrKind<'s>>) -> Self {
+        let mut kind = kind.into();
+
+        // showing int overflow error to user breaks abstraction
+        match kind {
+            ErrKind::Sw(ref mut sw_kind) => {
+                if let SwErrKind::Int { group, err } = sw_kind {
+                    if *err.kind() == IntErrorKind::PosOverflow {
+                        *sw_kind = SwErrKind::DurationOverflow(*group);
+                    }
+                }
+            }
+            ErrKind::Unit(ref mut unit_kind) => {
+                if let UnitErrKind::ParseInt { err, unit } = unit_kind {
+                    if *err.kind() == IntErrorKind::PosOverflow {
+                        *unit_kind = UnitErrKind::DurOverflow(*unit);
+                    }
+                }
+            }
+            _ => (),
+        }
+
         Self {
             src: span.src,
             span,
-            kind: kind.into(),
+            kind,
         }
     }
 

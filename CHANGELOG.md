@@ -5,6 +5,7 @@
 * added parse error for unexpected negative duration
 
 ### fixed
+* replaced int overflow errors in duration parsing with duration overflow errors
 * fixed hyperlink formatting in README
 
 ## [0.13.2] - 2023-06-03

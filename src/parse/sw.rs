@@ -5,7 +5,7 @@
 use unicode_segmentation::{GraphemeIndices, UnicodeSegmentation};
 
 use core::iter::{Peekable, Rev};
-use core::num::{NonZeroU8, ParseIntError};
+use core::num::{IntErrorKind, NonZeroU8, ParseIntError};
 use core::time::Duration;
 use core::{fmt, ops};
 
@@ -228,6 +228,7 @@ impl ReadDur {
                                 let mut span = span;
                                 span.shift_start_right(idx);
                                 span.len = len;
+                                assert_ne!(*err.kind(), IntErrorKind::PosOverflow);
                                 ParseErr::new(span, SwErrKind::Int { group, err })
                             }
                             ParseFracErr::NumeratorOverflow { .. } => {
