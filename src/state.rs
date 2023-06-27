@@ -103,10 +103,10 @@ impl<'shell> State<'shell> {
                             .expect("Sw::checked_toggle_at can only return None if Sw::is_running");
                     }
                     if self.since_stop.checked_toggle_at(now).is_none() {
-                        /* if this fails, since_stop was (and is) running. so we
-                         * know that sw was stopped but is now running, meaning
-                         * since_stop will be reset in the next condition, meaning
-                         * it's fine for this to fail. */
+                        /* if this branch is reached, since_stop was (and is)
+                         * running. so we know that sw was stopped but is now
+                         * running, meaning since_stop will be reset in the next
+                         * condition, meaning we dont have to do anything. */
                     }
 
                     if self.sw.is_running() {
