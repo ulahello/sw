@@ -20,8 +20,8 @@ pub(crate) enum SwErrKind {
     UnexpectedSign { is_neg: bool },
     Int { group: Group, err: ParseIntError },
     DurationOverflow(Group),
-    SubsecondsTooLong,
-    GroupExcess(Group),
+    SubsecondsTooLong,  // TODO: this should be warning
+    GroupExcess(Group), // TODO: this probably shouldn't be an error
 }
 
 impl SwErrKind {
