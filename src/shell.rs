@@ -130,7 +130,8 @@ impl Shell {
             }
             shell.stdout.print(&shell.out_buf)?;
             /* NOTE: flushing manually as workaround for
-             * https://github.com/BurntSushi/termcolor/issues/69 */
+             * https://github.com/BurntSushi/termcolor/issues/69 (this is also
+             * why if you strace sw, it uses unoptimal write syscalls) */
             io::stdout().flush()?;
             shell.out_buf.clear();
             Ok(())
