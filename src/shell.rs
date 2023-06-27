@@ -2,7 +2,7 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use termcolor::{Buffer, BufferWriter, Color, ColorChoice, ColorSpec, WriteColor};
+use termcolor::{BufferedStandardStream, Color, ColorChoice, ColorSpec, WriteColor};
 
 use core::fmt;
 use std::io::{self, stdin, BufRead, Read, Stdin, Write};
@@ -21,8 +21,7 @@ enum IoKind {
 }
 
 pub struct Shell {
-    stdout: BufferWriter,
-    out_buf: Buffer,
+    stdout: BufferedStandardStream,
     stdin: Stdin,
     read_limit: u64,
     last_op: Option<IoKind>,
@@ -36,9 +35,8 @@ pub struct Shell {
 
 impl Shell {
     pub fn new(choice: ColorChoice, read_limit: u64, visual_cues: bool) -> Self {
-        let stdout = BufferWriter::stdout(choice);
+        let stdout = BufferedStandardStream::stdout(choice);
         Self {
-            out_buf: stdout.buffer(),
             stdout,
             stdin: stdin(),
             read_limit,
@@ -97,8 +95,8 @@ impl Shell {
         color.set_reset(false);
         let this_op = IoKind::Out(color.clone());
         self.flush(Some(this_op))?;
-        self.out_buf.set_color(&color)?;
-        self.out_buf.write_fmt(fmt)?;
+        self.stdout.set_color(&color)?;
+        self.stdout.write_fmt(fmt)?;
         Ok(())
     }
 
@@ -126,14 +124,9 @@ impl Shell {
     fn flush(&mut self, anticipate: Option<IoKind>) -> io::Result<()> {
         fn inner(shell: &mut Shell, reset: bool) -> io::Result<()> {
             if reset {
-                shell.out_buf.reset()?;
+                shell.stdout.reset()?;
             }
-            shell.stdout.print(&shell.out_buf)?;
-            /* NOTE: flushing manually as workaround for
-             * https://github.com/BurntSushi/termcolor/issues/69 (this is also
-             * why if you strace sw, it uses unoptimal write syscalls) */
-            io::stdout().flush()?;
-            shell.out_buf.clear();
+            shell.stdout.flush()?;
             Ok(())
         }
 
@@ -142,7 +135,7 @@ impl Shell {
                 #[allow(clippy::if_not_else)]
                 if !last_color.is_none() {
                     if expect_color.is_none() {
-                        self.out_buf.reset()?;
+                        self.stdout.reset()?;
                     } else {
                         // anticipated color will overwrite previous color
                     }
