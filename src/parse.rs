@@ -84,6 +84,7 @@ impl<'s> ParseErr<'s> {
         let mut kind = kind.into();
 
         // showing int overflow error to user breaks abstraction
+        #[allow(clippy::match_wildcard_for_single_variants)]
         match kind {
             ErrKind::Sw(ref mut sw_kind) => {
                 if let SwErrKind::Int { group, err } = sw_kind {
