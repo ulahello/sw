@@ -4,6 +4,10 @@
 ### added
 * added parse error for unexpected negative duration
 
+### changed
+* replaced `is-terminal` dependency with `std::io::IsTerminal`
+  * MSRV bumped to `1.70.0`
+
 ### fixed
 * replaced int overflow errors in duration parsing with duration overflow errors
 * fixed hyperlink formatting in README

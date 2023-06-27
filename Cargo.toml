@@ -3,7 +3,7 @@ name = "sw"
 version = "0.13.2"
 authors = ["Ula Shipman <ula.hello@mailbox.org>"]
 edition = "2021"
-rust-version = "1.61.0"
+rust-version = "1.70.0"
 description = "terminal stopwatch"
 repository = "https://github.com/ulahello/sw"
 license = "GPL-3.0-or-later"
@@ -12,7 +12,6 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 argh = "0.1.10"
-is-terminal = "0.4.7"
 libsw = "3.3.0"
 strsim = "0.10.0"
 termcolor = "1.2.0"

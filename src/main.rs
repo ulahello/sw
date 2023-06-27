@@ -16,10 +16,9 @@ const SHELL_READ_LIMIT: u64 = 256;
 mod tests;
 
 use argh::FromArgs;
-use is_terminal::IsTerminal;
 use termcolor::ColorChoice;
 
-use std::io::{self, stderr, stdin, stdout, BufWriter, Write};
+use std::io::{self, stderr, stdin, stdout, BufWriter, IsTerminal, Write};
 use std::process::ExitCode;
 
 use crate::shell::Shell;
