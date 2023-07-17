@@ -3,6 +3,7 @@
 ## [unreleased]
 ### added
 * added parse error for unexpected negative duration
+* added `default.nix` and `shell.nix` for building with nix
 
 ### changed
 * replaced `is-terminal` dependency with `std::io::IsTerminal`
