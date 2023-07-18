@@ -48,8 +48,8 @@ field shows which key combination maps to the command. The command's name is
 also a valid input.
 
 [[ Command name
-:- Input
-:< Description
+:[ Input
+:[ Description
 |[ Help
 :  h
 :  Show help
