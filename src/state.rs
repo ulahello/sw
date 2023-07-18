@@ -152,8 +152,8 @@ impl<'shell> State<'shell> {
                                 assert!(!is_neg);
                                 if self.sw.is_running() {
                                     self.since_stop.start().expect(
-                                            "since_stop and sw are never simultaneously running or stopped",
-                                        );
+                                        "since_stop and sw are never simultaneously running or stopped",
+                                    );
                                 }
                                 self.sw.set(dur);
                                 cb.info_change(format_args!("updated elapsed time"))?;
