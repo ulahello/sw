@@ -52,13 +52,13 @@ also a valid input.
 :< Description
 |[ Help
 :  h
-:  List available commands and their description
+:  Show help
 |  Display
 :  <Enter>
-:  Display elapsed time and stopwatch state
+:  Display elapsed time
 |  Toggle
 :  s
-:  Toggle whether stopwatch is running
+:  Toggle stopwatch
 |  Reset
 :  r
 :  Reset stopwatch
@@ -73,7 +73,7 @@ also a valid input.
 :  Set stopwatch name
 |  Precision
 :  p
-:  Set decimal precision for displaying durations
+:  Set display precision
 |  Visuals
 :  v
 :  Toggle visual cues

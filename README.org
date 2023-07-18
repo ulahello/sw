@@ -50,7 +50,7 @@ The command's name is also a valid input.
 | Reset        | r       | Reset stopwatch       |
 | Change       | c       | Change elapsed time   |
 | Offset       | o       | Offset elapsed time   |
-| Name         | n       | Name stopwatch        |
+| Name         | n       | Set stopwatch name    |
 | Precision    | p       | Set display precision |
 | Visuals      | v       | Toggle visual cues    |
 | License      | l       | Print license info    |
