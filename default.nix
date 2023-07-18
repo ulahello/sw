@@ -1,4 +1,4 @@
-{ lib, rustPlatform }:
+{ lib, rustPlatform, gnumake, scdoc }:
 let manifest = (lib.importTOML ./Cargo.toml).package;
 in
 rustPlatform.buildRustPackage rec {
@@ -13,4 +13,10 @@ rustPlatform.buildRustPackage rec {
 
   cargoLock.lockFile = ./Cargo.lock;
   src = lib.cleanSource ./.;
+
+  nativeBuildInputs = [ gnumake scdoc ];
+
+  postInstall = ''
+    cd docs && PREFIX="$out" make install
+  '';
 }

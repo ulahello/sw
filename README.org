@@ -36,7 +36,7 @@ This flag disables the check.
 Display the version of ~sw~.
 
 *** Commands
-The interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
+The shell interface allows you to manipulate a stopwatch by issuing commands and responding to prompts that may follow.
 
 The following table is a quick overview of the available commands.
 The "input" field shows which key combination maps to the command.
@@ -197,7 +197,7 @@ number unit
 
 ~number~ is a whole or decimal number, and ~unit~ is one of "s", "m", or "h", meaning seconds, minutes, and hours respectively.
 
-Whitespace is ignored, so ~1s~ is just as valid as ~1 s~.
+Whitespace is ignored, so "1s" is just as valid as "1 s".
 
 **** Unit format
 #+begin_example
@@ -209,7 +209,7 @@ The details shouldn't be surprising, it's a superset of how durations are displa
 ~hours~, ~minutes~, ~seconds~ and ~subseconds~ are all integers.
 ~minutes~ and ~seconds~ must be less than 60.
 
-~sign~ is optional, and one of ~+~ or ~-~.
+~sign~ is optional, and one of "+" or "-".
 It indicates whether the duration is positive or negative, defaulting to positive.
 
 It's okay to omit separators and values.
@@ -217,10 +217,10 @@ Rightmost values are the most important, so the meaning of the input will be inf
 
 Some examples of terse inputs:
 
-- ~:5~ and ~::5~ represent 5 seconds
-- ~:5:~ represents 5 minutes
-- ~:.6~ represents 0.6 seconds
-- ~1::1.1~ represents 1 hour and 1.1 seconds
+- ":5" and "::5" represent 5 seconds
+- ":5:" represents 5 minutes
+- ":.6" represents 0.6 seconds
+- "1::1.1" represents 1 hour and 1.1 seconds
 
 It's also okay to add whitespace between separators.
 
@@ -231,8 +231,8 @@ It's also okay to add whitespace between separators.
 
 With visual cues enabled, durations are formatted as ~hours:minutes:seconds.subseconds~.
 Otherwise they're formatted as they would be spoken.
-For example, ~00:05:32.98~ would be formatted as ~5 minutes, 32.98 seconds~.
-If the [[#precision][precision]] is zero, this will simply be ~5 minutes, 32 seconds~.
+For example, "00:05:32.98" would be formatted as "5 minutes, 32.98 seconds".
+If the [[#precision][precision]] is zero, this will simply be "5 minutes, 32 seconds".
 
 *** Colors
 :PROPERTIES:
@@ -241,7 +241,7 @@ If the [[#precision][precision]] is zero, this will simply be ~5 minutes, 32 sec
 
 ~sw~ will use colors if they are supported by the terminal, or as directed by the [[#--no-colors][--no-colors flag]].
 
-The following table documents the meaning of each color as it appears.
+The following table documents the meaning of each color as it appears:
 
 | Color   | Meaning                                |
 |---------+----------------------------------------|
