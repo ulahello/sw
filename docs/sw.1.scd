@@ -263,7 +263,7 @@ the *--no-colors* flag.
 The following table documents the meaning of each color as it appears:
 
 [[ Color
-:< Meaning
+:[ Meaning
 |  Magenta
 :  Information about program state change
 |  Cyan
