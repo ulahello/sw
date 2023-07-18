@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+
+## [0.13.3] - 2023-07-18
 ### added
 * added parse error for unexpected negative duration
 * added `default.nix` and `shell.nix` for building with nix
