@@ -60,7 +60,6 @@ impl<'shell> State<'shell> {
         match cb.read_cmd(&self.name, self.sw.is_running())? {
             Ok(command) => match command {
                 Command::Help => {
-                    // TODO: be able to print help page for individual commands
                     for help_cmd in Command::iter() {
                         cb.writeln(format_args!(
                             "{} or {}. {}.",
