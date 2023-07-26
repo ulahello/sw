@@ -17,7 +17,6 @@ rustPlatform.buildRustPackage rec {
   nativeBuildInputs = [ gnumake scdoc ];
 
   postInstall = ''
-    cd docs
-    PREFIX="$out" make clean install
+    PREFIX="$out" make -C ./docs clean install
   '';
 }
