@@ -47,7 +47,7 @@ struct Args {
 
 fn main() -> ExitCode {
     fn print_error(err: &io::Error) -> io::Result<()> {
-        let mut stderr = BufWriter::new(stderr());
+        let mut stderr = BufWriter::new(stderr()); // @alloc
         writeln!(stderr, "fatal error: {err}")?;
         stderr.flush()?;
         Ok(())
@@ -64,7 +64,7 @@ fn main() -> ExitCode {
 
 fn try_main(args: &Args) -> io::Result<()> {
     if args.version {
-        let mut stdout = BufWriter::new(stdout());
+        let mut stdout = BufWriter::new(stdout()); // @alloc
         writeln!(
             stdout,
             "{name} {version}",

@@ -35,7 +35,7 @@ pub struct Shell {
 
 impl Shell {
     pub fn new(choice: ColorChoice, read_limit: u16, visual_cues: bool) -> Self {
-        let stdout = BufferedStandardStream::stdout(choice);
+        let stdout = BufferedStandardStream::stdout(choice); // @alloc
         Self {
             stdout,
             stdin: stdin(),

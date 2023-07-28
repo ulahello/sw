@@ -39,7 +39,7 @@ impl<'shell> State<'shell> {
         Self {
             sw: Sw::new(),
             since_stop: Sw::new_started(),
-            name: input.clone(),
+            name: input.clone(), // @alloc
             input,
             prec: Self::DEFAULT_PRECISION,
             shell,
