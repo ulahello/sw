@@ -149,7 +149,7 @@ impl ReadDur {
 
                 // TODO: this is not minimally restrictive
                 let places = NonZeroU8::new(9).unwrap();
-                assert_eq!(u32::MAX.to_string().len() - 1, places.get().into());
+                debug_assert_eq!(u32::MAX.to_string().len() - 1, places.get().into());
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {
                     ParseFracErr::ExcessDigits { idx } => {
                         let mut span = sub_span;

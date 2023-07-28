@@ -324,7 +324,7 @@ pub(crate) fn parse_frac(s: &str, places: NonZeroU8) -> Result<u32, ParseFracErr
             len: chr.len(),
             err,
         })?;
-        assert!(digit < 10);
+        debug_assert!(digit < 10);
         num = num
             .checked_add(u32::from(digit) * 10_u32.pow(place - 1))
             .ok_or(ParseFracErr::NumeratorOverflow { idx })?;
