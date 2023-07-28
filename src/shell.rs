@@ -23,7 +23,7 @@ enum IoKind {
 pub struct Shell {
     stdout: BufferedStandardStream,
     stdin: Stdin,
-    read_limit: u64,
+    read_limit: u16,
     last_op: Option<IoKind>,
 
     visual_cues: bool,
@@ -34,7 +34,7 @@ pub struct Shell {
 }
 
 impl Shell {
-    pub fn new(choice: ColorChoice, read_limit: u64, visual_cues: bool) -> Self {
+    pub fn new(choice: ColorChoice, read_limit: u16, visual_cues: bool) -> Self {
         let stdout = BufferedStandardStream::stdout(choice);
         Self {
             stdout,
@@ -100,15 +100,19 @@ impl Shell {
         Ok(())
     }
 
-    pub fn read(&mut self) -> io::Result<String> {
+    pub fn read(&mut self, input: &mut String) -> io::Result<()> {
         let this_op = IoKind::In;
         self.flush(Some(this_op))?;
-        let mut input = String::new();
+        input.clear();
         self.stdin
             .lock()
-            .take(self.read_limit)
-            .read_line(&mut input)?;
-        Ok(input.trim().to_string())
+            .take(self.read_limit.into())
+            .read_line(input)?;
+        Ok(())
+    }
+
+    pub fn input(input: &String) -> &str {
+        input.trim()
     }
 
     pub fn finish(&mut self) -> io::Result<()> {
@@ -117,6 +121,10 @@ impl Shell {
             self.flush(None)?;
         }
         Ok(())
+    }
+
+    pub const fn read_limit(&self) -> u16 {
+        self.read_limit
     }
 }
 
@@ -176,22 +184,25 @@ impl CmdBuf<'_> {
         self.shell.visual_cues = new;
     }
 
-    pub fn read_cmd(
+    pub fn read_cmd<'a>(
         &mut self,
+        input: &'a mut String,
         name: &str,
         is_running: bool,
-    ) -> io::Result<Result<Command, String>> {
-        let input = if self.shell.visual_cues {
-            self.read(format_args!(
-                "{name} {} ",
-                if is_running { "*" } else { ";" }
-            ))?
+    ) -> io::Result<Result<Command, &'a str>> {
+        if self.shell.visual_cues {
+            self.read(
+                input,
+                format_args!("{name} {} ", if is_running { "*" } else { ";" }),
+            )?;
         } else {
-            self.read(format_args!("{name}. "))?
-        };
-        match input.parse() {
+            self.read(input, format_args!("{name}. "))?;
+        }
+
+        let try_cmd = Shell::input(input);
+        match try_cmd.parse() {
             Ok(cmd) => Ok(Ok(cmd)),
-            Err(()) => Ok(Err(input)),
+            Err(()) => Ok(Err(try_cmd)),
         }
     }
 
@@ -232,9 +243,9 @@ impl CmdBuf<'_> {
         )
     }
 
-    pub fn read(&mut self, prompt: fmt::Arguments) -> io::Result<String> {
+    pub fn read(&mut self, input: &mut String, prompt: fmt::Arguments) -> io::Result<()> {
         self.write(prompt)?;
-        self.shell.read()
+        self.shell.read(input)
     }
 }
 

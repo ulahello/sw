@@ -10,7 +10,7 @@ mod shell;
 mod state;
 
 const MAX_NANOS_CHARS: u8 = 9;
-const SHELL_READ_LIMIT: u64 = 256;
+const SHELL_READ_LIMIT: u16 = 256;
 
 #[cfg(test)]
 mod tests;

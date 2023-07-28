@@ -1,6 +1,8 @@
 # changelog
 
 ## [unreleased]
+### changed
+* reuse strings to reduce frequent allocations
 
 ## [0.13.3] - 2023-07-18
 ### added

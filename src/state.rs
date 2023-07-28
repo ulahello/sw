@@ -24,6 +24,7 @@ pub struct State<'shell> {
     sw: Sw,
     since_stop: Sw,
     name: String,
+    input: String,
     prec: u8,
     shell: &'shell mut Shell,
 }
@@ -34,10 +35,12 @@ impl<'shell> State<'shell> {
     const COMMAND_SUGGEST_SIMILAR_THRESHOLD: f64 = 0.4;
 
     pub fn new(shell: &'shell mut Shell) -> Self {
+        let input = String::with_capacity(shell.read_limit().into()); // @alloc
         Self {
             sw: Sw::new(),
             since_stop: Sw::new_started(),
-            name: String::new(),
+            name: input.clone(),
+            input,
             prec: Self::DEFAULT_PRECISION,
             shell,
         }
@@ -57,7 +60,7 @@ impl<'shell> State<'shell> {
     pub fn update(&mut self) -> io::Result<Option<Passback>> {
         let mut passback = None;
         let mut cb = self.shell.create_cmd_buf();
-        match cb.read_cmd(&self.name, self.sw.is_running())? {
+        match cb.read_cmd(&mut self.input, &self.name, self.sw.is_running())? {
             Ok(command) => match command {
                 Command::Help => {
                     for help_cmd in Command::iter() {
@@ -144,8 +147,8 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Change => {
-                    let input = cb.read(format_args!("new elapsed? "))?;
-                    if let Some(try_read_dur) = ReadDur::parse(&input, false) {
+                    cb.read(&mut self.input, format_args!("new elapsed? "))?;
+                    if let Some(try_read_dur) = ReadDur::parse(Shell::input(&self.input), false) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
                                 assert!(!is_neg);
@@ -166,8 +169,8 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Offset => {
-                    let input = cb.read(format_args!("offset by? "))?;
-                    if let Some(try_read_dur) = ReadDur::parse(&input, true) {
+                    cb.read(&mut self.input, format_args!("offset by? "))?;
+                    if let Some(try_read_dur) = ReadDur::parse(Shell::input(&self.input), true) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
                                 let now = Instant::now();
@@ -202,7 +205,8 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Name => {
-                    let new = cb.read(format_args!("new name? "))?;
+                    cb.read(&mut self.input, format_args!("new name? "))?;
+                    let new = Shell::input(&self.input);
                     if new == self.name {
                         cb.info_idle(format_args!("name unchanged"))?;
                     } else {
@@ -211,12 +215,14 @@ impl<'shell> State<'shell> {
                         } else {
                             cb.info_change(format_args!("set name"))?;
                         }
-                        self.name = new;
+                        self.name.clear();
+                        self.name.push_str(new)
                     }
                 }
 
                 Command::Precision => {
-                    let try_prec = cb.read(format_args!("new precision? "))?;
+                    cb.read(&mut self.input, format_args!("new precision? "))?;
+                    let try_prec = Shell::input(&self.input);
                     if try_prec.is_empty() {
                         if self.prec == Self::DEFAULT_PRECISION {
                             cb.info_idle(format_args!("precision unchanged"))?;
@@ -336,7 +342,7 @@ impl<'shell> State<'shell> {
                 ))?;
 
                 // try to find similarly named command and present it to the user
-                if UnicodeWidthStr::width(unk.as_str()) > 1 {
+                if UnicodeWidthStr::width(unk) > 1 {
                     let (similarity, similar_cmd) = Command::iter()
                         .iter()
                         .map(|cmd| {
