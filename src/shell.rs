@@ -111,7 +111,7 @@ impl Shell {
         Ok(())
     }
 
-    pub fn input(input: &String) -> &str {
+    pub fn input(input: &str) -> &str {
         input.trim()
     }
 

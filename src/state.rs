@@ -215,8 +215,7 @@ impl<'shell> State<'shell> {
                         } else {
                             cb.info_change(format_args!("set name"))?;
                         }
-                        self.name.clear();
-                        self.name.push_str(new)
+                        self.name.replace_range(.., new);
                     }
                 }
 
@@ -347,7 +346,7 @@ impl<'shell> State<'shell> {
                         .iter()
                         .map(|cmd| {
                             (
-                                strsim::normalized_damerau_levenshtein(&unk, cmd.long_name()),
+                                strsim::normalized_damerau_levenshtein(unk, cmd.long_name()),
                                 cmd,
                             )
                         })
