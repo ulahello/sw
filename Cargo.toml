@@ -11,7 +11,7 @@ keywords = ["stopwatch"]
 categories = ["command-line-utilities"]
 
 [dependencies]
-argh = "0.1.10"
+argh = "0.1.12"
 libsw = { version = "3.3.0", default-features = false, features = ["std_instant"] }
 strsim = "0.10.0"
 termcolor = "1.2.0"
