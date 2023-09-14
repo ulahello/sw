@@ -336,9 +336,7 @@ impl<'shell> State<'shell> {
             },
 
             Err(unk) => {
-                cb.error(format_args!(
-                    r#"unknown command '{unk}' (try "h" for help)"#
-                ))?;
+                cb.error(format_args!(r#"unknown command (try "h" for help)"#))?;
 
                 // try to find similarly named command and present it to the user
                 if UnicodeWidthStr::width(unk) > 1 {
