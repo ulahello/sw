@@ -14,9 +14,9 @@ categories = ["command-line-utilities"]
 argh = "0.1.12"
 libsw = { version = "3.3.0", default-features = false, features = ["std_instant"] }
 strsim = "0.10.0"
-termcolor = "1.2.0"
+termcolor = "1.4.0"
 unicode-segmentation = "1.10.1"
-unicode-width = "0.1.10"
+unicode-width = "0.1.11"
 
 [profile.release]
 lto = true
