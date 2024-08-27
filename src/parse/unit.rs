@@ -147,7 +147,7 @@ impl ReadDur {
             if let Some(mut sub_span) = sub_span {
                 sub_span.trim_whitespace();
 
-                // TODO: this is not minimally restrictive
+                // TODO: this is not minimally restrictive. depending on the unit, a different precision will be permissible
                 let places = NonZeroU8::new(9).unwrap();
                 debug_assert_eq!(u32::MAX.to_string().len() - 1, places.get().into());
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {

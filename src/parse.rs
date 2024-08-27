@@ -110,6 +110,7 @@ impl<'s> ParseErr<'s> {
         }
     }
 
+    // TODO: careful printing user input. may contain escape codes.
     pub fn display(&self, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
         fn display_error_red_highlighted(err: &ParseErr, cmd: &mut CmdBuf<'_>) -> io::Result<()> {
             // text before span
