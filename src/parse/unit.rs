@@ -143,7 +143,7 @@ impl ReadDur {
             }
 
             // parse subs
-            let mut subs = 0;
+            let mut subs: u32 = 0;
             if let Some(mut sub_span) = sub_span {
                 sub_span.trim_whitespace();
 
