@@ -2,6 +2,7 @@
 
 ## [unreleased]
 ### changed
+* added `name` positional argument to set stopwatch name
 * reuse strings to reduce frequent allocations
 * removed nix files
 

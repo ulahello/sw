@@ -34,12 +34,12 @@ impl<'shell> State<'shell> {
     const MAX_PRECISION: u8 = 9;
     const COMMAND_SUGGEST_SIMILAR_THRESHOLD: f64 = 0.4;
 
-    pub fn new(shell: &'shell mut Shell) -> Self {
+    pub fn new(shell: &'shell mut Shell, name: String) -> Self {
         let input = String::with_capacity(shell.read_limit().into()); // @alloc
         Self {
             sw: Sw::new(),
             since_stop: Sw::new_started(),
-            name: input.clone(), // @alloc
+            name,
             input,
             prec: Self::DEFAULT_PRECISION,
             shell,

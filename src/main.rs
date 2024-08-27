@@ -43,6 +43,10 @@ struct Args {
     /// display version
     #[argh(short = 'V', switch)]
     version: bool,
+
+    /// set the stopwatch name
+    #[argh(positional)]
+    name: Option<String>,
 }
 
 fn main() -> ExitCode {
@@ -54,7 +58,7 @@ fn main() -> ExitCode {
     }
 
     let args: Args = argh::from_env();
-    if let Err(err) = try_main(&args) {
+    if let Err(err) = try_main(args) {
         _ = print_error(&err);
         ExitCode::FAILURE
     } else {
@@ -62,7 +66,7 @@ fn main() -> ExitCode {
     }
 }
 
-fn try_main(args: &Args) -> io::Result<()> {
+fn try_main(args: Args) -> io::Result<()> {
     if args.version {
         let mut stdout = BufWriter::new(stdout()); // @alloc
         writeln!(
@@ -97,7 +101,8 @@ fn try_main(args: &Args) -> io::Result<()> {
     let mut shell = Shell::new(cc, SHELL_READ_LIMIT, !args.no_visual_cues);
     shell.splash_text()?;
 
-    let mut state = State::new(&mut shell);
+    let name = args.name.unwrap_or(String::new());
+    let mut state = State::new(&mut shell, name);
     loop {
         if let Some(passback) = state.update()? {
             match passback {

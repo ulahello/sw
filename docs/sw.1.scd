@@ -6,13 +6,18 @@ sw - terminal stopwatch
 
 # SYNOPSIS
 
-*sw* [_OPTIONS_]
+*sw* [_OPTIONS_] [_NAME_]
 
 # DESCRIPTION
 
 *sw* is a terminal stopwatch that runs as a shell.
 
-# OPTIONS
+# PARAMETERS
+
+_NAME_
+	Set the stopwatch name.
+
+	This is equivalent to using the _Name_ command.
 
 *-v*, *--no-visual-cues*
 	Disable text-based graphics and visual cues.
