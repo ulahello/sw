@@ -13,10 +13,10 @@ categories = ["command-line-utilities"]
 [dependencies]
 argh = "0.1.12"
 libsw = { version = "3.3.1", default-features = false, features = ["std_instant"] }
-strsim = "0.10.0"
-termcolor = "1.4.0"
-unicode-segmentation = "1.10.1"
-unicode-width = "0.1.11"
+strsim = "0.11.1"
+termcolor = "1.4.1"
+unicode-segmentation = "1.11.0"
+unicode-width = "0.1.13"
 
 [profile.release]
 lto = true
