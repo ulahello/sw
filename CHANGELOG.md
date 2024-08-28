@@ -1,8 +1,13 @@
 # changelog
 
 ## [unreleased]
-### changed
+
+## [0.14.0] - 2024-08-28
+### added
 * added `name` positional argument to set stopwatch name
+* added icon
+
+### changed
 * reuse strings to reduce frequent allocations
 * removed nix files
 
