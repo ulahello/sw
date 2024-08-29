@@ -1,6 +1,26 @@
 * ~sw~
 ~sw~ is a terminal stopwatch that runs as a shell.
 
+** Quick Start
+First, [[https://www.rust-lang.org/tools/install][install Rust]].
+Then, to build and install ~sw~:
+
+#+begin_src sh
+  # build sw
+  cargo build --release
+
+  # make sw available in your $PATH
+  cargo install --locked --path .
+#+end_src
+
+If you wish to build and install the man pages for your POSIX system, make sure you have [[https://sr.ht/~sircmpwn/scdoc/][scdoc]] installed.
+Having Make is nice because you can use the provided Makefile, but it's not strictly required.
+
+#+begin_src sh
+  # install the documentation to $PREFIX
+  PREFIX="/usr/local" make -B -C docs install
+#+end_src
+
 ** Usage
 *** Arguments
 **** ~--help~
