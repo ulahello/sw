@@ -5,20 +5,16 @@
 mod parse {
     mod frac {
         use crate::parse::{parse_frac, ParseFracErr};
-        use core::num::NonZeroU8;
 
         #[test]
         fn basic() {
-            assert_eq!(parse_frac("1", NonZeroU8::new(1).unwrap()), Ok(1));
-            assert_eq!(parse_frac("2", NonZeroU8::new(1).unwrap()), Ok(2));
+            assert_eq!(parse_frac("1", 1), Ok(1));
+            assert_eq!(parse_frac("2", 1), Ok(2));
+            assert_eq!(parse_frac("23", 1), Ok(2));
+            assert_eq!(parse_frac("23", 2), Ok(23));
+            assert_eq!(parse_frac("2", 2), Ok(20));
             assert_eq!(
-                parse_frac("23", NonZeroU8::new(1).unwrap()),
-                Err(ParseFracErr::ExcessDigits { idx: 1 })
-            );
-            assert_eq!(parse_frac("23", NonZeroU8::new(2).unwrap()), Ok(23));
-            assert_eq!(parse_frac("2", NonZeroU8::new(2).unwrap()), Ok(20));
-            assert_eq!(
-                parse_frac("24🪴21", NonZeroU8::new(5).unwrap()),
+                parse_frac("24🪴21", 5),
                 Err(ParseFracErr::ParseDigit {
                     idx: 2,
                     len: 4,
@@ -28,7 +24,7 @@ mod parse {
             {
                 let s = (u64::from(u32::MAX) + 1).to_string();
                 assert_eq!(
-                    parse_frac(&s, NonZeroU8::new(s.len() as _).unwrap()),
+                    parse_frac(&s, s.len() as _),
                     Err(ParseFracErr::NumeratorOverflow { idx: s.len() - 1 })
                 );
             }
