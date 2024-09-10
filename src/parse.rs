@@ -311,7 +311,7 @@ pub(crate) enum ParseFracErr {
 pub(crate) fn parse_frac(s: &str, places: NonZeroU8) -> Result<u32, ParseFracErr> {
     let mut num: u32 = 0;
     let mut place: u32 = places.get().into();
-    let graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
+    let graphs = UnicodeSegmentation::grapheme_indices(s, true);
     for (idx, chr) in graphs {
         let digit = chr.parse::<u8>().map_err(|err| ParseFracErr::ParseDigit {
             idx,
