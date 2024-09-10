@@ -7,7 +7,7 @@ use unicode_segmentation::UnicodeSegmentation;
 use unicode_width::UnicodeWidthStr;
 
 use core::fmt;
-use core::num::{IntErrorKind, NonZeroU8, ParseIntError};
+use core::num::{IntErrorKind, ParseIntError};
 use core::time::Duration;
 use std::io;
 
@@ -308,9 +308,9 @@ pub(crate) enum ParseFracErr {
     },
 }
 
-pub(crate) fn parse_frac(s: &str, places: NonZeroU8) -> Result<u32, ParseFracErr> {
+pub(crate) fn parse_frac(s: &str, places: u8) -> Result<u32, ParseFracErr> {
     let mut num: u32 = 0;
-    let mut place: u32 = places.get().into();
+    let mut place: u32 = places.into();
     let graphs = UnicodeSegmentation::grapheme_indices(s, true);
     for (idx, chr) in graphs {
         let digit = chr.parse::<u8>().map_err(|err| ParseFracErr::ParseDigit {

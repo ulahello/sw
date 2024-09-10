@@ -5,7 +5,7 @@
 use unicode_segmentation::{GraphemeIndices, UnicodeSegmentation};
 
 use core::iter::{Peekable, Rev};
-use core::num::{IntErrorKind, NonZeroU8, ParseIntError};
+use core::num::{IntErrorKind, ParseIntError};
 use core::time::Duration;
 use core::{fmt, ops};
 
@@ -213,8 +213,8 @@ impl ReadDur {
             let to_parse = span.get();
             if !to_parse.trim().is_empty() {
                 let nanos =
-                    super::parse_frac(to_parse, NonZeroU8::new(crate::MAX_NANOS_CHARS).unwrap())
-                        .map_err(|frac_err| match frac_err {
+                    super::parse_frac(to_parse, crate::MAX_NANOS_CHARS).map_err(|frac_err| {
+                        match frac_err {
                             ParseFracErr::ParseDigit { idx, len, err } => {
                                 let mut span = span;
                                 span.shift_start_right(idx);
@@ -225,7 +225,8 @@ impl ReadDur {
                             ParseFracErr::NumeratorOverflow { .. } => {
                                 unreachable!("max nanosecond has 9 characters, max u32 has 10")
                             }
-                        })?;
+                        }
+                    })?;
                 if u64::from(nanos) >= group.max() {
                     unreachable!("max nanosecond has 9 characters. add 1 to max and it has 10 characters. that case is checked previously.");
                 }

@@ -5,7 +5,7 @@
 use unicode_segmentation::UnicodeSegmentation;
 
 use core::fmt;
-use core::num::{NonZeroU8, ParseIntError};
+use core::num::ParseIntError;
 use core::time::Duration;
 
 use super::{ByteSpan, ErrKind, ParseErr, ParseFracErr, ReadDur, Unit, SEC_PER_HOUR, SEC_PER_MIN};
@@ -139,7 +139,7 @@ impl ReadDur {
             if let Some(mut sub_span) = sub_span {
                 sub_span.trim_whitespace();
 
-                let places = NonZeroU8::new(12).unwrap(); // 9 (u32::MAX digits) + extra for hour conversion
+                let places = 12; // 9 (u32::MAX digits) + extra for hour conversion
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {
                     ParseFracErr::ParseDigit { idx, len, err } => {
                         let mut span = sub_span;
