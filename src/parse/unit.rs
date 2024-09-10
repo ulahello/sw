@@ -139,9 +139,7 @@ impl ReadDur {
             if let Some(mut sub_span) = sub_span {
                 sub_span.trim_whitespace();
 
-                // TODO: this is not minimally restrictive. depending on the unit, a different precision will be permissible
-                let places = NonZeroU8::new(9).unwrap();
-                debug_assert_eq!(u32::MAX.to_string().len() - 1, places.get().into());
+                let places = NonZeroU8::new(12).unwrap(); // 9 (u32::MAX digits) + extra for hour conversion
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {
                     ParseFracErr::ParseDigit { idx, len, err } => {
                         let mut span = sub_span;
