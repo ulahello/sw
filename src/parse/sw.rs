@@ -20,7 +20,6 @@ pub(crate) enum SwErrKind {
     UnexpectedSign { is_neg: bool },
     Int { group: Group, err: ParseIntError },
     DurationOverflow(Group),
-    GroupExcess(Group), // TODO: this probably shouldn't be an error
 }
 
 impl SwErrKind {
@@ -29,8 +28,7 @@ impl SwErrKind {
             Self::UnexpectedColon
             | Self::UnexpectedDot(_)
             | Self::DurationOverflow(_)
-            | Self::Int { .. }
-            | Self::GroupExcess(_) => true,
+            | Self::Int { .. } => true,
 
             Self::UnexpectedSign { .. } => false,
         }
@@ -63,9 +61,6 @@ impl fmt::Display for SwErrKind {
                 Self::DurationOverflow(_) => {
                     write!(f, "this duration is too large to be represented")
                 }
-                Self::GroupExcess(group) => {
-                    write!(f, "{group} must be less than {}", group.max())
-                }
                 Self::Int { group, err: _ } => write!(f, "{group} are parsed as an integer"),
 
                 Self::UnexpectedSign { .. } => {
@@ -83,8 +78,6 @@ impl fmt::Display for SwErrKind {
                 Self::DurationOverflow(group) => {
                     write!(f, "duration overflow while parsing {group}")
                 }
-
-                Self::GroupExcess(group) => write!(f, "value is out of range for {group}"),
             }
         }
     }
@@ -190,9 +183,6 @@ impl ReadDur {
             if !to_parse.is_empty() {
                 match to_parse.parse::<u64>() {
                     Ok(units) => {
-                        if units >= group.max() {
-                            return Err(ParseErr::new(span, SwErrKind::GroupExcess(group)));
-                        }
                         let secs = units.checked_mul(sec_per_unit).ok_or_else(|| {
                             ParseErr::new(span, SwErrKind::DurationOverflow(group))
                         })?;
