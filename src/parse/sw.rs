@@ -20,7 +20,6 @@ pub(crate) enum SwErrKind {
     UnexpectedSign { is_neg: bool },
     Int { group: Group, err: ParseIntError },
     DurationOverflow(Group),
-    SubsecondsTooLong,  // TODO: this should be warning
     GroupExcess(Group), // TODO: this probably shouldn't be an error
 }
 
@@ -33,7 +32,7 @@ impl SwErrKind {
             | Self::Int { .. }
             | Self::GroupExcess(_) => true,
 
-            Self::UnexpectedSign { .. } | Self::SubsecondsTooLong => false,
+            Self::UnexpectedSign { .. } => false,
         }
     }
 }
@@ -69,7 +68,7 @@ impl fmt::Display for SwErrKind {
                 }
                 Self::Int { group, err: _ } => write!(f, "{group} are parsed as an integer"),
 
-                Self::UnexpectedSign { .. } | Self::SubsecondsTooLong => {
+                Self::UnexpectedSign { .. } => {
                     unreachable!()
                 }
             }
@@ -85,9 +84,6 @@ impl fmt::Display for SwErrKind {
                     write!(f, "duration overflow while parsing {group}")
                 }
 
-                Self::SubsecondsTooLong => {
-                    write!(f, "too many characters in {}", Group::SecondsSub)
-                }
                 Self::GroupExcess(group) => write!(f, "value is out of range for {group}"),
             }
         }
@@ -219,11 +215,6 @@ impl ReadDur {
                 let nanos =
                     super::parse_frac(to_parse, NonZeroU8::new(crate::MAX_NANOS_CHARS).unwrap())
                         .map_err(|frac_err| match frac_err {
-                            ParseFracErr::ExcessDigits { idx } => {
-                                let mut span = span;
-                                span.shift_start_right(idx);
-                                ParseErr::new(span, SwErrKind::SubsecondsTooLong)
-                            }
                             ParseFracErr::ParseDigit { idx, len, err } => {
                                 let mut span = span;
                                 span.shift_start_right(idx);

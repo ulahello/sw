@@ -16,7 +16,6 @@ pub(crate) enum UnitErrKind<'s> {
     UnitUnknown(&'s str),
     DurMissing(Unit),
     ParseInt { err: ParseIntError, unit: Unit },
-    FractionalTooLong(Unit),
     DurOverflow(Unit),
 }
 
@@ -28,8 +27,6 @@ impl UnitErrKind<'_> {
             | Self::ParseInt { .. }
             | Self::UnitUnknown(_)
             | Self::DurOverflow(_) => true,
-
-            Self::FractionalTooLong(_) => false,
         }
     }
 }
@@ -45,8 +42,6 @@ impl fmt::Display for UnitErrKind<'_> {
                     write!(f, "expected the number of {unit}s")
                 }
                 Self::DurOverflow(_) => write!(f, "this duration is too large to be represented"),
-
-                Self::FractionalTooLong(_) => unreachable!(),
             }
         } else {
             match self {
@@ -54,9 +49,6 @@ impl fmt::Display for UnitErrKind<'_> {
                 Self::UnitUnknown(unk) => write!(f, "unrecognised unit '{unk}'"),
                 Self::DurMissing(_) => write!(f, "unit given, but missing value"),
                 Self::ParseInt { err, unit: _ } => write!(f, "{err}"),
-                Self::FractionalTooLong(unit) => {
-                    write!(f, "too many characters in fractional {unit}s")
-                }
                 Self::DurOverflow(unit) => write!(f, "duration overflow while parsing {unit}s"),
             }
         }
@@ -151,11 +143,6 @@ impl ReadDur {
                 let places = NonZeroU8::new(9).unwrap();
                 debug_assert_eq!(u32::MAX.to_string().len() - 1, places.get().into());
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {
-                    ParseFracErr::ExcessDigits { idx } => {
-                        let mut span = sub_span;
-                        span.shift_start_right(idx);
-                        ParseErr::new(span, UnitErrKind::FractionalTooLong(unit))
-                    }
                     ParseFracErr::ParseDigit { idx, len, err } => {
                         let mut span = sub_span;
                         span.shift_start_right(idx);

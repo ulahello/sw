@@ -298,9 +298,6 @@ impl fmt::Display for Unit {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ParseFracErr {
-    ExcessDigits {
-        idx: usize,
-    },
     ParseDigit {
         idx: usize,
         len: usize,
@@ -317,7 +314,8 @@ pub(crate) fn parse_frac(s: &str, places: NonZeroU8) -> Result<u32, ParseFracErr
     let graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
     for (idx, chr) in graphs {
         if place == 0 {
-            return Err(ParseFracErr::ExcessDigits { idx });
+            // excess digits truncated
+            break;
         }
 
         let digit = chr.parse::<u8>().map_err(|err| ParseFracErr::ParseDigit {
