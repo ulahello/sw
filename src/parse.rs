@@ -313,22 +313,21 @@ pub(crate) fn parse_frac(s: &str, places: NonZeroU8) -> Result<u32, ParseFracErr
     let mut place: u32 = places.get().into();
     let graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
     for (idx, chr) in graphs {
-        if place == 0 {
-            // excess digits truncated
-            break;
-        }
-
         let digit = chr.parse::<u8>().map_err(|err| ParseFracErr::ParseDigit {
             idx,
             len: chr.len(),
             err,
         })?;
-        debug_assert!(digit < 10);
-        num = num
-            .checked_add(u32::from(digit) * 10_u32.pow(place - 1))
-            .ok_or(ParseFracErr::NumeratorOverflow { idx })?;
+        if place == 0 {
+            // excess digits truncated
+        } else {
+            debug_assert!(digit < 10);
+            num = num
+                .checked_add(u32::from(digit) * 10_u32.pow(place - 1))
+                .ok_or(ParseFracErr::NumeratorOverflow { idx })?;
 
-        place -= 1;
+            place -= 1;
+        }
     }
     Ok(num)
 }
