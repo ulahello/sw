@@ -379,7 +379,6 @@ struct DurationFmt {
 }
 
 impl DurationFmt {
-    #[allow(clippy::assertions_on_constants)]
     #[must_use]
     pub const fn new(dur: Duration, prec: u8, visual_cues: bool) -> Self {
         debug_assert!(prec <= crate::MAX_NANOS_CHARS);
