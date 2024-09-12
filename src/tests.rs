@@ -50,6 +50,17 @@ mod parse {
             assert_eq!(ReadDur::parse_as_unit("1 . s", true), expect);
             assert_eq!(ReadDur::parse_as_unit("1 .s", true), expect);
         }
+
+        #[test]
+        fn overflow_bug() {
+            assert_eq!(
+                ReadDur::parse_as_unit("0.2s", true),
+                Ok(ReadDur {
+                    dur: Duration::from_millis(200),
+                    is_neg: false,
+                })
+            );
+        }
     }
 
     mod sw {
