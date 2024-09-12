@@ -182,9 +182,11 @@ impl<'shell> State<'shell> {
                                     if let Some(new_sw) = self.sw.checked_sub_at(dur, now) {
                                         self.sw = new_sw;
                                     } else if self.sw.checked_elapsed_at(now).is_some() {
+                                        // the new elapsed time underflows
                                         self.sw.reset_in_place();
                                         cb.warn(format_args!("elapsed time clamped to zero"))?;
                                     } else {
+                                        // the new elapsed time overflows
                                         self.sw = self.sw.saturating_sub_at(dur, now);
                                     }
                                 } else {
