@@ -34,10 +34,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "libsw"
-version = "3.3.1"
+name = "libsw-core"
+version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0673364c1ef7a1674241dbad9ba2415354103d6126451f01eeb7aaa25d6b4fce"
+checksum = "f3ecbc481ceb1421df07f1e5884afa55b6146167290346eb1860833dcf61409c"
 
 [[package]]
 name = "proc-macro2"
@@ -88,7 +88,7 @@ name = "sw"
 version = "0.14.0"
 dependencies = [
  "argh",
- "libsw",
+ "libsw-core",
  "strsim",
  "termcolor",
  "unicode-segmentation",

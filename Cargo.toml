@@ -13,7 +13,7 @@ categories = ["command-line-utilities"]
 
 [dependencies]
 argh = "0.1.12"
-libsw = { version = "3.3.1", default-features = false, features = ["std_instant"] }
+libsw-core = { version = "0.1.0", features = ["std"] }
 strsim = "0.11.1"
 termcolor = "1.4.1"
 unicode-segmentation = "1.11.0"

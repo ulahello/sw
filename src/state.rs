@@ -2,7 +2,7 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use libsw::{Instant, Sw};
+use libsw_core::{Instant, Sw};
 use termcolor::{Color, ColorSpec};
 use unicode_width::UnicodeWidthStr;
 
@@ -31,7 +31,7 @@ pub struct State<'shell> {
 
 impl<'shell> State<'shell> {
     const DEFAULT_PRECISION: u8 = 2;
-    const MAX_PRECISION: u8 = 9;
+    const MAX_PRECISION: u8 = crate::MAX_NANOS_CHARS;
     const COMMAND_SUGGEST_SIMILAR_THRESHOLD: f64 = 0.4;
 
     pub fn new(shell: &'shell mut Shell, name: String) -> Self {
@@ -97,13 +97,11 @@ impl<'shell> State<'shell> {
 
                 Command::Toggle => {
                     let now = Instant::now();
-                    let sw_overflow = self.sw.checked_toggle_at(now).is_none();
+                    let sw_overflow = !self.sw.checked_toggle_at(now);
                     if sw_overflow {
-                        self.sw
-                            .stop_at(now)
-                            .expect("Sw::checked_toggle_at can only return None if Sw::is_running");
+                        self.sw.stop_at(now);
                     }
-                    if self.since_stop.checked_toggle_at(now).is_none() {
+                    if !self.since_stop.checked_toggle_at(now) {
                         /* if this branch is reached, since_stop was (and is)
                          * running. so we know that sw was stopped but is now
                          * running, meaning since_stop will be reset in the next
@@ -132,9 +130,11 @@ impl<'shell> State<'shell> {
 
                 Command::Reset => {
                     if self.sw.is_running() {
-                        self.since_stop.start().expect(
-                            "since_stop and sw are never simultaneously running or stopped",
+                        assert!(
+                            self.since_stop.is_stopped(),
+                            "since_stop and sw must be mutually exclusive"
                         );
+                        self.since_stop.start();
                     }
                     let sw_was_running = self.sw.is_running();
                     self.sw.reset();
@@ -153,9 +153,11 @@ impl<'shell> State<'shell> {
                             Ok(ReadDur { dur, is_neg }) => {
                                 debug_assert!(!is_neg);
                                 if self.sw.is_running() {
-                                    self.since_stop.start().expect(
-                                        "since_stop and sw are never simultaneously running or stopped",
+                                    assert!(
+                                        self.since_stop.is_stopped(),
+                                        "since_stop and sw must be mutually exclusive"
                                     );
+                                    self.since_stop.start();
                                 }
                                 self.sw.set(dur);
                                 cb.info_change(format_args!("updated elapsed time"))?;
