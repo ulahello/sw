@@ -139,7 +139,8 @@ impl ReadDur {
             if let Some(mut sub_span) = sub_span {
                 sub_span.trim_whitespace();
 
-                let places = 12; // 9 (u32::MAX digits) + extra for hour conversion
+                // TODO: can't specify full precision hours or minutes
+                let places = 9; // u32::MAX digits
                 subs = super::parse_frac(sub_span.get(), places).map_err(|err| match err {
                     ParseFracErr::ParseDigit { idx, len, err } => {
                         let mut span = sub_span;
