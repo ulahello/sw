@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+## [0.14.2] - 2024-09-12
+### Fixed
+* fixed 0.14.1 regression in unit format subsecond parsing
 
 ## [0.14.1] - 2024-09-12
 ### Changed
