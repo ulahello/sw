@@ -3,6 +3,7 @@
 // licensed under GPL-3.0-or-later
 
 #![warn(clippy::cargo, clippy::pedantic)]
+#![forbid(unsafe_code)]
 
 mod command;
 mod parse;
