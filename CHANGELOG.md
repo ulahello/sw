@@ -19,6 +19,8 @@
 
 ### Changed
 * reuse strings to reduce frequent allocations
+
+### Removed
 * removed nix files
 
 ## [0.13.3] - 2023-07-18
@@ -113,11 +115,13 @@
 
 ## [0.9.1] - 2022-09-05
 ### Changed
-* removed dependency on `log` crate
 * refactored internals
 
 ### Fixed
 * made "X seconds since start" message more accurate
+
+### Removed
+* removed dependency on `log` crate
 
 ## [0.9.0] - 2022-08-09
 ### Added
