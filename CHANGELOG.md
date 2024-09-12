@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## [0.14.1] - 2024-09-12
+### Changed
+* more lax duration parsing
+  * truncate excess subsecond digits instead of raising error
+  * don't error when minutes or seconds exceed maximum
+* replaced `libsw` dependency with `libsw_core`
+
+### Removed
+* removed `deny.toml`
+
 ## [0.14.0] - 2024-08-28
 ### Added
 * added `name` positional argument to set stopwatch name
