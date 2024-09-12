@@ -15,6 +15,72 @@ use crate::command::Command;
 use crate::parse::ReadDur;
 use crate::shell::Shell;
 
+struct Crate {
+    name: &'static str,
+    license: &'static str,
+    owners: &'static [&'static str],
+}
+
+// NOTE: volatile, copypasted data
+const DEPENDENCIES: [Crate; 6] = [
+    Crate {
+        name: "argh",
+        license: "BSD-3-Clause",
+        owners: &[
+            "Taylor Cramer <cramertj@google.com>",
+            "Benjamin Brittain <bwb@google.com>",
+            "Erick Tryzelaar <etryzelaar@google.com>",
+        ],
+    },
+    Crate {
+        name: "libsw-core",
+        license: "MIT OR Apache-2.0",
+        owners: &["Ula Shipman <ula.hello@mailbox.org>"],
+    },
+    Crate {
+        name: "strsim",
+        license: "MIT",
+        owners: &["Danny Guo <danny@dannyguo.com>"],
+    },
+    Crate {
+        name: "termcolor",
+        license: "Unlicense OR MIT",
+        owners: &["Andrew Gallant <jamslam@gmail.com>"],
+    },
+    Crate {
+        name: "unicode-segmentation",
+        license: "MIT/Apache-2.0",
+        owners: &[
+            "kwantam <kwantam@gmail.com>",
+            "Manish Goregaokar <manishsmail@gmail.com>",
+        ],
+    },
+    Crate {
+        name: "unicode-width",
+        license: "MIT/Apache-2.0",
+        owners: &[
+            "kwantam <kwantam@gmail.com>",
+            "Manish Goregaokar <manishsmail@gmail.com>",
+        ],
+    },
+];
+
+impl fmt::Display for Crate {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let Self {
+            name,
+            owners,
+            license,
+        } = self;
+        write!(f, "'{name}' by ")?;
+        for owner in *owners {
+            write!(f, "{owner}, ")?;
+        }
+        write!(f, "licensed under '{license}'")?;
+        Ok(())
+    }
+}
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Passback {
     Quit,
@@ -288,42 +354,8 @@ impl<'shell> State<'shell> {
                         "{} uses the following libraries:",
                         env!("CARGO_PKG_NAME")
                     ))?;
-                    // NOTE: volatile, copypasted data
-                    for (name, license, owners) in [
-                        (
-                            "argh",
-                            "BSD-3-Clause",
-                            "Taylor Cramer <cramertj@google.com>, Benjamin Brittain <bwb@google.com>, Erick Tryzelaar <etryzelaar@google.com>",
-                        ),
-                        (
-                            "libsw-core",
-                            "MIT OR Apache-2.0",
-                            "Ula Shipman <ula.hello@mailbox.org>",
-                        ),
-                        (
-                            "strsim",
-                            "MIT",
-                            "Danny Guo <danny@dannyguo.com>",
-                        ),
-                        (
-                            "termcolor",
-                            "Unlicense OR MIT",
-                            "Andrew Gallant <jamslam@gmail.com>",
-                        ),
-                        (
-                            "unicode-segmentation",
-                            "MIT/Apache-2.0",
-                            "kwantam <kwantam@gmail.com>, Manish Goregaokar <manishsmail@gmail.com>",
-                        ),
-                        (
-                            "unicode-width",
-                            "MIT/Apache-2.0",
-                            "kwantam <kwantam@gmail.com>, Manish Goregaokar <manishsmail@gmail.com>",
-                        ),
-                    ] {
-                        cb.writeln(format_args!(
-                            "'{name}' by {owners}, licensed under '{license}'"
-                        ))?;
+                    for dep in DEPENDENCIES {
+                        cb.writeln(format_args!("{dep}"))?;
                     }
                 }
 
