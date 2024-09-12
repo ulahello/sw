@@ -296,7 +296,7 @@ impl<'shell> State<'shell> {
                             "Taylor Cramer <cramertj@google.com>, Benjamin Brittain <bwb@google.com>, Erick Tryzelaar <etryzelaar@google.com>",
                         ),
                         (
-                            "libsw",
+                            "libsw-core",
                             "MIT OR Apache-2.0",
                             "Ula Shipman <ula.hello@mailbox.org>",
                         ),
