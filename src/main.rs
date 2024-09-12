@@ -2,7 +2,7 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-#![warn(clippy::pedantic)]
+#![warn(clippy::cargo, clippy::pedantic)]
 
 mod command;
 mod parse;
