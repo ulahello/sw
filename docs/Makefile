@@ -15,7 +15,7 @@ uninstall:
 clean:
 	rm -vf sw.1
 
-.PHONY: all clean install
+.PHONY: all clean install uninstall
 
 .1.scd.1:
 	scdoc < $< > $@
