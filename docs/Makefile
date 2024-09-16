@@ -1,10 +1,9 @@
 PREFIX?=/usr/local
 MANDIR?=$(PREFIX)/share/man
 
-all: sw.1
+.SUFFIXES: .1 .1.scd
 
-sw.1: sw.1.scd
-	scdoc < $< > $@
+all: sw.1
 
 install: all
 	mkdir -p $(DESTDIR)/$(MANDIR)/man1
@@ -17,3 +16,6 @@ clean:
 	rm -vf sw.1
 
 .PHONY: all clean install
+
+.1.scd.1:
+	scdoc < $< > $@
