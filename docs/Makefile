@@ -1,5 +1,5 @@
-PREFIX?=/usr/local
-MANDIR?=$(PREFIX)/share/man
+PREFIX ?= /usr/local
+MANDIR ?= $(PREFIX)/share/man
 
 .SUFFIXES: .1 .1.scd
 
