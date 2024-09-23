@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Fixed
+* fixed documentation error: stopwatch format and unit format were interchanged
+
 ## [0.14.2] - 2024-09-12
 ### Fixed
 * fixed 0.14.1 regression in unit format subsecond parsing
