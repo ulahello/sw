@@ -10,6 +10,7 @@ repository = "https://github.com/ulahello/sw"
 license = "GPL-3.0-or-later"
 keywords = ["stopwatch"]
 categories = ["command-line-utilities"]
+publish = false
 
 [dependencies]
 argh = "0.1.12"
