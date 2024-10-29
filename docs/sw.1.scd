@@ -235,8 +235,7 @@ sign hours : minutes : seconds . subseconds
 The details shouldn't be surprising, it's a superset of how durations are
 displayed.
 
-_hours_, _minutes_, _seconds_ and _subseconds_ are all integers. _minutes_ and
-_seconds_ must be less than 60.
+_hours_, _minutes_, _seconds_ and _subseconds_ are all integers.
 
 _sign_ is optional, and one of "+" or "-". It indicates whether the duration is
 positive or negative, defaulting to positive.

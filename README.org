@@ -227,7 +227,6 @@ sign hours : minutes : seconds . subseconds
 The details shouldn't be surprising, it's a superset of how durations are displayed.
 
 ~hours~, ~minutes~, ~seconds~ and ~subseconds~ are all integers.
-~minutes~ and ~seconds~ must be less than 60.
 
 ~sign~ is optional, and one of "+" or "-".
 It indicates whether the duration is positive or negative, defaulting to positive.
