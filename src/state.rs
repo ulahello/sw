@@ -239,16 +239,11 @@ impl<'shell> State<'shell> {
                                 let now = Instant::now();
                                 #[allow(clippy::collapsible_else_if)]
                                 if is_neg {
+                                    let underflow = dur > self.sw.elapsed_at(now);
+                                    self.sw = self.sw.saturating_sub_at(dur, now);
                                     cb.info_change(format_args!("subtracted from elapsed time"))?;
-                                    if let Some(new_sw) = self.sw.checked_sub_at(dur, now) {
-                                        self.sw = new_sw;
-                                    } else if self.sw.checked_elapsed_at(now).is_some() {
-                                        // the new elapsed time underflows
-                                        self.sw.reset_in_place();
+                                    if underflow {
                                         cb.warn(format_args!("elapsed time clamped to zero"))?;
-                                    } else {
-                                        // the new elapsed time overflows
-                                        self.sw = self.sw.saturating_sub_at(dur, now);
                                     }
                                 } else {
                                     if let Some(new_sw) = self.sw.checked_add(dur) {
