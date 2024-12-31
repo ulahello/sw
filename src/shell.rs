@@ -6,6 +6,7 @@ use termcolor::{BufferedStandardStream, Color, ColorChoice, ColorSpec, WriteColo
 
 use core::fmt;
 use std::io::{self, stdin, BufRead, Read, Stdin, Write};
+use std::time::Instant;
 
 use crate::command::Command;
 
@@ -25,6 +26,7 @@ pub struct Shell {
     stdin: Stdin,
     read_limit: u16,
     last_op: Option<IoKind>,
+    pub last_read_time: Option<Instant>, // instant when the last read completed
 
     visual_cues: bool,
 
@@ -41,6 +43,7 @@ impl Shell {
             stdin: stdin(),
             read_limit,
             last_op: None,
+            last_read_time: None,
             visual_cues,
             splash_text_written: false,
             finished: false,
@@ -108,6 +111,7 @@ impl Shell {
             .lock()
             .take(self.read_limit.into())
             .read_line(input)?;
+        self.last_read_time = Some(Instant::now());
         Ok(())
     }
 

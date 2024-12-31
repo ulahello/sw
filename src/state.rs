@@ -2,7 +2,7 @@
 // copyright (C) 2022-2023 Ula Shipman <ula.hello@mailbox.org>
 // licensed under GPL-3.0-or-later
 
-use libsw_core::{Instant, Sw};
+use libsw_core::Sw;
 use termcolor::{Color, ColorSpec};
 use unicode_width::UnicodeWidthStr;
 
@@ -10,6 +10,7 @@ use core::num::IntErrorKind;
 use core::time::Duration;
 use core::{cmp, fmt, mem};
 use std::io;
+use std::time::Instant;
 
 use crate::command::Command;
 use crate::parse::ReadDur;
@@ -122,7 +123,6 @@ impl<'shell> State<'shell> {
         let mut passback = None;
         let mut cb = self.shell.create_cmd_buf();
         let result = cb.read_cmd(&mut self.input, &self.name, self.sw.is_running())?;
-        let now = Instant::now();
         match result {
             Ok(command) => match command {
                 Command::Help => {
@@ -137,6 +137,7 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Display => {
+                    let now = Instant::now();
                     cb.writeln(format_args!(
                         "{}",
                         DurationFmt::new(self.sw.elapsed_at(now), self.prec, cb.visual_cues())
@@ -158,6 +159,7 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Toggle => {
+                    let now = Instant::now();
                     let sw_overflow = !self.sw.checked_toggle_at(now);
                     if sw_overflow {
                         self.sw.stop_at(now);
@@ -215,6 +217,7 @@ impl<'shell> State<'shell> {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
                                 if is_neg {
+                                    let now = Instant::now();
                                     let underflow = dur > self.sw.elapsed_at(now);
                                     self.sw = self.sw.saturating_sub_at(dur, now);
                                     cb.info_change(format_args!("subtracted from elapsed time"))?;
@@ -363,6 +366,7 @@ impl<'shell> State<'shell> {
         if self.sw.is_running() {
             self.since_stop.reset();
         } else if self.since_stop.is_stopped() {
+            let now = self.shell.last_read_time.unwrap();
             self.since_stop.start_at(now);
         }
         assert_ne!(self.sw.is_running(), self.since_stop.is_running());
