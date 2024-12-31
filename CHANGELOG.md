@@ -1,6 +1,10 @@
 # Changelog
 
 ## [Unreleased]
+### Fixed
+* fixed inconsistent saturation behavior between positive and negative offsets
+  * now, both will saturate.
+
 ## [0.14.3] - 2024-09-23
 ### Fixed
 * fixed documentation error: stopwatch format and unit format were interchanged

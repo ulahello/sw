@@ -236,9 +236,8 @@ impl<'shell> State<'shell> {
                     if let Some(try_read_dur) = ReadDur::parse(Shell::input(&self.input), true) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
-                                let now = Instant::now();
-                                #[allow(clippy::collapsible_else_if)]
                                 if is_neg {
+                                    let now = Instant::now();
                                     let underflow = dur > self.sw.elapsed_at(now);
                                     self.sw = self.sw.saturating_sub_at(dur, now);
                                     cb.info_change(format_args!("subtracted from elapsed time"))?;
@@ -246,12 +245,15 @@ impl<'shell> State<'shell> {
                                         cb.warn(format_args!("elapsed time clamped to zero"))?;
                                     }
                                 } else {
-                                    if let Some(new_sw) = self.sw.checked_add(dur) {
-                                        self.sw = new_sw;
-                                        cb.info_change(format_args!("added to elapsed time"))?;
-                                    } else {
-                                        cb.error(format_args!(
-                                            "cannot add offset, new elapsed time would overflow"
+                                    /* TODO: not aware of anchor, so its
+                                     * possible to add to an overflowing
+                                     * stopwatch without the warning */
+                                    let overflow = self.sw.checked_add(dur).is_none();
+                                    self.sw = self.sw.saturating_add(dur);
+                                    cb.info_change(format_args!("added to elapsed time"))?;
+                                    if overflow {
+                                        cb.warn(format_args!(
+                                            "new elapsed time too large, clamped to maximum"
                                         ))?;
                                     }
                                 }
