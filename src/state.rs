@@ -162,23 +162,19 @@ impl<'shell> State<'shell> {
                     if sw_overflow {
                         self.sw.stop_at(now);
                     }
-                    if !self.since_stop.checked_toggle_at(now) {
-                        /* if this branch is reached, since_stop was (and is)
-                         * running. so we know that sw was stopped but is now
-                         * running, meaning since_stop will be reset in the next
-                         * condition, meaning we dont have to do anything. */
-                    }
-
+                    assert_eq!(self.since_stop.is_running(), self.sw.is_running());
                     if self.sw.is_running() {
-                        cb.info_change(format_args!("started stopwatch"))?;
-                        if let Some(since_stop_elapsed) = self.since_stop.checked_elapsed_at(now) {
-                            cb.info_idle(format_args!(
-                                "{} since stopped",
-                                DurationFmt::new(since_stop_elapsed, self.prec, cb.visual_cues())
-                            ))?;
-                        }
-                        self.since_stop.reset();
                         assert!(!sw_overflow);
+                        cb.info_change(format_args!("started stopwatch"))?;
+                        cb.info_idle(format_args!(
+                            "{} since stopped",
+                            DurationFmt::new(
+                                self.since_stop.elapsed_at(now),
+                                self.prec,
+                                cb.visual_cues()
+                            )
+                        ))?;
+                        self.since_stop.reset();
                     } else {
                         cb.info_change(format_args!("stopped stopwatch"))?;
                         if sw_overflow {
@@ -186,6 +182,7 @@ impl<'shell> State<'shell> {
                                 "new elapsed time too large, clamped to maximum"
                             ))?;
                         }
+                        self.since_stop.start_at(now);
                     }
                 }
 
