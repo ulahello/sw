@@ -121,7 +121,9 @@ impl<'shell> State<'shell> {
     pub fn update(&mut self) -> io::Result<Option<Passback>> {
         let mut passback = None;
         let mut cb = self.shell.create_cmd_buf();
-        match cb.read_cmd(&mut self.input, &self.name, self.sw.is_running())? {
+        let result = cb.read_cmd(&mut self.input, &self.name, self.sw.is_running())?;
+        let now = Instant::now();
+        match result {
             Ok(command) => match command {
                 Command::Help => {
                     for help_cmd in Command::iter() {
@@ -135,7 +137,6 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Display => {
-                    let now = Instant::now();
                     cb.writeln(format_args!(
                         "{}",
                         DurationFmt::new(self.sw.elapsed_at(now), self.prec, cb.visual_cues())
@@ -157,7 +158,6 @@ impl<'shell> State<'shell> {
                 }
 
                 Command::Toggle => {
-                    let now = Instant::now();
                     let sw_overflow = !self.sw.checked_toggle_at(now);
                     if sw_overflow {
                         self.sw.stop_at(now);
@@ -237,7 +237,6 @@ impl<'shell> State<'shell> {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
                                 if is_neg {
-                                    let now = Instant::now();
                                     let underflow = dur > self.sw.elapsed_at(now);
                                     self.sw = self.sw.saturating_sub_at(dur, now);
                                     cb.info_change(format_args!("subtracted from elapsed time"))?;
@@ -268,16 +267,16 @@ impl<'shell> State<'shell> {
 
                 Command::Name => {
                     cb.read(&mut self.input, format_args!("new name? "))?;
-                    let new = Shell::input(&self.input);
-                    if new == self.name {
+                    let new_name = Shell::input(&self.input);
+                    if new_name == self.name {
                         cb.info_idle(format_args!("name unchanged"))?;
                     } else {
-                        if new.is_empty() {
+                        if new_name.is_empty() {
                             cb.info_change(format_args!("cleared name"))?;
                         } else {
                             cb.info_change(format_args!("set name"))?;
                         }
-                        self.name.replace_range(.., new);
+                        self.name.replace_range(.., new_name);
                     }
                 }
 
@@ -294,15 +293,15 @@ impl<'shell> State<'shell> {
                     };
                     match parsed {
                         Ok(spec) => {
-                            let (new, clamped) =
+                            let (new_prec, clamped) =
                                 Self::clamp_prec(spec.unwrap_or(Self::DEFAULT_PRECISION));
-                            let old = mem::replace(&mut self.prec, new);
+                            let old_prec = mem::replace(&mut self.prec, new_prec);
                             if clamped {
-                                cb.warn(format_args!("precision clamped to {new}"))?;
-                            } else if old == new {
+                                cb.warn(format_args!("precision clamped to {new_prec}"))?;
+                            } else if old_prec == new_prec {
                                 cb.info_idle(format_args!("precision unchanged"))?;
                             } else if spec.is_none() {
-                                cb.info_change(format_args!("reset precision to {new}"))?;
+                                cb.info_change(format_args!("reset precision to {new_prec}"))?;
                             } else {
                                 cb.info_change(format_args!("updated precision"))?;
                             }
