@@ -6,9 +6,9 @@ use libsw_core::{Instant, Sw};
 use termcolor::{Color, ColorSpec};
 use unicode_width::UnicodeWidthStr;
 
-use core::fmt;
 use core::num::IntErrorKind;
 use core::time::Duration;
+use core::{cmp, fmt, mem};
 use std::io;
 
 use crate::command::Command;
@@ -112,15 +112,10 @@ impl<'shell> State<'shell> {
         }
     }
 
-    pub fn set_prec(prec: &mut u8, mut new: u8) -> Result<(), u8> {
-        if new > Self::MAX_PRECISION {
-            new = Self::MAX_PRECISION;
-            *prec = new;
-            Err(new)
-        } else {
-            *prec = new;
-            Ok(())
-        }
+    pub fn clamp_prec(spec: u8) -> (u8, bool) {
+        let new = cmp::min(Self::MAX_PRECISION, spec);
+        let clamped = spec != new;
+        (new, clamped)
     }
 
     pub fn update(&mut self) -> io::Result<Option<Passback>> {
@@ -292,42 +287,30 @@ impl<'shell> State<'shell> {
                 Command::Precision => {
                     cb.read(&mut self.input, format_args!("new precision? "))?;
                     let try_prec = Shell::input(&self.input);
-                    if try_prec.is_empty() {
-                        if self.prec == Self::DEFAULT_PRECISION {
-                            cb.info_idle(format_args!("precision unchanged"))?;
-                        } else {
-                            self.prec = Self::DEFAULT_PRECISION;
-                            cb.info_change(format_args!(
-                                "reset precision to {}",
-                                Self::DEFAULT_PRECISION
-                            ))?;
-                        }
-                    } else {
-                        /* if the number is too big, just clamp it. this
-                         * improves the quality of error messages by hiding the
-                         * implementation detail that we're parsing for a u8
-                         * rather than another sized integer. */
-                        let parsed = match try_prec.parse::<u8>() {
-                            Ok(prec) => Ok(prec),
-                            Err(err) => {
-                                if *err.kind() == IntErrorKind::PosOverflow {
-                                    Ok(u8::MAX)
-                                } else {
-                                    Err(err)
-                                }
+                    let parsed = match try_prec.parse::<u8>() {
+                        Ok(prec) => Ok(Some(prec)),
+                        Err(err) => match err.kind() {
+                            IntErrorKind::PosOverflow => Ok(Some(u8::MAX)), // clamp overflow for better error ux
+                            IntErrorKind::Empty => Ok(None),
+                            _ => Err(err),
+                        },
+                    };
+                    match parsed {
+                        Ok(spec) => {
+                            let (new, clamped) =
+                                Self::clamp_prec(spec.unwrap_or(Self::DEFAULT_PRECISION));
+                            let old = mem::replace(&mut self.prec, new);
+                            if clamped {
+                                cb.warn(format_args!("precision clamped to {new}"))?;
+                            } else if old == new {
+                                cb.info_idle(format_args!("precision unchanged"))?;
+                            } else if spec.is_none() {
+                                cb.info_change(format_args!("reset precision to {new}"))?;
+                            } else {
+                                cb.info_change(format_args!("updated precision"))?;
                             }
-                        };
-
-                        match parsed {
-                            Ok(prec) => {
-                                if let Err(clamped) = Self::set_prec(&mut self.prec, prec) {
-                                    cb.warn(format_args!("precision clamped to {clamped}"))?;
-                                } else {
-                                    cb.info_change(format_args!("updated precision"))?;
-                                }
-                            }
-                            Err(err) => cb.error(format_args!("{err}"))?,
                         }
+                        Err(err) => cb.error(format_args!("{err}"))?,
                     }
                 }
 
