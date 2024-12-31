@@ -142,17 +142,15 @@ impl<'shell> State<'shell> {
                         "{}",
                         DurationFmt::new(self.sw.elapsed_at(now), self.prec, cb.visual_cues())
                     ))?;
-                    if self.sw.is_running() {
-                        cb.writeln_color(
-                            ColorSpec::new().set_fg(Some(Color::Green)),
-                            format_args!("running"),
-                        )?;
+                    let (state, color) = if self.sw.is_running() {
+                        ("running", Color::Green)
                     } else {
-                        cb.writeln_color(
-                            ColorSpec::new().set_fg(Some(Color::Yellow)),
-                            format_args!("stopped"),
-                        )?;
-                    }
+                        ("stopped", Color::Yellow)
+                    };
+                    cb.writeln_color(
+                        ColorSpec::new().set_fg(Some(color)),
+                        format_args!("{state}"),
+                    )?;
                     if self.sw.checked_elapsed_at(now).is_none() {
                         cb.error(format_args!("elapsed time overflowing"))?;
                     }
