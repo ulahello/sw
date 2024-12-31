@@ -183,7 +183,7 @@ impl<'shell> State<'shell> {
                             ))?;
                         }
                         self.since_stop.reset();
-                        debug_assert!(!sw_overflow);
+                        assert!(!sw_overflow);
                     } else {
                         cb.info_change(format_args!("stopped stopwatch"))?;
                         if sw_overflow {
@@ -217,7 +217,7 @@ impl<'shell> State<'shell> {
                     if let Some(try_read_dur) = ReadDur::parse(Shell::input(&self.input), false) {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
-                                debug_assert!(!is_neg);
+                                assert!(!is_neg);
                                 if self.sw.is_running() {
                                     assert!(
                                         self.since_stop.is_stopped(),
@@ -363,7 +363,7 @@ impl<'shell> State<'shell> {
                     /* quit message comes from foot terminal
                      * (https://codeberg.org/dnkl/foot) */
                     cb.info_change(format_args!("goodbye"))?;
-                    debug_assert!(
+                    assert!(
                         passback.is_none(),
                         "State::update is not called after Passback::Quit"
                     );
@@ -417,7 +417,7 @@ struct DurationFmt {
 impl DurationFmt {
     #[must_use]
     pub const fn new(dur: Duration, prec: u8, visual_cues: bool) -> Self {
-        debug_assert!(prec <= crate::MAX_NANOS_CHARS);
+        assert!(prec <= crate::MAX_NANOS_CHARS);
         Self {
             dur,
             prec,

@@ -48,7 +48,7 @@ impl Shell {
     }
 
     pub fn splash_text(&mut self) -> io::Result<()> {
-        debug_assert!(
+        assert!(
             !self.splash_text_written,
             "splash text can only be written once"
         );

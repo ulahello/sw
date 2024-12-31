@@ -43,7 +43,7 @@ impl fmt::Display for SwErrKind {
                     write!(f, "there is no colon before {}", Group::Hours)
                 }
                 Self::UnexpectedDot(group) => {
-                    debug_assert_ne!(*group, Group::SecondsSub);
+                    assert_ne!(*group, Group::SecondsSub);
                     if *group == Group::SecondsInt {
                         write!(
                             f,
@@ -209,7 +209,7 @@ impl ReadDur {
                                 let mut span = span;
                                 span.shift_start_right(idx);
                                 span.len = len;
-                                debug_assert_ne!(*err.kind(), IntErrorKind::PosOverflow);
+                                assert_ne!(*err.kind(), IntErrorKind::PosOverflow);
                                 ParseErr::new(span, SwErrKind::Int { group, err })
                             }
                             ParseFracErr::NumeratorOverflow { .. } => {
