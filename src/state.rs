@@ -162,7 +162,6 @@ impl<'shell> State<'shell> {
                     if sw_overflow {
                         self.sw.stop_at(now);
                     }
-                    assert_eq!(self.since_stop.is_running(), self.sw.is_running());
                     if self.sw.is_running() {
                         assert!(!sw_overflow);
                         cb.info_change(format_args!("started stopwatch"))?;
@@ -174,7 +173,6 @@ impl<'shell> State<'shell> {
                                 cb.visual_cues()
                             )
                         ))?;
-                        self.since_stop.reset();
                     } else {
                         cb.info_change(format_args!("stopped stopwatch"))?;
                         if sw_overflow {
@@ -182,18 +180,10 @@ impl<'shell> State<'shell> {
                                 "new elapsed time too large, clamped to maximum"
                             ))?;
                         }
-                        self.since_stop.start_at(now);
                     }
                 }
 
                 Command::Reset => {
-                    if self.sw.is_running() {
-                        assert!(
-                            self.since_stop.is_stopped(),
-                            "since_stop and sw must be mutually exclusive"
-                        );
-                        self.since_stop.start();
-                    }
                     let sw_was_running = self.sw.is_running();
                     self.sw.reset();
                     let msg = if sw_was_running {
@@ -210,17 +200,9 @@ impl<'shell> State<'shell> {
                         match try_read_dur {
                             Ok(ReadDur { dur, is_neg }) => {
                                 assert!(!is_neg);
-                                if self.sw.is_running() {
-                                    assert!(
-                                        self.since_stop.is_stopped(),
-                                        "since_stop and sw must be mutually exclusive"
-                                    );
-                                    self.since_stop.start();
-                                }
                                 self.sw.set(dur);
                                 cb.info_change(format_args!("updated elapsed time"))?;
                             }
-
                             Err(err) => err.display(&mut cb)?,
                         }
                     } else {
@@ -254,7 +236,6 @@ impl<'shell> State<'shell> {
                                     }
                                 }
                             }
-
                             Err(err) => err.display(&mut cb)?,
                         }
                     } else {
@@ -378,6 +359,14 @@ impl<'shell> State<'shell> {
                 }
             }
         }
+
+        // sw and since_stop have mutually exclusive state
+        if self.sw.is_running() {
+            self.since_stop.reset();
+        } else if self.since_stop.is_stopped() {
+            self.since_stop.start_at(now);
+        }
+        assert_ne!(self.sw.is_running(), self.since_stop.is_running());
 
         Ok(passback)
     }
