@@ -59,7 +59,7 @@ pub(crate) enum ErrKind<'s> {
     Negative,
 }
 
-impl<'s> From<SwErrKind> for ErrKind<'s> {
+impl From<SwErrKind> for ErrKind<'_> {
     fn from(sw: SwErrKind) -> Self {
         Self::Sw(sw)
     }

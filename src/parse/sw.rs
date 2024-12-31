@@ -337,7 +337,7 @@ impl<'s> ops::Index<Group> for Groups<'s> {
     }
 }
 
-impl<'s> ops::IndexMut<Group> for Groups<'s> {
+impl ops::IndexMut<Group> for Groups<'_> {
     fn index_mut(&mut self, idx: Group) -> &mut Self::Output {
         &mut self.0[idx as usize]
     }

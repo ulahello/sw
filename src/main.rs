@@ -102,7 +102,7 @@ fn try_main(args: Args) -> io::Result<()> {
     let mut shell = Shell::new(cc, SHELL_READ_LIMIT, !args.no_visual_cues);
     shell.splash_text()?;
 
-    let name = args.name.unwrap_or(String::new());
+    let name = args.name.unwrap_or_default();
     let mut state = State::new(&mut shell, name);
     loop {
         if let Some(passback) = state.update()? {
