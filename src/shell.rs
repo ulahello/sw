@@ -203,6 +203,11 @@ impl CmdBuf<'_> {
             self.read(input, format_args!("{name}. "))?;
         }
 
+        if input.is_empty() {
+            // we received EOF, quit
+            return Ok(Ok(Command::Quit));
+        }
+
         let try_cmd = Shell::input(input);
         match try_cmd.parse() {
             Ok(cmd) => Ok(Ok(cmd)),

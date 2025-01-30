@@ -1,6 +1,9 @@
 # Changelog
 
 ## [Unreleased]
+### Changed
+* `sw` now quits when EOF is received in place of a command
+
 ### Fixed
 * fixed inconsistent saturation behavior between positive and negative offsets
   * now, both will saturate.
