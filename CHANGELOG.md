@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.15.0] - 2025-01-30
 ### Changed
 * `sw` now quits when EOF is received in place of a command
 
