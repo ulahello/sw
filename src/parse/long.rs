@@ -14,7 +14,7 @@ use super::{
 };
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum SwErrKind {
+pub(crate) enum LongErrKind {
     UnexpectedColon,
     UnexpectedDot(Group),
     UnexpectedSign { is_neg: bool },
@@ -22,7 +22,7 @@ pub(crate) enum SwErrKind {
     DurationOverflow(Group),
 }
 
-impl SwErrKind {
+impl LongErrKind {
     pub(crate) fn has_help_message(&self) -> bool {
         match self {
             Self::UnexpectedColon
@@ -35,7 +35,7 @@ impl SwErrKind {
     }
 }
 
-impl fmt::Display for SwErrKind {
+impl fmt::Display for LongErrKind {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if f.alternate() {
             match self {
@@ -129,12 +129,12 @@ impl ReadDur {
                     (Group::Minutes, SwTokenKind::Colon) => cur = Group::Hours,
 
                     (Group::Hours, SwTokenKind::Colon) => {
-                        return Err(ParseErr::new(token.span, SwErrKind::UnexpectedColon));
+                        return Err(ParseErr::new(token.span, LongErrKind::UnexpectedColon));
                     }
 
                     (_, SwTokenKind::Data) => groups[cur] = token.span,
                     (_, SwTokenKind::Dot) => {
-                        return Err(ParseErr::new(token.span, SwErrKind::UnexpectedDot(cur)));
+                        return Err(ParseErr::new(token.span, LongErrKind::UnexpectedDot(cur)));
                     }
 
                     (_, SwTokenKind::Pos) => {
@@ -143,7 +143,7 @@ impl ReadDur {
                         } else {
                             return Err(ParseErr::new(
                                 token.span,
-                                SwErrKind::UnexpectedSign { is_neg: false },
+                                LongErrKind::UnexpectedSign { is_neg: false },
                             ));
                         }
                     }
@@ -154,7 +154,7 @@ impl ReadDur {
                         } else {
                             return Err(ParseErr::new(
                                 token.span,
-                                SwErrKind::UnexpectedSign { is_neg: true },
+                                LongErrKind::UnexpectedSign { is_neg: true },
                             ));
                         }
                     }
@@ -184,14 +184,14 @@ impl ReadDur {
                 match to_parse.parse::<u64>() {
                     Ok(units) => {
                         let secs = units.checked_mul(sec_per_unit).ok_or_else(|| {
-                            ParseErr::new(span, SwErrKind::DurationOverflow(group))
+                            ParseErr::new(span, LongErrKind::DurationOverflow(group))
                         })?;
                         dur = dur.checked_add(Duration::from_secs(secs)).ok_or_else(|| {
-                            ParseErr::new(span, SwErrKind::DurationOverflow(group))
+                            ParseErr::new(span, LongErrKind::DurationOverflow(group))
                         })?;
                     }
 
-                    Err(err) => return Err(ParseErr::new(span, SwErrKind::Int { group, err })),
+                    Err(err) => return Err(ParseErr::new(span, LongErrKind::Int { group, err })),
                 }
             }
         }
@@ -210,7 +210,7 @@ impl ReadDur {
                                 span.shift_start_right(idx);
                                 span.len = len;
                                 assert_ne!(*err.kind(), IntErrorKind::PosOverflow);
-                                ParseErr::new(span, SwErrKind::Int { group, err })
+                                ParseErr::new(span, LongErrKind::Int { group, err })
                             }
                             ParseFracErr::NumeratorOverflow { .. } => {
                                 unreachable!("max nanosecond has 9 characters, max u32 has 10")
@@ -222,7 +222,7 @@ impl ReadDur {
                 }
                 dur = dur
                     .checked_add(Duration::from_nanos(nanos.into()))
-                    .ok_or_else(|| ParseErr::new(span, SwErrKind::DurationOverflow(group)))?;
+                    .ok_or_else(|| ParseErr::new(span, LongErrKind::DurationOverflow(group)))?;
             }
         }
 

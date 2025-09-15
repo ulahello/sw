@@ -11,7 +11,7 @@ use core::time::Duration;
 use super::{ByteSpan, ErrKind, ParseErr, ParseFracErr, ReadDur, Unit, SEC_PER_HOUR, SEC_PER_MIN};
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-pub(crate) enum UnitErrKind<'s> {
+pub(crate) enum ShortErrKind<'s> {
     UnitMissing,
     UnitUnknown(&'s str),
     DurMissing(Unit),
@@ -19,7 +19,7 @@ pub(crate) enum UnitErrKind<'s> {
     DurOverflow(Unit),
 }
 
-impl UnitErrKind<'_> {
+impl ShortErrKind<'_> {
     pub(crate) fn has_help_message(&self) -> bool {
         match self {
             Self::UnitMissing
@@ -31,7 +31,7 @@ impl UnitErrKind<'_> {
     }
 }
 
-impl fmt::Display for UnitErrKind<'_> {
+impl fmt::Display for ShortErrKind<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if f.alternate() {
             match self {
@@ -65,13 +65,13 @@ impl ReadDur {
             .last()
             .ok_or(ParseErr::new(
                 ByteSpan::new_all(s),
-                UnitErrKind::UnitMissing,
+                ShortErrKind::UnitMissing,
             ))?;
 
         let unit = Unit::from_grapheme(try_unit).map_err(|_| {
             ParseErr::new(
                 ByteSpan::new(try_unit_idx, try_unit.len(), s),
-                UnitErrKind::UnitUnknown(try_unit),
+                ShortErrKind::UnitUnknown(try_unit),
             )
         })?;
 
@@ -79,7 +79,7 @@ impl ReadDur {
         let mut dur_span = ByteSpan::new(0, dur_len, s);
         dur_span.trim_whitespace();
         if dur_span.get().is_empty() {
-            Err(ParseErr::new(dur_span, UnitErrKind::DurMissing(unit)))
+            Err(ParseErr::new(dur_span, ShortErrKind::DurMissing(unit)))
         } else {
             let mut num_span = dur_span;
             let mut graphs = UnicodeSegmentation::grapheme_indices(s, true).peekable();
@@ -131,7 +131,7 @@ impl ReadDur {
                 ints = int_span
                     .get()
                     .parse::<u64>()
-                    .map_err(|err| ParseErr::new(int_span, UnitErrKind::ParseInt { err, unit }))?;
+                    .map_err(|err| ParseErr::new(int_span, ShortErrKind::ParseInt { err, unit }))?;
             }
 
             // parse subs
@@ -146,10 +146,10 @@ impl ReadDur {
                         let mut span = sub_span;
                         span.shift_start_right(idx);
                         span.len = len;
-                        ParseErr::new(span, UnitErrKind::ParseInt { err, unit })
+                        ParseErr::new(span, ShortErrKind::ParseInt { err, unit })
                     }
                     ParseFracErr::NumeratorOverflow { idx: _ } => {
-                        ParseErr::new(sub_span, UnitErrKind::DurOverflow(unit))
+                        ParseErr::new(sub_span, ShortErrKind::DurOverflow(unit))
                     }
                 })?;
             }
@@ -162,7 +162,7 @@ impl ReadDur {
                     Unit::Minute => u32::from(SEC_PER_MIN),
                     Unit::Hour => u32::from(SEC_PER_HOUR),
                 })
-                .ok_or(ParseErr::new(num_span, UnitErrKind::DurOverflow(unit)))?;
+                .ok_or(ParseErr::new(num_span, ShortErrKind::DurOverflow(unit)))?;
 
             Ok(ReadDur { dur, is_neg })
         }

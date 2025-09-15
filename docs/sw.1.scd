@@ -215,7 +215,7 @@ work.
 The _Offset_ and _Change_ commands accept a duration as input. The following
 formats are supported.
 
-## UNIT FORMAT
+## SHORT FORMAT
 
 ```
 number unit
@@ -226,7 +226,7 @@ meaning seconds, minutes, and hours respectively.
 
 Whitespace is ignored, so "1s" is just as valid as "1 s".
 
-## STOPWATCH FORMAT
+## LONG FORMAT
 
 ```
 sign hours : minutes : seconds . subseconds

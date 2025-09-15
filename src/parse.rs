@@ -13,11 +13,11 @@ use std::io;
 
 use crate::shell::{CmdBuf, ERROR};
 
-pub(crate) mod sw;
-pub(crate) mod unit;
+pub(crate) mod long;
+pub(crate) mod short;
 
-use sw::SwErrKind;
-use unit::UnitErrKind;
+use long::LongErrKind;
+use short::ShortErrKind;
 
 const SEC_PER_MIN: u8 = 60;
 const MIN_PER_HOUR: u8 = 60;
@@ -54,18 +54,18 @@ impl ReadDur {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ErrKind<'s> {
-    Unit(UnitErrKind<'s>),
-    Sw(SwErrKind),
+    Unit(ShortErrKind<'s>),
+    Sw(LongErrKind),
     Negative,
 }
 
-impl From<SwErrKind> for ErrKind<'_> {
-    fn from(sw: SwErrKind) -> Self {
+impl From<LongErrKind> for ErrKind<'_> {
+    fn from(sw: LongErrKind) -> Self {
         Self::Sw(sw)
     }
 }
-impl<'s> From<UnitErrKind<'s>> for ErrKind<'s> {
-    fn from(unit: UnitErrKind<'s>) -> Self {
+impl<'s> From<ShortErrKind<'s>> for ErrKind<'s> {
+    fn from(unit: ShortErrKind<'s>) -> Self {
         Self::Unit(unit)
     }
 }
@@ -87,16 +87,16 @@ impl<'s> ParseErr<'s> {
         #[allow(clippy::match_wildcard_for_single_variants)]
         match kind {
             ErrKind::Sw(ref mut sw_kind) => {
-                if let SwErrKind::Int { group, err } = sw_kind {
+                if let LongErrKind::Int { group, err } = sw_kind {
                     if *err.kind() == IntErrorKind::PosOverflow {
-                        *sw_kind = SwErrKind::DurationOverflow(*group);
+                        *sw_kind = LongErrKind::DurationOverflow(*group);
                     }
                 }
             }
             ErrKind::Unit(ref mut unit_kind) => {
-                if let UnitErrKind::ParseInt { err, unit } = unit_kind {
+                if let ShortErrKind::ParseInt { err, unit } = unit_kind {
                     if *err.kind() == IntErrorKind::PosOverflow {
-                        *unit_kind = UnitErrKind::DurOverflow(*unit);
+                        *unit_kind = ShortErrKind::DurOverflow(*unit);
                     }
                 }
             }

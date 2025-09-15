@@ -210,7 +210,7 @@ work.
 The [[#offset][offset]] and [[#change][change]] commands accept a duration as input.
 The following formats are supported.
 
-**** Unit format
+**** Short format
 #+begin_example
 number unit
 #+end_example
@@ -219,7 +219,7 @@ number unit
 
 Whitespace is ignored, so "1s" is just as valid as "1 s".
 
-**** Stopwatch format
+**** Long format
 #+begin_example
 sign hours : minutes : seconds . subseconds
 #+end_example
