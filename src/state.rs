@@ -190,7 +190,7 @@ impl<'shell> State<'shell> {
                         cb.info_change(format_args!("stopped and reset stopwatch"))?;
                     } else {
                         cb.info_change(format_args!("reset stopwatch"))?;
-                    };
+                    }
                 }
 
                 Command::Change => {

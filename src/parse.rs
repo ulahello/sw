@@ -30,7 +30,7 @@ pub struct ReadDur {
 }
 
 impl ReadDur {
-    pub fn parse(s: &str, allow_neg: bool) -> Option<Result<Self, ParseErr>> {
+    pub fn parse(s: &str, allow_neg: bool) -> Option<Result<Self, ParseErr<'_>>> {
         if s.is_empty() {
             None
         } else {

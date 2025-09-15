@@ -56,7 +56,7 @@ impl fmt::Display for UnitErrKind<'_> {
 }
 
 impl ReadDur {
-    pub fn parse_as_unit(s: &str, allow_neg: bool) -> Result<Self, ParseErr> {
+    pub fn parse_as_unit(s: &str, allow_neg: bool) -> Result<Self, ParseErr<'_>> {
         // whitespace? + number + whitespace? + unit + whitespace?
         let s = s.trim_end();
 

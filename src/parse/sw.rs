@@ -84,7 +84,7 @@ impl fmt::Display for SwErrKind {
 }
 
 impl ReadDur {
-    pub fn parse_as_sw(s: &str, allow_neg: bool) -> Result<Self, ParseErr> {
+    pub fn parse_as_sw(s: &str, allow_neg: bool) -> Result<Self, ParseErr<'_>> {
         /* split string into groups of hours, minutes, etc */
         let mut neg_span = None;
         let (groups, is_neg): (Groups, bool) = {
