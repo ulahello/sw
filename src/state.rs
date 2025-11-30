@@ -393,7 +393,7 @@ impl DurationFmt {
 }
 
 impl fmt::Display for DurationFmt {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> where {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result where {
         fn plural(len: impl Into<u64>) -> &'static str {
             let len: u64 = len.into();
             if len == 1 {

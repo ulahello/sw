@@ -32,7 +32,7 @@ impl ShortErrKind<'_> {
 }
 
 impl fmt::Display for ShortErrKind<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if f.alternate() {
             match self {
                 Self::UnitMissing | Self::UnitUnknown(_) => {

@@ -36,7 +36,7 @@ impl LongErrKind {
 }
 
 impl fmt::Display for LongErrKind {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if f.alternate() {
             match self {
                 Self::UnexpectedColon => {

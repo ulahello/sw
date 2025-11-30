@@ -16,8 +16,6 @@
 
 //! `sw` errors.
 
-#![allow(clippy::module_name_repetitions)]
-
 use std::fmt;
 use std::io;
 use std::num::{ParseFloatError, ParseIntError};
@@ -37,7 +35,7 @@ impl From<io::Error> for FatalError {
 }
 
 impl fmt::Display for FatalError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::Io(err) => write!(f, "io: {}", err),
         }
@@ -77,7 +75,7 @@ pub enum UserError {
 }
 
 impl fmt::Display for UserError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Self::UnrecognizedCommand(command) => write!(f, "unrecognized command `{}`", command),
             Self::UnrecognizedUnit(unit) => write!(

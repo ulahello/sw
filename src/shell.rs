@@ -144,16 +144,13 @@ impl Shell {
 
         match (&self.last_op, &anticipate) {
             (Some(IoKind::Out(last_color)), Some(IoKind::Out(expect_color))) => {
-                #[allow(clippy::if_not_else)]
-                if !last_color.is_none() {
-                    if expect_color.is_none() {
+                #[allow(clippy::match_same_arms)]
+                match (last_color.is_none(), expect_color.is_none()) {
+                    (false, true) => {
                         self.stdout.reset()?;
-                    } else {
-                        // anticipated color will overwrite previous color
                     }
-                } else {
-                    // previous color is none so it won't overwrite the
-                    // anticipated color
+                    (false, false) => (), // anticipated color will overwrite previous color
+                    (true, _) => (), // previous color is none so it won't overwrite the anticipated color
                 }
             }
             (Some(IoKind::Out(color)), Some(IoKind::In)) => {

@@ -70,7 +70,6 @@ impl<'s> From<ShortErrKind<'s>> for ErrKind<'s> {
     }
 }
 
-#[allow(clippy::module_name_repetitions)]
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct ParseErr<'s> {
     src: &'s str,
@@ -181,7 +180,7 @@ impl ParseErr<'_> {
 }
 
 impl fmt::Display for ParseErr<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if f.alternate() {
             match &self.kind {
                 ErrKind::Short(short) => write!(f, "{short:#}"),
