@@ -34,15 +34,15 @@ impl ReadDur {
         if s.is_empty() {
             None
         } else {
-            let parsed = match Self::parse_as_unit(s, allow_neg) {
-                Ok(unit_ok) => Ok(unit_ok),
-                Err(unit_err) => match Self::parse_as_sw(s, allow_neg) {
-                    Ok(sw_ok) => Ok(sw_ok),
-                    Err(sw_err) => {
+            let parsed = match Self::parse_as_short(s, allow_neg) {
+                Ok(short_ok) => Ok(short_ok),
+                Err(short_err) => match Self::parse_as_long(s, allow_neg) {
+                    Ok(long_ok) => Ok(long_ok),
+                    Err(long_err) => {
                         if s.as_bytes().contains(&b':') {
-                            Err(sw_err)
+                            Err(long_err)
                         } else {
-                            Err(unit_err)
+                            Err(short_err)
                         }
                     }
                 },
@@ -54,19 +54,19 @@ impl ReadDur {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub(crate) enum ErrKind<'s> {
-    Unit(ShortErrKind<'s>),
-    Sw(LongErrKind),
+    Short(ShortErrKind<'s>),
+    Long(LongErrKind),
     Negative,
 }
 
 impl From<LongErrKind> for ErrKind<'_> {
-    fn from(sw: LongErrKind) -> Self {
-        Self::Sw(sw)
+    fn from(long: LongErrKind) -> Self {
+        Self::Long(long)
     }
 }
 impl<'s> From<ShortErrKind<'s>> for ErrKind<'s> {
-    fn from(unit: ShortErrKind<'s>) -> Self {
-        Self::Unit(unit)
+    fn from(short: ShortErrKind<'s>) -> Self {
+        Self::Short(short)
     }
 }
 
@@ -83,24 +83,23 @@ impl<'s> ParseErr<'s> {
     pub(crate) fn new(span: ByteSpan<'s>, kind: impl Into<ErrKind<'s>>) -> Self {
         let mut kind = kind.into();
 
-        // showing int overflow error to user breaks abstraction
-        #[allow(clippy::match_wildcard_for_single_variants)]
         match kind {
-            ErrKind::Sw(ref mut sw_kind) => {
-                if let LongErrKind::Int { group, err } = sw_kind {
+            ErrKind::Long(ref mut long_kind) => {
+                if let LongErrKind::Int { group, err } = long_kind {
                     if *err.kind() == IntErrorKind::PosOverflow {
-                        *sw_kind = LongErrKind::DurationOverflow(*group);
+                        *long_kind = LongErrKind::DurationOverflow(*group);
                     }
                 }
             }
-            ErrKind::Unit(ref mut unit_kind) => {
-                if let ShortErrKind::ParseInt { err, unit } = unit_kind {
+            ErrKind::Short(ref mut short_kind) => {
+                if let ShortErrKind::ParseInt { err, unit } = short_kind {
                     if *err.kind() == IntErrorKind::PosOverflow {
-                        *unit_kind = ShortErrKind::DurOverflow(*unit);
+                        *short_kind = ShortErrKind::DurOverflow(*unit);
                     }
                 }
             }
-            _ => (),
+            // showing int overflow error to user breaks abstraction
+            ErrKind::Negative => (),
         }
 
         Self {
@@ -174,8 +173,8 @@ impl<'s> ParseErr<'s> {
 impl ParseErr<'_> {
     fn has_help_message(&self) -> bool {
         match &self.kind {
-            ErrKind::Unit(unit) => unit.has_help_message(),
-            ErrKind::Sw(sw) => sw.has_help_message(),
+            ErrKind::Short(short) => short.has_help_message(),
+            ErrKind::Long(long) => long.has_help_message(),
             ErrKind::Negative => true,
         }
     }
@@ -185,14 +184,14 @@ impl fmt::Display for ParseErr<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         if f.alternate() {
             match &self.kind {
-                ErrKind::Unit(unit) => write!(f, "{unit:#}"),
-                ErrKind::Sw(sw) => write!(f, "{sw:#}"),
+                ErrKind::Short(short) => write!(f, "{short:#}"),
+                ErrKind::Long(long) => write!(f, "{long:#}"),
                 ErrKind::Negative => write!(f, "only offsets to duration can be negative"),
             }
         } else {
             match &self.kind {
-                ErrKind::Unit(unit) => write!(f, "{unit}"),
-                ErrKind::Sw(sw) => write!(f, "{sw}"),
+                ErrKind::Short(short) => write!(f, "{short}"),
+                ErrKind::Long(long) => write!(f, "{long}"),
                 ErrKind::Negative => write!(f, "expected positive duration"),
             }
         }

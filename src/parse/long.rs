@@ -84,18 +84,18 @@ impl fmt::Display for LongErrKind {
 }
 
 impl ReadDur {
-    pub fn parse_as_sw(s: &str, allow_neg: bool) -> Result<Self, ParseErr<'_>> {
+    pub fn parse_as_long(s: &str, allow_neg: bool) -> Result<Self, ParseErr<'_>> {
         /* split string into groups of hours, minutes, etc */
         let mut neg_span = None;
         let (groups, is_neg): (Groups, bool) = {
             // NOTE: the lexer scans IN REVERSE
-            let mut lexer = SwLexer::new(s).peekable();
+            let mut lexer = LongLexer::new(s).peekable();
             let mut cur = Group::SecondsSub;
             let mut groups = Groups::new(s);
             let mut is_neg = None;
             while let Some(token) = lexer.next() {
                 match (cur, token.typ) {
-                    (Group::SecondsSub, SwTokenKind::Colon) => {
+                    (Group::SecondsSub, LongTokenKind::Colon) => {
                         // turns out the cur has been SecondsInt this whole
                         // time!
                         let tmp = groups[cur];
@@ -107,8 +107,8 @@ impl ReadDur {
                         // transition.
                         cur = Group::Minutes;
                     }
-                    (Group::SecondsSub, SwTokenKind::Dot) => cur = Group::SecondsInt,
-                    (Group::SecondsSub, SwTokenKind::Data) => {
+                    (Group::SecondsSub, LongTokenKind::Dot) => cur = Group::SecondsInt,
+                    (Group::SecondsSub, LongTokenKind::Data) => {
                         // NOTE: the question im asking is: "are there are no
                         // colons after this current token?" the way im asking
                         // it is "is this the last token or is the next token a
@@ -116,28 +116,28 @@ impl ReadDur {
                         // signs are only correctly parsed as the last"
                         let next_typ = lexer.peek().map(|token| token.typ);
                         if next_typ.is_none()
-                            || next_typ == Some(SwTokenKind::Pos)
-                            || next_typ == Some(SwTokenKind::Neg)
+                            || next_typ == Some(LongTokenKind::Pos)
+                            || next_typ == Some(LongTokenKind::Neg)
                         {
                             cur = Group::SecondsInt;
                         }
                         groups[cur] = token.span;
                     }
 
-                    (Group::SecondsInt, SwTokenKind::Colon) => cur = Group::Minutes,
+                    (Group::SecondsInt, LongTokenKind::Colon) => cur = Group::Minutes,
 
-                    (Group::Minutes, SwTokenKind::Colon) => cur = Group::Hours,
+                    (Group::Minutes, LongTokenKind::Colon) => cur = Group::Hours,
 
-                    (Group::Hours, SwTokenKind::Colon) => {
+                    (Group::Hours, LongTokenKind::Colon) => {
                         return Err(ParseErr::new(token.span, LongErrKind::UnexpectedColon));
                     }
 
-                    (_, SwTokenKind::Data) => groups[cur] = token.span,
-                    (_, SwTokenKind::Dot) => {
+                    (_, LongTokenKind::Data) => groups[cur] = token.span,
+                    (_, LongTokenKind::Dot) => {
                         return Err(ParseErr::new(token.span, LongErrKind::UnexpectedDot(cur)));
                     }
 
-                    (_, SwTokenKind::Pos) => {
+                    (_, LongTokenKind::Pos) => {
                         if lexer.peek().is_none() {
                             is_neg = Some(false);
                         } else {
@@ -147,7 +147,7 @@ impl ReadDur {
                             ));
                         }
                     }
-                    (_, SwTokenKind::Neg) => {
+                    (_, LongTokenKind::Neg) => {
                         if lexer.peek().is_none() {
                             is_neg = Some(true);
                             neg_span = Some(token.span);
@@ -230,12 +230,12 @@ impl ReadDur {
     }
 }
 
-pub(crate) struct SwLexer<'s> {
+pub(crate) struct LongLexer<'s> {
     content: Peekable<Rev<GraphemeIndices<'s>>>,
     s: &'s str,
 }
 
-impl<'s> SwLexer<'s> {
+impl<'s> LongLexer<'s> {
     pub(crate) fn new(s: &'s str) -> Self {
         Self {
             content: UnicodeSegmentation::grapheme_indices(s, true)
@@ -262,25 +262,25 @@ impl<'s> SwLexer<'s> {
         content.peek()
     }
 
-    fn single_token(next: &str) -> Option<SwTokenKind> {
+    fn single_token(next: &str) -> Option<LongTokenKind> {
         match next {
-            ":" => Some(SwTokenKind::Colon),
-            "." => Some(SwTokenKind::Dot),
-            "+" => Some(SwTokenKind::Pos),
-            "-" => Some(SwTokenKind::Neg),
+            ":" => Some(LongTokenKind::Colon),
+            "." => Some(LongTokenKind::Dot),
+            "+" => Some(LongTokenKind::Pos),
+            "-" => Some(LongTokenKind::Neg),
             _ => None,
         }
     }
 }
 
-impl<'s> Iterator for SwLexer<'s> {
-    type Item = SwToken<'s>;
+impl<'s> Iterator for LongLexer<'s> {
+    type Item = LongToken<'s>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let next = Self::advance(&mut self.content)?;
         let mut span = ByteSpan::new(next.0, next.1.len(), self.s);
         if let Some(typ) = Self::single_token(next.1) {
-            Some(SwToken { typ, span })
+            Some(LongToken { typ, span })
         } else {
             let mut bytes_ignored = 0;
             while let Some(d_next) = Self::peek(&mut self.content) {
@@ -297,8 +297,8 @@ impl<'s> Iterator for SwLexer<'s> {
                 }
                 self.content.next();
             }
-            Some(SwToken {
-                typ: SwTokenKind::Data,
+            Some(LongToken {
+                typ: LongTokenKind::Data,
                 span,
             })
         }
@@ -306,7 +306,7 @@ impl<'s> Iterator for SwLexer<'s> {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-pub(crate) enum SwTokenKind {
+pub(crate) enum LongTokenKind {
     Colon,
     Dot,
     Pos,
@@ -315,8 +315,8 @@ pub(crate) enum SwTokenKind {
 }
 
 #[derive(Debug, PartialEq, Eq)]
-pub(crate) struct SwToken<'s> {
-    pub(crate) typ: SwTokenKind,
+pub(crate) struct LongToken<'s> {
+    pub(crate) typ: LongTokenKind,
     pub(crate) span: ByteSpan<'s>,
 }
 

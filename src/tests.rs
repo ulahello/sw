@@ -31,8 +31,8 @@ mod parse {
         }
     }
 
-    mod unit {
-        // TODO: test unit format
+    mod short {
+        // TODO: test short format
 
         use crate::parse::*;
         use core::time::Duration;
@@ -43,18 +43,18 @@ mod parse {
                 dur: Duration::from_secs(1),
                 is_neg: false,
             });
-            assert_eq!(ReadDur::parse_as_unit(" 1s", true), expect);
-            assert_eq!(ReadDur::parse_as_unit("1s ", true), expect);
-            assert_eq!(ReadDur::parse_as_unit("1 s", true), expect);
-            assert_eq!(ReadDur::parse_as_unit("1. s", true), expect);
-            assert_eq!(ReadDur::parse_as_unit("1 . s", true), expect);
-            assert_eq!(ReadDur::parse_as_unit("1 .s", true), expect);
+            assert_eq!(ReadDur::parse_as_short(" 1s", true), expect);
+            assert_eq!(ReadDur::parse_as_short("1s ", true), expect);
+            assert_eq!(ReadDur::parse_as_short("1 s", true), expect);
+            assert_eq!(ReadDur::parse_as_short("1. s", true), expect);
+            assert_eq!(ReadDur::parse_as_short("1 . s", true), expect);
+            assert_eq!(ReadDur::parse_as_short("1 .s", true), expect);
         }
 
         #[test]
         fn overflow_bug() {
             assert_eq!(
-                ReadDur::parse_as_unit("0.2s", true),
+                ReadDur::parse_as_short("0.2s", true),
                 Ok(ReadDur {
                     dur: Duration::from_millis(200),
                     is_neg: false,
@@ -63,19 +63,19 @@ mod parse {
         }
     }
 
-    mod sw {
+    mod long {
         // TODO: test subsecond parsing
 
+        use crate::parse::long::*;
         use crate::parse::*;
         use core::time::Duration;
-        use sw::*;
 
         fn test<'a>(
             runs: impl Iterator<Item = (&'a [&'static str], Result<ReadDur, ParseErr<'static>>)>,
         ) {
             for (inputs, expect) in runs {
                 for input in inputs {
-                    assert_eq!(ReadDur::parse_as_sw(input, true), expect);
+                    assert_eq!(ReadDur::parse_as_long(input, true), expect);
                 }
             }
         }
@@ -140,39 +140,39 @@ mod parse {
         #[test]
         fn whitespace_trimmed() {
             const S: &str = " 1:2    45  6 : 4 ";
-            let mut lexer: Vec<_> = SwLexer::new(S).into_iter().collect();
+            let mut lexer: Vec<_> = LongLexer::new(S).into_iter().collect();
             assert_eq!(
                 lexer.pop(),
-                Some(SwToken {
-                    typ: SwTokenKind::Data,
+                Some(LongToken {
+                    typ: LongTokenKind::Data,
                     span: ByteSpan::new(1, 1, S),
                 })
             );
             assert_eq!(
                 lexer.pop(),
-                Some(SwToken {
-                    typ: SwTokenKind::Colon,
+                Some(LongToken {
+                    typ: LongTokenKind::Colon,
                     span: ByteSpan::new(2, 1, S),
                 })
             );
             assert_eq!(
                 lexer.pop(),
-                Some(SwToken {
-                    typ: SwTokenKind::Data,
+                Some(LongToken {
+                    typ: LongTokenKind::Data,
                     span: ByteSpan::new(3, 10, S),
                 })
             );
             assert_eq!(
                 lexer.pop(),
-                Some(SwToken {
-                    typ: SwTokenKind::Colon,
+                Some(LongToken {
+                    typ: LongTokenKind::Colon,
                     span: ByteSpan::new(14, 1, S),
                 })
             );
             assert_eq!(
                 lexer.pop(),
-                Some(SwToken {
-                    typ: SwTokenKind::Data,
+                Some(LongToken {
+                    typ: LongTokenKind::Data,
                     span: ByteSpan::new(16, 1, S),
                 })
             );
