@@ -319,6 +319,7 @@ impl<'shell> State<'shell> {
                 Command::Quit => {
                     /* quit message comes from foot terminal
                      * (https://codeberg.org/dnkl/foot) */
+                    // TODOOO: also print how much is elapsed in case of accidental C-d
                     cb.info_change(format_args!("goodbye"))?;
                     assert!(
                         passback.is_none(),
