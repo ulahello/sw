@@ -17,6 +17,7 @@ pub enum Command {
     Visuals,
     License,
     Quit,
+    QuitAbrupt,
 }
 
 #[allow(clippy::enum_glob_use)]
@@ -35,7 +36,7 @@ impl Command {
             Precision => "p",
             Visuals => "v",
             License => "l",
-            Quit => "q",
+            Quit | QuitAbrupt => "q",
         }
     }
 
@@ -58,7 +59,7 @@ impl Command {
             Precision => "precision",
             Visuals => "visuals",
             License => "license",
-            Quit => "quit",
+            Quit | QuitAbrupt => "quit",
         }
     }
 
@@ -74,7 +75,7 @@ impl Command {
             Precision => "set display precision",
             Visuals => "toggle visual cues",
             License => "print license info",
-            Quit => "Abandon all Data",
+            Quit | QuitAbrupt => "Abandon all Data",
         }
     }
 

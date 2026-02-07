@@ -316,15 +316,25 @@ impl<'shell> State<'shell> {
                     }
                 }
 
-                Command::Quit => {
+                Command::Quit | Command::QuitAbrupt => {
+                    let now = Instant::now();
+
                     /* quit message comes from foot terminal
                      * (https://codeberg.org/dnkl/foot) */
-                    // TODOOO: also print how much is elapsed in case of accidental C-d
                     cb.info_change(format_args!("goodbye"))?;
                     assert!(
                         passback.is_none(),
                         "State::update is not called after Passback::Quit"
                     );
+
+                    if let Command::QuitAbrupt = command {
+                        // print how much is elapsed in case of accidental C-d
+                        cb.info_change(format_args!(
+                            "(clock reads {})",
+                            DurationFmt::new(self.sw.elapsed_at(now), self.prec, cb.visual_cues())
+                        ))?;
+                    }
+
                     passback = Some(Passback::Quit);
                 }
             },

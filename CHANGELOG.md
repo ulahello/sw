@@ -5,6 +5,8 @@
 * renamed duration output formats:
   * stopwatch format is now long format
   * unit format is now short format
+* when quitting after an EOF, `sw` now prints the elapsed time
+  * this is a countermeasure against despair following an accidental EOF
 
 ## [0.15.0] - 2025-01-30
 ### Changed

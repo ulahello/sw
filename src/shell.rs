@@ -202,7 +202,7 @@ impl CmdBuf<'_> {
 
         if input.is_empty() {
             // we received EOF, quit
-            return Ok(Ok(Command::Quit));
+            return Ok(Ok(Command::QuitAbrupt));
         }
 
         let try_cmd = Shell::input(input);
