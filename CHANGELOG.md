@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+
+## [0.16.0] - 2026-02-06
 ### Changed
 * renamed duration output formats:
   * stopwatch format is now long format
